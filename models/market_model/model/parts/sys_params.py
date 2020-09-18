@@ -1,8 +1,8 @@
 from FixedPoint import FXnum
 import numpy as np
 
-import options as options
-from constants import SPY, RAY
+from ....options import *
+from ....constants import SPY, RAY
 
 #assume
 halflife = SPY / 52 #weeklong halflife
@@ -24,6 +24,6 @@ params = {
     'kd-hat': [FXnum(.1)], #derivative term for the market process to the debt price: unitless
     'alpha': [alpha], #in 1/RAY
     'error_term': [lambda target, measured: target - measured],
-    options.DebtPriceSource.__name__: [options.DebtPriceSource.DEFAULT.value],
-    options.IntegralType.__name__: [options.IntegralType.LEAKY.value],
+    DebtPriceSource.__name__: [DebtPriceSource.DEFAULT.value],
+    IntegralType.__name__: [IntegralType.LEAKY.value],
 }

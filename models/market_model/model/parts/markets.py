@@ -2,14 +2,14 @@ import scipy.stats as sts
 import datetime as dt
 from FixedPoint import FXnum
 
-import options
+from ....options import *
 
 def resolve_time_passed(params, substep, state_history, state):
     """
     Time passes 
     """
     
-    if params[options.DebtPriceSource.__name__] == options.DebtPriceSource.EXTERNAL.value:
+    if params[DebtPriceSource.__name__] == DebtPriceSource.EXTERNAL.value:
         seconds = max(params['minumum_control_period'], params['seconds_passed'](state['timestep']))
     else:
         offset = params['minumum_control_period']
@@ -48,7 +48,7 @@ def resolve_debt_price(params, substep, state_history, state):
     driving process
     """
     
-    if params[options.DebtPriceSource.__name__] == options.DebtPriceSource.EXTERNAL.value:
+    if params[DebtPriceSource.__name__] == DebtPriceSource.EXTERNAL.value:
         price_move = params['price_move'](state['timestep'])
     else:
         base_var = params['debt_market_std']

@@ -2,8 +2,9 @@
 from .helpers import *
 from FixedPoint import FXnum
 
-import options as options
-import constants
+from ....options import *
+from ....constants import *
+# import constants
 
 ### Stability Controller blocks
 
@@ -55,9 +56,9 @@ def update_error_star_integral(params, substep, state_history, state, policy_inp
     area = mean_error * timedelta
 
     error_integral = None
-    if params[options.IntegralType.__name__] == options.IntegralType.LEAKY.value:
+    if params[IntegralType.__name__] == IntegralType.LEAKY.value:
         alpha = params['alpha']
-        remaing_frac = float(alpha / constants.RAY)**timedelta
+        remaing_frac = float(alpha / RAY)**timedelta
         remaining = int(remaing_frac * error_star_integral)
         error_integral = remaining + area
     else:
