@@ -18,7 +18,7 @@ def update_target_rate(params, substep, state_history, state, policy_input):
     key = 'target_rate'
     value = target_rate # unitless
 
-    return key, 0
+    return key, value
 
 def update_target_price(params, substep, state_history, state, policy_input):
     # exp(bt) = (1+b)**t for low values of b; but to avoid compounding errors 
