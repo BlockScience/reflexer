@@ -20,9 +20,11 @@ Each model is located under `models/_`, with a unique name for each experiment.
 
 * `swig` for `auto-sklearn` Python library. Use `brew install swig@3` or:
 
-```apt-get install swig3.0
+```apt-get remove swig
+apt-get install swig3.0
 ln -s /usr/bin/swig3.0 /usr/bin/swig
 ```
+
 
 # Dependencies
 
