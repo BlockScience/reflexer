@@ -1,4 +1,4 @@
-Reflexer Labs, RAI
+# geb-rd
 =======
 
 # Table of Contents
@@ -16,22 +16,27 @@ Each model is located under `models/_`, with a unique name for each experiment.
    * PI Controller Tuning
    * Debt Price Model & Market Model Validation
 
+## System Dependencies
+
+* `swig` for `auto-sklearn` Python library. Use `brew install swig@3` or:
+
+```apt-get install swig3.0
+ln -s /usr/bin/swig3.0 /usr/bin/swig
+```
+
 # Dependencies
 
-You'll need Python 3+ and NodeJS/NPM in your environment.
+You'll need Python 3+ and NodeJS/NPM (v10.13.0) in your environment.
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip3 install wheel
+pip3 install -r requirements.txt
 jupyter labextension install jupyterlab-plotly@4.9.0 # --minimize=False
 python -m ipykernel install --user --name python-reflexer --display-name "Python (Reflexer)"
 jupyter-lab
 ```
-
-## System Dependencies
-
-* `swig` for `auto-sklearn` Python library: e.g. `brew install swig`
 
 # Modelling & Simulation
 
