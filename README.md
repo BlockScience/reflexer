@@ -1,7 +1,6 @@
 # geb-rd
-=======
 
-# Table of Contents
+## Table of Contents
 
 Each model is located under `models/_`, with a unique name for each experiment.
 
@@ -10,23 +9,23 @@ Each model is located under `models/_`, with a unique name for each experiment.
 * `models/_/model` - model configuration (e.g. PSUBs, state variables)
 * `models/_/model/parts` - model logic, state update functions, and policy functions
 
-# Models
+## Models
 
 1. Validation model - `models/market_model` / `notebook_validation.ipynb`: various debt price test scenarios, used for validating full system model, and tuning PI controller
    * PI Controller Tuning
    * Debt Price Model & Market Model Validation
 
-## System Dependencies
+### System Dependencies
 
 * `swig` for `auto-sklearn` Python library. Use `brew install swig@3` or:
 
-```apt-get remove swig
+```
+apt-get remove swig
 apt-get install swig3.0
 ln -s /usr/bin/swig3.0 /usr/bin/swig
 ```
 
-
-# Dependencies
+## Dependencies
 
 You'll need Python 3+ and NodeJS/NPM (v10.13.0) in your environment.
 
@@ -40,7 +39,7 @@ python -m ipykernel install --user --name python-reflexer --display-name "Python
 jupyter-lab
 ```
 
-# Modelling & Simulation
+## Modelling & Simulation
 
 To run simulation:
 ```python
@@ -57,7 +56,7 @@ market_simulation.append()
 result = run(drop_midsteps=True)
 ```
 
-# Simulation Profiling
+## Simulation Profiling
 
 ```python
 python3 -m cProfile -s time models/run.py
