@@ -60,9 +60,9 @@ def update_error_star_integral(params, substep, state_history, state, policy_inp
     timedelta = state['timedelta'] # unit: time (seconds)
     area = mean_error * timedelta # unit: USD * seconds
 
-    if params[options.IntegralType.__name__] == options.IntegralType.LEAKY.value:
+    if params[IntegralType.__name__] == IntegralType.LEAKY.value:
         alpha = params['alpha']
-        remaing_frac = float(alpha / constants.RAY)**timedelta # unitless
+        remaing_frac = float(alpha / RAY)**timedelta # unitless
         remaining = int(remaing_frac * error_star_integral) # unit: USD * seconds
         error_integral = remaining + area # unit: USD * seconds
     else:

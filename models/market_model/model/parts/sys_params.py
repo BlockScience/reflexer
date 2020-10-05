@@ -26,7 +26,7 @@ params = {
     'k-autoreg-1': [(0.7922)], #autoregressive term for the market model: unitless
     'alpha': [alpha], #in 1/RAY
     'error_term': [lambda target, measured: target - measured],
-    options.DebtPriceSource.__name__: [options.DebtPriceSource.DEFAULT.value],
-    options.IntegralType.__name__: [options.IntegralType.LEAKY.value],
+    DebtPriceSource.__name__: [DebtPriceSource.DEFAULT.value],
+    IntegralType.__name__: [IntegralType.LEAKY.value],
     'controller_enabled': [True]
 }

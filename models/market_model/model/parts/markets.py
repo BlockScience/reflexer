@@ -11,7 +11,7 @@ def resolve_time_passed(params, substep, state_history, state):
     
     if params[DebtPriceSource.__name__] == DebtPriceSource.EXTERNAL.value:
         seconds = max(params['minumum_control_period'], params['seconds_passed'](state['timestep']))
-    elif params[options.DebtPriceSource.__name__] == options.DebtPriceSource.DEBT_MARKET_MODEL.value:
+    elif params[DebtPriceSource.__name__] == DebtPriceSource.DEBT_MARKET_MODEL.value:
         seconds = max(params['minumum_control_period'], params['seconds_passed'](state['timestep']))
     else:
         offset = params['minumum_control_period']
@@ -52,7 +52,7 @@ def resolve_debt_price(params, substep, state_history, state):
     
     if params[DebtPriceSource.__name__] == DebtPriceSource.EXTERNAL.value:
         price_move = params['price_move'](state['timestep'])
-    elif params[options.DebtPriceSource.__name__] == options.DebtPriceSource.DEBT_MARKET_MODEL.value:
+    elif params[DebtPriceSource.__name__] == DebtPriceSource.DEBT_MARKET_MODEL.value:
         price_move = params['price_move'](state['timestep'])
     else:
         base_var = params['debt_market_std']
