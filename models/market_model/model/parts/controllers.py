@@ -7,8 +7,8 @@ import constants
 
 def update_target_rate(params, substep, state_history, state, policy_input):
 
-    error = -state['error_star'] # unit USD
-    error_integral = -state['error_star_integral'] # unit USD * seconds
+    error = state['error_star'] # unit USD
+    error_integral = state['error_star_integral'] # unit USD * seconds
 
     target_rate = params['kp'] * error + params['ki'] * error_integral
     
