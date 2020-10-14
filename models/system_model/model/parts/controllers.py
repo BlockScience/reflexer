@@ -25,14 +25,15 @@ def update_target_price(params, substep, state_history, state, policy_input):
     try:
         target_price = state['target_price'] * (1 + state['target_rate'])**state['timedelta']
     except OverflowError:
-        print(f'Controller target price OverflowError: target price {target_price}; target rate {state["target_rate"]}')
+        # print(f'Controller target price OverflowError: target price {target_price}; target rate {state["target_rate"]}')
         target_price = state['target_price']
+        raise
     
     if (target_price < 0):
         target_price = 0
-    elif target_price > 10:
-        print('Target price capped at 10')
-        target_price = state['target_price']
+    # elif target_price > 10:
+    #     print('Target price capped at 10')
+    #     target_price = state['target_price']
 
     key = 'target_price'
     value = target_price

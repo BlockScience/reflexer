@@ -1,4 +1,5 @@
 cadCAD==0.4.23
+#https://github.com/danlessa/cadCAD/archive/danlessa_devel.zip
 matplotlib==3.3.0
 jupyterlab==2.2.0
 seaborn==0.10.1
@@ -16,3 +17,5 @@ arff==0.9
 kaleido
 # Required for auto-sklearn, see https://github.com/automl/auto-sklearn/issues/848
 pandas<1.0
+jupytext==1.6.0
+papermill==2.2.0

@@ -11,7 +11,7 @@ def resolve_time_passed(params, substep, state_history, state):
     
     offset = params['minumum_control_period']
     expected_lag = params['expected_control_delay'](state['timestep'])
-    seconds = int(sts.expon.rvs(loc=offset, scale=expected_lag))
+    seconds = int(sts.expon.rvs(loc=offset, scale=expected_lag, random_state=state['run']))
 
     return {'seconds_passed': seconds}
 

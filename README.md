@@ -57,6 +57,18 @@ market_simulation.append()
 result = run(drop_midsteps=True)
 ```
 
+## System Shock Tests
+
+See `run_shock_tests.py` for the set of Ki and Kp parameter sweeps.
+
+```bash
+python run_shock_tests.py
+```
+
+Outputs:
+* `exports/_.png` - metric grid for each set of parameters
+* `templates/shock_tests.ipynb` - template notebook for running test and generating grid
+
 # Simulation Profiling
 
 ```python
