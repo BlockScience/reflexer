@@ -10,7 +10,7 @@ alpha = int(np.power(.5, float(1 / halflife)) * RAY)
 params = {
     'expected_blocktime': [15], #seconds
     'minumum_control_period': [3600], #seconds
-    'expected_control_delay': [1200], #seconds
+    'expected_control_delay': [lambda _timestep: 1200], #seconds
     'derivative_smoothing': [1], #unitless
     'debt_market_std':[.001], #defined price units per hour
     'kp': [6.944e-06], #proportional term for the stability controller: units 1/USD
