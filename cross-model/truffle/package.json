@@ -8,14 +8,14 @@
   },
   "scripts": {
     "install-deps": "npm install",
-    "setup-network": "npm install && ganache-cli -d -e 100000000000",
-    "test-all": "truffle test",
-    "pi-raw-second": "truffle test test/pi-raw-second.js",
-    "pi-raw-global-imported-config": "truffle test test/pi_raw_global_imported_config.js",
-    "pi-raw-second-imported-config": "truffle test test/pi_raw_second_imported_config.js",
-    "pi-scaled-second-imported-config": "truffle test test/pi_scaled_second_imported_config.js",
-    "pi-scaled-global-imported-config": "truffle test test/pi_scaled_global_imported_config.js",
-    "both-imported-config-sims": "truffle test test/pi_raw_validator_imported_config.js && truffle test test/pi_scaled_validator_imported_config.js"
+    "setup-network": "npx ganache-cli -d -e 100000000000",
+    "test-all": "npx truffle test",
+    "pi-raw-second": "npx truffle test test/pi-raw-second.js",
+    "pi-raw-global-imported-config": "npx truffle test test/pi_raw_global_imported_config.js",
+    "pi-raw-second-imported-config": "npx truffle test test/pi_raw_second_imported_config.js",
+    "pi-scaled-second-imported-config": "npx truffle test test/pi_scaled_second_imported_config.js",
+    "pi-scaled-global-imported-config": "npx truffle test test/pi_scaled_global_imported_config.js",
+    "both-imported-config-sims": "npx truffle test test/pi_raw_validator_imported_config.js && truffle test test/pi_scaled_validator_imported_config.js"
   },
   "keywords": [
     "GEB",

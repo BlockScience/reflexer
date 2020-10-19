@@ -76,6 +76,15 @@ market_simulation.append()
 result = run(drop_midsteps=True)
 ```
 
+## Solidity / cadCAD Simulation
+
+```bash
+cd ./cross-model/truffle
+npm install
+npm setup-network
+# Run notebook in ./cross-model/cadCAD
+```
+
 ## Simulation Profiling
 
 ```python
