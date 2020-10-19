@@ -173,9 +173,7 @@ for subset in range(df.subset.max() + 1):
 
     dataset["relative_diff"] = df.market_price / df.debt_price
     
-    overshoot_pct = (dataset.market_price.max() - dataset.debt_price.max())
-            / dataset.debt_price.max()
-            * 100
+    overshoot_pct = (dataset.market_price.max() - dataset.debt_price.max()) / dataset.debt_price.max() * 100
 
     reasonable_steady_state_error = 0.01
     dataset["pct_error"] = dataset["error_hat"] / dataset["debt_price"]
