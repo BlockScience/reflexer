@@ -1,5 +1,7 @@
 # Reflexer, RAI
 
+![RAI laws of motion](diagrams/laws_of_motion.png)
+
 ## Table of Contents
 
 Each model is located under `models/_`, with a unique name for each experiment.
