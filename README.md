@@ -82,7 +82,7 @@ result = run(drop_midsteps=True)
 cd ./cross-model/truffle
 npm install
 npm setup-network
-# Run notebook in ./cross-model/cadCAD
+# Open and run notebook_solidity_validation.ipynb
 ```
 
 ## Simulation Profiling
