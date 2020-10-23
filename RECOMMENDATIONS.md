@@ -34,6 +34,15 @@ See `notebook_solidity_validation.ipynb` for Solidity/cadCAD validation and erro
 
 ### Solidity cadCAD Validation
 
-![](./exports/shock_analysis/v1/plots/solidity-cadcad-market.png)
+Error metrics:
+
+```
+Max error: 0.001549358635118292
+Std. error: 0.000493563911806611
+Mean error: -5.243893138066842e-05
+Abs. mean error: 0.00037834760494943686
+```
 
 ![](./exports/shock_analysis/v1/plots/solidity-cadcad-error.png)
+
+![](./exports/shock_analysis/v1/plots/solidity-cadcad-market.png)
