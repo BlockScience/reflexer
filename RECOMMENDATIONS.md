@@ -14,12 +14,14 @@ See `exports/shock_analysis/v1`:
 
 See `notebook_solidity_validation.ipynb` for Solidity/cadCAD validation and error stats.
 
-## Metrics for Kp `-1.5e-6`
+## Outputs for Kp `-1.5e-6`
 
 ### Shock Metrics
+
 ![](./exports/shock_analysis/v1/shock_metrics/kp_-1.5000E-06-ki_0.0000E+00.png)
 
 ### Shock Standard Deviation
+
 ![](./exports/shock_analysis/v1/shock_std/kp_-1.5000E-06-ki_0.0000E+00.png)
 
 ### Market Shock Response
@@ -29,3 +31,9 @@ See `notebook_solidity_validation.ipynb` for Solidity/cadCAD validation and erro
 ### Regression Model Response
 
 ![](./exports/shock_analysis/v1/plots/regression.png)
+
+### Solidity cadCAD Validation
+
+![](./exports/shock_analysis/v1/plots/solidity-cadcad-market.png)
+
+![](./exports/shock_analysis/v1/plots/solidity-cadcad-error.png)
