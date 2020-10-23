@@ -3,6 +3,14 @@
 * Ideal Kp parameter value for launch: `-1.5e-6`
 * Range of Kp parameters given KPI metrics (response time, stability, sensitivity, error): `-3e-06, -2e-06, -1e-06, -9e-07, -8e-07, -7e-07`
 
+## Simulation Metadata
+
+* 4 Monte Carlo runs per shock simulation
+* 12 shock simulations:
+  * Impulse, step, sinusoid with three amplitudes each (9)
+  * Sinusoid with three control delays (3)
+* = 48 runs per value in sweep x 50 values = 2,400 total runs over sweep
+
 ## Relevant Analysis and Resources
 
 See `exports/shock_datasets` for raw Pandas dataframes.
