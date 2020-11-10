@@ -19,16 +19,16 @@ def s_update_eth_price(params, substep, state_history, state, policy_input):
     
     return 'eth_price', eth_price + delta_eth_price
 
-def s_update_redemption_price(params, substep, state_history, state, policy_input):
-    eth_collateral = state['eth_collateral']
-    eth_price = state['eth_price']
-    collateral_value = eth_collateral * eth_price
-    principal_debt = state['principal_debt']
+# def s_update_redemption_price(params, substep, state_history, state, policy_input):
+#     eth_collateral = state['eth_collateral']
+#     eth_price = state['eth_price']
+#     collateral_value = eth_collateral * eth_price
+#     principal_debt = state['principal_debt']
     
-    redemption_price = collateral_value / principal_debt
-    assert redemption_price >= 0, f'{redemption_price} !>= 0 ~ {collateral_value}, {principal_debt}, {state}'
+#     target_price = collateral_value / principal_debt
+#     assert target_price >= 0, f'{target_price} !>= 0 ~ {collateral_value}, {principal_debt}, {state}'
     
-    return 'redemption_price', redemption_price
+#     return 'target_price', target_price
 
 ############################################################################################################################################
 
@@ -43,8 +43,8 @@ def p_open_cdps(params, substep, state_history, state):
 
 #     liquidation_ratio = params['liquidation_ratio']
 #     collateral_value = v1 * state['eth_price']
-#     redemption_price = state['redemption_price']
-#     u1 = collateral_value / (redemption_price * liquidation_ratio)
+#     target_price = state['target_price']
+#     u1 = collateral_value / (target_price * liquidation_ratio)
     
 #     cumulative_time = state['cumulative_time']
 #     # Daily activity
@@ -72,7 +72,7 @@ def p_close_cdps(params, substep, state_history, state):
 
 def p_liquidate_cdps(params, substep, state_history, state):
     eth_price = state['eth_price']
-    redemption_price = state['redemption_price']
+    target_price = state['target_price']
     liquidation_penalty = params['liquidation_penalty']
     liquidation_ratio = params['liquidation_ratio']
     
@@ -80,7 +80,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
     liquidated_cdps = pd.DataFrame()
     if len(cdps) > 0:
         try:
-            liquidated_cdps = cdps.query(f'locked * {eth_price} < drawn * {redemption_price} * {liquidation_ratio}')
+            liquidated_cdps = cdps.query(f'locked * {eth_price} < drawn * {target_price} * {liquidation_ratio}')
         except:
             print(state)
             raise
@@ -88,7 +88,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
     if len(liquidated_cdps.index) > 0:
         try:
             delta_u3 = liquidated_cdps['drawn'].sum()
-            delta_v3 = (delta_u3 * redemption_price * (1 + liquidation_penalty)) / eth_price
+            delta_v3 = (delta_u3 * target_price * (1 + liquidation_penalty)) / eth_price
             eth_locked = liquidated_cdps['locked'].sum()
             assert delta_v3 >= 0, f'{delta_v3} !>= 0 ~ {state}'
             assert delta_v3 <= eth_locked, f'{delta_v3} !<= {eth_locked}'
@@ -129,19 +129,19 @@ def s_resolve_cdps(params, substep, state_history, state, policy_input):
 
     cdp_top_up_buffer = params['cdp_top_up_buffer']
     eth_price = state['eth_price']
-    redemption_price = state['redemption_price']
+    target_price = state['target_price']
     
     def top_up_cdp(cdp, top_up_collateral):
         locked = cdp['locked']
         drawn = cdp['drawn']
-        top_up = locked * eth_price < drawn * redemption_price * cdp_top_up_buffer
+        top_up = locked * eth_price < drawn * target_price * cdp_top_up_buffer
         if top_up:
             cdp['locked'] = locked + top_up_collateral
         return cdp
             
     if delta_v1 > 0:
         cumulative_time = state['cumulative_time']
-        total_top_ups = cdps.query(f'locked * {eth_price} < drawn * {redemption_price} * {cdp_top_up_buffer}').shape[0]
+        total_top_ups = cdps.query(f'locked * {eth_price} < drawn * {target_price} * {cdp_top_up_buffer}').shape[0]
         if total_top_ups > 0:
             top_up_collateral = (delta_v1 * 0.5) / total_top_ups
             delta_v1 = delta_v1 * 0.5
@@ -235,10 +235,10 @@ def s_update_accrued_interest(params, substep, state_history, state, policy_inpu
     principal_debt = state['principal_debt']
     
     stability_fee = state['stability_fee']
-    redemption_rate = state['redemption_rate']
+    target_rate = state['target_rate']
     timedelta = state['timedelta']
     
-    accrued_interest = (((1 + stability_fee)*(1 + redemption_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
+    accrued_interest = (((1 + stability_fee)*(1 + target_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
     return 'accrued_interest', previous_accrued_interest + accrued_interest
 
 def s_update_interest_bitten(params, substep, state_history, state, policy_input):
@@ -249,13 +249,13 @@ def s_update_interest_bitten(params, substep, state_history, state, policy_input
 def s_update_cdp_interest(params, substep, state_history, state, policy_input):
     cdps = state['cdps']
     stability_fee = state['stability_fee']
-    redemption_rate = state['redemption_rate']
+    target_rate = state['target_rate']
     timedelta = state['timedelta']
     
     def resolve_cdp_interest(cdp):
         principal_debt = cdp['drawn']
         previous_accrued_interest = cdp['dripped']
-        cdp['dripped'] = (((1 + stability_fee)*(1 + redemption_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
+        cdp['dripped'] = (((1 + stability_fee)*(1 + target_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
         return cdp
     
     cdps.apply(resolve_cdp_interest, axis=1)
