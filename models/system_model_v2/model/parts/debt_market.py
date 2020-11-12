@@ -19,18 +19,11 @@ def s_update_eth_price(params, substep, state_history, state, policy_input):
     
     return 'eth_price', eth_price + delta_eth_price
 
-# def s_update_redemption_price(params, substep, state_history, state, policy_input):
-#     eth_collateral = state['eth_collateral']
-#     eth_price = state['eth_price']
-#     collateral_value = eth_collateral * eth_price
-#     principal_debt = state['principal_debt']
-    
-#     target_price = collateral_value / principal_debt
-#     assert target_price >= 0, f'{target_price} !>= 0 ~ {collateral_value}, {principal_debt}, {state}'
-    
-#     return 'target_price', target_price
-
 ############################################################################################################################################
+
+def s_update_stability_fee(params, substep, state_history, state, policy_input):
+    stability_fee = params['stability_fee'](state['timestep'])
+    return 'stability_fee', stability_fee
 
 def p_open_cdps(params, substep, state_history, state):
 #     base_var = 100
@@ -53,7 +46,9 @@ def p_open_cdps(params, substep, state_history, state):
 #     else:
 #         return {'delta_v1': 0, 'delta_u1': 0}
 
-    delta_v1 = params['delta_v1'](state['timestep'])
+    #delta_v1 = params['delta_v1'](state['timestep'])
+    #delta_u1 = params['delta_u1'](state['timestep'])
+    delta_v1 = params['delta_v1'](state, state_history)
     delta_u1 = params['delta_u1'](state['timestep'])
     
     return {'delta_v1': delta_v1, 'delta_u1': delta_u1}
@@ -85,20 +80,21 @@ def p_liquidate_cdps(params, substep, state_history, state):
             print(state)
             raise
     
+    events = []
     if len(liquidated_cdps.index) > 0:
         try:
             delta_u3 = liquidated_cdps['drawn'].sum()
             delta_v3 = (delta_u3 * target_price * (1 + liquidation_penalty)) / eth_price
             eth_locked = liquidated_cdps['locked'].sum()
             assert delta_v3 >= 0, f'{delta_v3} !>= 0 ~ {state}'
-            assert delta_v3 <= eth_locked, f'{delta_v3} !<= {eth_locked}'
+            assert delta_v3 <= eth_locked, f'Liquidation short of collateral: {delta_v3} !<= {eth_locked}'
             # Assume remaining collateral freed
             delta_v2 = eth_locked - delta_v3
             assert delta_v2 >= 0, f'{delta_v2} !>= {0}'
             delta_w3 = liquidated_cdps['dripped'].sum()
             assert delta_w3 > 0
         except AssertionError as err:
-            print(f'Liquidation short of collateral: {err}')
+            events = [err]
             delta_v3 = liquidated_cdps['locked'].sum()
             delta_u3 = liquidated_cdps['drawn'].sum()
             delta_v2 = 0
@@ -109,7 +105,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
         delta_v2 = 0
         delta_w3 = 0
     
-    return {'liquidated_cdps': liquidated_cdps, 'delta_v3': delta_v3, 'delta_u3': delta_u3, 'delta_v2': delta_v2, 'delta_w3': delta_w3}
+    return {'events': events, 'liquidated_cdps': liquidated_cdps, 'delta_v3': delta_v3, 'delta_u3': delta_u3, 'delta_v2': delta_v2, 'delta_w3': delta_w3}
 
 def s_resolve_cdps(params, substep, state_history, state, policy_input):
     delta_v1 = policy_input.get('delta_v1', 0)

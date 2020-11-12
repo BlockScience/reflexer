@@ -45,9 +45,9 @@ def update_target_price(params, substep, state_history, state, policy_input):
 def observe_errors(params, substep, state_history, state):
 
     error_star = params['error_term'](state['target_price'], state['market_price'])
-    error_hat = state['debt_price'] - state['market_price']
+    # error_hat = state['debt_price'] - state['market_price']
 
-    return {'error_star':error_star, 'error_hat':error_hat}
+    return {'error_star': error_star} # , 'error_hat': error_hat
 
 def store_error_star(params, substep, state_history, state, policy_input):
     error = policy_input['error_star']
@@ -72,41 +72,41 @@ def update_error_star_integral(params, substep, state_history, state, policy_inp
 
     return 'error_star_integral', error_integral # unit: USD * seconds
 
-def update_error_star_derivative(params, substep, state_history, state, policy_input):
+# def update_error_star_derivative(params, substep, state_history, state, policy_input):
     
-    old_error = state['error_star']
-    new_error = policy_input['error_star']
+#     old_error = state['error_star']
+#     new_error = policy_input['error_star']
 
-    theta = params['derivative_smoothing']
+#     theta = params['derivative_smoothing']
 
-    error_derivative = theta*(new_error-old_error)/state['timedelta'] + (1-theta)*state['error_star_derivative']
+#     error_derivative = theta*(new_error-old_error)/state['timedelta'] + (1-theta)*state['error_star_derivative']
 
-    return 'error_star_derivative', error_derivative
+#     return 'error_star_derivative', error_derivative
 
-def store_error_hat(params, substep, state_history, state, policy_input):
-    error = policy_input['error_hat']
-    return 'error_hat', error
+# def store_error_hat(params, substep, state_history, state, policy_input):
+#     error = policy_input['error_hat']
+#     return 'error_hat', error
 
-def update_error_hat_integral(params, substep, state_history, state, policy_input):
+# def update_error_hat_integral(params, substep, state_history, state, policy_input):
     
-    old_error = state['error_hat']
-    new_error = policy_input['error_hat']
+#     old_error = state['error_hat']
+#     new_error = policy_input['error_hat']
 
-    mean_error = (old_error+new_error)/2
+#     mean_error = (old_error+new_error)/2
 
-    area = mean_error*state['timedelta']
+#     area = mean_error*state['timedelta']
     
-    error_integral = state['error_hat_integral'] + area
+#     error_integral = state['error_hat_integral'] + area
 
-    return 'error_hat_integral', error_integral
+#     return 'error_hat_integral', error_integral
 
 
-def update_error_hat_derivative(params, substep, state_history, state, policy_input):
-    old_error = state['error_star']
-    new_error = policy_input['error_star']
+# def update_error_hat_derivative(params, substep, state_history, state, policy_input):
+#     old_error = state['error_star']
+#     new_error = policy_input['error_star']
 
-    theta = params['derivative_smoothing']
+#     theta = params['derivative_smoothing']
 
-    error_derivative = theta*(new_error-old_error)/state['timedelta']+(1-theta)*state['error_hat_derivative']
+#     error_derivative = theta*(new_error-old_error)/state['timedelta']+(1-theta)*state['error_hat_derivative']
 
-    return 'error_hat_derivative', error_derivative
+#     return 'error_hat_derivative', error_derivative

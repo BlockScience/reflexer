@@ -8,6 +8,7 @@ halflife = SPY / 52 #weeklong halflife
 alpha = int(np.power(.5, float(1 / halflife)) * RAY)
 
 params = {
+    'free_memory_states': [['cdps', 'events']],
     'expected_blocktime': [15], #seconds
     'minumum_control_period': [lambda _timestep: 3600], #seconds
     'expected_control_delay': [lambda _timestep: 1200], #seconds
@@ -29,5 +30,6 @@ params = {
     options.IntegralType.__name__: [options.IntegralType.LEAKY.value],
     options.MarketPriceSource.__name__: [options.MarketPriceSource.DEFAULT.value],
     'controller_enabled': [True],
-    'delta_output': [lambda state, timestep: 0]
+    'delta_output': [lambda state, timestep: 0],
+    'market_price': [lambda timestep: 2.0]
 }

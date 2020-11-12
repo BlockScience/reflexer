@@ -21,6 +21,7 @@ cdps = cdps.append({
 }, ignore_index=True)
 
 state_variables = {
+    'events': [],
     'error_star': (0.0), #price units
     'error_hat': (0.0), #price units
     'old_error_star': (0.0), #price units
@@ -31,7 +32,7 @@ state_variables = {
     'error_hat_derivative': (0.0), #price units per second
     #'target_rate': (0.0), #price units per second
     #'target_price': (2.0), #price units
-    'market_price': (2.0), #price units
+    'market_price': target_price, #price units
     #'debt_price': (2.0), #price units
     'blockheight': 0, # block offset (init 0 simplicity)
     # # Env. process states
