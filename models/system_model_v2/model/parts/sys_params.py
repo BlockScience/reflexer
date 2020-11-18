@@ -31,5 +31,13 @@ params = {
     options.MarketPriceSource.__name__: [options.MarketPriceSource.DEFAULT.value],
     'controller_enabled': [True],
     'delta_output': [lambda state, timestep: 0],
-    'market_price': [lambda timestep: 2.0]
+    'market_price': [lambda timestep: 2.0],
+    # APT model
+    'alpha_0': [-0.15945516088407055],
+    'alpha_1': [1.159513245269044],
+    'beta_0': [1.0003953223600617],
+    'beta_1': [0.6756295152422528],
+    'beta_2': [3.86810578185312e-06],
+    'G_OLS': [lambda x, to_opt, data, constant: 0],
+    'interest_rate': [1.01],
 }

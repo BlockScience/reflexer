@@ -47,21 +47,33 @@ state_variables = {
     'eth_price': eth_price, # dollars
     # v
     'eth_collateral': eth_collateral, # Q
-    'eth_locked': eth_collateral, # v1
-    'eth_freed': 0, # v2
-    'eth_bitten': 0, # v3 "liquidated"
+    'eth_locked': eth_collateral, # cumulative v1
+    'eth_freed': 0, # cumulative v2
+    'eth_bitten': 0, # cumulative v3 "liquidated"
+    'v_1': 0,
+    'v_2': 0,
+    'v_3': 0,
     # u
     'principal_debt': principal_debt, # D1
-    'rai_drawn': principal_debt, # u1 "minted"
-    'rai_wiped': 0, # u2 "burned" in repayment
-    'rai_bitten': 0, # u3 "burned" in liquidation
+    'rai_drawn': principal_debt, # cumulative u1 "minted"
+    'rai_wiped': 0, # cumulative u2 "burned" in repayment
+    'rai_bitten': 0, # cumulative u3 "burned" in liquidation
+    'u_1': 0,
+    'u_2': 0,
+    'u_3': 0,
     # w
     'accrued_interest': 0, # D2
     'system_revenue': 0, # R
     'stability_fee': 0.015 / (30 * 24 * 3600), # per second interest rate (1.5% per month)
-    'interest_dripped': 0, # w1 interest collected
-    'interest_wiped': 0, # w2, interest repaid - in practice acrues to MKR holders, because interest is actually acrued by burning MKR
-    'interest_bitten': 0, # w3
+    'interest_dripped': 0, # cumulative w1 interest collected
+    'interest_wiped': 0, # cumulative w2, interest repaid - in practice acrues to MKR holders, because interest is actually acrued by burning MKR
+    'interest_bitten': 0, # cumulative w3
+    'w_1': 0,
+    'w_2': 0,
+    'w_3': 0,
     'target_price': target_price, # dollars == redemption price
-    'target_rate': 0 # per second interest rate (X% per month) == redemption rate
+    'target_rate': 0, # per second interest rate (X% per month) == redemption rate
+    # APT model
+    'eth_return': 0,
+    'eth_gross_return': 0,
 }

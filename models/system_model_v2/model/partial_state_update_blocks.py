@@ -3,6 +3,7 @@ from .parts.markets import *
 from .parts.debt_market import *
 from .parts.time import *
 from .parts.utils import *
+from .parts.apt_model import *
 
 partial_state_update_blocks = [
     {
@@ -43,7 +44,9 @@ partial_state_update_blocks = [
             'exogenous_eth_process': p_resolve_eth_price,
         },
         'variables': {
-            'eth_price': s_update_eth_price
+            'eth_price': s_update_eth_price,
+            'eth_return': s_update_eth_return,
+            'eth_gross_return': s_update_eth_gross_return
         }
     },
     {
@@ -59,6 +62,10 @@ partial_state_update_blocks = [
             'eth_freed': s_update_eth_freed,
             'rai_bitten': s_update_rai_bitten,
             'accrued_interest': s_update_interest_bitten,
+            'v_2': s_store_v_2,
+            'v_3': s_store_v_3,
+            'u_3': s_store_u_3,
+            'w_3': s_store_w_3,
             'cdps': s_resolve_cdps,
         }
     },
@@ -72,6 +79,9 @@ partial_state_update_blocks = [
         'variables': {
             'eth_locked': s_update_eth_locked,
             'rai_drawn': s_update_rai_drawn,
+            'v_1': s_store_v_1,
+            'u_1': s_store_u_1,
+            #'w_1': s_store_w_1,
             'cdps': s_resolve_cdps,
         }
     },
@@ -86,6 +96,9 @@ partial_state_update_blocks = [
             'eth_freed': s_update_eth_freed,
             'rai_wiped': s_update_rai_wiped,
             'system_revenue': s_update_system_revenue,
+            'v_2': s_store_v_2,
+            'u_2': s_store_u_2,
+            'w_2': s_store_w_2,
             'cdps': s_resolve_cdps,
         }
     },
@@ -143,5 +156,14 @@ partial_state_update_blocks = [
         'variables': {
             'target_price': update_target_price,
         }
+    },
+    {
+        'details': """
+            APT model
+        """,
+        'policies': {
+            'apt': p_apt_model
+        },
+        'variables': {}
     }
 ]

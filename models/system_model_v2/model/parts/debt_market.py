@@ -4,20 +4,32 @@ import pandas as pd
 ############################################################################################################################################
 
 def p_resolve_eth_price(params, substep, state_history, state):
-    base_var = params['eth_market_std']
-    variance = float(base_var * state['timedelta'] / 3600.0)
-    random_state = params['random_state']
-    delta_eth_price = sts.norm.rvs(loc=0, scale=variance, random_state=random_state)
+    #base_var = params['eth_market_std']
+    #variance = float(base_var * state['timedelta'] / 3600.0)
+    #random_state = params['random_state']
+    #delta_eth_price = sts.norm.rvs(loc=0, scale=variance, random_state=random_state)
+    eth_price = params['eth_price'](state['timestep'])
+    delta_eth_price = eth_price - state_history[-1][-1]['eth_price']
     
     return {'delta_eth_price': delta_eth_price}
 
 def s_update_eth_price(params, substep, state_history, state, policy_input):
-    #eth_price = state['eth_price']
-    #delta_eth_price = policy_input['delta_eth_price']
-    eth_price = params['eth_price'](state['timestep'])
-    delta_eth_price = 0
-    
+    eth_price = state['eth_price']
+    delta_eth_price = policy_input['delta_eth_price']
+
     return 'eth_price', eth_price + delta_eth_price
+
+def s_update_eth_return(params, substep, state_history, state, policy_input):
+    eth_price = state['eth_price']
+    delta_eth_price = policy_input['delta_eth_price']
+    
+    return 'eth_return', delta_eth_price / eth_price
+
+def s_update_eth_gross_return(params, substep, state_history, state, policy_input):
+    eth_price = state['eth_price']
+    eth_gross_return = eth_price / state_history[-1][-1]['eth_price']
+    
+    return 'eth_gross_return', eth_gross_return
 
 ############################################################################################################################################
 
@@ -106,6 +118,33 @@ def p_liquidate_cdps(params, substep, state_history, state):
         delta_w3 = 0
     
     return {'events': events, 'liquidated_cdps': liquidated_cdps, 'delta_v3': delta_v3, 'delta_u3': delta_u3, 'delta_v2': delta_v2, 'delta_w3': delta_w3}
+
+def s_store_v_1(params, substep, state_history, state, policy_input):
+    return 'v_1', policy_input['delta_v1']
+
+def s_store_u_1(params, substep, state_history, state, policy_input):
+    return 'u_1', policy_input['delta_u1']
+    
+def s_store_w_1(params, substep, state_history, state, policy_input):
+    return 'w_1', policy_input['delta_w1']
+
+def s_store_v_2(params, substep, state_history, state, policy_input):
+    return 'v_2', policy_input['delta_v2']
+
+def s_store_u_2(params, substep, state_history, state, policy_input):
+    return 'u_2', policy_input['delta_u2']
+    
+def s_store_w_2(params, substep, state_history, state, policy_input):
+    return 'w_2', policy_input['delta_w2']
+
+def s_store_v_3(params, substep, state_history, state, policy_input):
+    return 'v_3', policy_input['delta_v3']
+
+def s_store_u_3(params, substep, state_history, state, policy_input):
+    return 'u_3', policy_input['delta_u3']
+
+def s_store_w_3(params, substep, state_history, state, policy_input):
+    return 'w_3', policy_input['delta_w3']
 
 def s_resolve_cdps(params, substep, state_history, state, policy_input):
     delta_v1 = policy_input.get('delta_v1', 0)
