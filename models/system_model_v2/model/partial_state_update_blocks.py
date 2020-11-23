@@ -50,6 +50,20 @@ partial_state_update_blocks = [
         }
     },
     {
+        'details': """
+            APT model
+        """,
+        'policies': {
+            'apt': p_apt_model
+        },
+        'variables': {
+#             'v_1': s_store_v_1,
+#             'u_1': s_store_u_1,
+#             'u_2': s_store_u_2,
+#             'v_2 + v_3': s_store_v_2_v_3
+        }
+    },
+    {
         'details': '''
             Exogenous u,v activity: liquidate CDPs
         ''',
@@ -157,13 +171,4 @@ partial_state_update_blocks = [
             'target_price': update_target_price,
         }
     },
-    {
-        'details': """
-            APT model
-        """,
-        'policies': {
-            'apt': p_apt_model
-        },
-        'variables': {}
-    }
 ]

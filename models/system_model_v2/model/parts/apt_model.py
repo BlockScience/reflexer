@@ -114,7 +114,7 @@ def p_apt_model(params, substep, state_history, state):
     
     # EXTERNAL HANDLER: pass optimal values to CDP handler (here, as dict)
     # EXTERNAL HANDLER: receive new initial condition from CDP handler (as numpy array)
-
+    # This is done automatically via state
     # _send_values_to_CDP(optimal_values)
     # feature_0 = _receive_values_from_CDP()
         
@@ -127,3 +127,14 @@ def p_apt_model(params, substep, state_history, state):
     # print(optimal_values)
     
     return optimal_values
+
+def s_():
+    # assign CDP levers in response to disequilibrium
+    # remember: unexpected realized ETH price increase *lowers* expected return!
+    if eth_return < eth_returns_mean:
+        # mint new RAI, sell on secondary market
+        optvars = ['u_1', 'v_1', 'v_2 + v_3']
+    else:
+        # repay RAI, buy on secondary market
+        optvars = ['u_2', 'v_1', 'v_2 + v_3']
+        
