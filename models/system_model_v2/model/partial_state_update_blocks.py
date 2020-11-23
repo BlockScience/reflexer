@@ -57,10 +57,11 @@ partial_state_update_blocks = [
             'apt': p_apt_model
         },
         'variables': {
-#             'v_1': s_store_v_1,
-#             'u_1': s_store_u_1,
-#             'u_2': s_store_u_2,
-#             'v_2 + v_3': s_store_v_2_v_3
+            #'v_1': s_store_v_1,
+            #'v_2': s_store_v_2,
+            #'v_3': s_store_v_3,
+            #'u_1': s_store_u_1,
+            #'u_2': s_store_u_2,
         }
     },
     {

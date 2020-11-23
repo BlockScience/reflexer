@@ -137,4 +137,3 @@ def s_():
     else:
         # repay RAI, buy on secondary market
         optvars = ['u_2', 'v_1', 'v_2 + v_3']
-        

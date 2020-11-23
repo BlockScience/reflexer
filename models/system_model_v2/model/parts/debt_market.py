@@ -54,16 +54,16 @@ def p_open_cdps(params, substep, state_history, state):
 #     cumulative_time = state['cumulative_time']
 #     # Daily activity
 #     if cumulative_time % 1 == 0:
-#         return {'delta_v1': v1, 'delta_u1': u1}
+#         return {'v_1': v1, 'u_1': u1}
 #     else:
-#         return {'delta_v1': 0, 'delta_u1': 0}
+#         return {'v_1': 0, 'u_1': 0}
 
-    #delta_v1 = params['delta_v1'](state['timestep'])
-    #delta_u1 = params['delta_u1'](state['timestep'])
-    delta_v1 = params['delta_v1'](state, state_history)
-    delta_u1 = params['delta_u1'](state['timestep'])
+    #v_1 = params['v_1'](state['timestep'])
+    #u_1 = params['u_1'](state['timestep'])
+    v_1 = params['v_1'](state, state_history)
+    u_1 = params['u_1'](state['timestep'])
     
-    return {'delta_v1': delta_v1, 'delta_u1': delta_u1}
+    return {'v_1': v_1, 'u_1': u_1}
 
 def p_close_cdps(params, substep, state_history, state):    
     cdps = state['cdps']
@@ -71,11 +71,11 @@ def p_close_cdps(params, substep, state_history, state):
     cumulative_time = state['cumulative_time']
     
     closed_cdps = cdps.query(f'{cumulative_time} - time >= {average_debt_age}')
-    delta_v2 = closed_cdps['locked'].sum()
-    delta_u2 = closed_cdps['drawn'].sum()
-    delta_w2 = closed_cdps['dripped'].sum()
+    v_2 = closed_cdps['locked'].sum()
+    u_2 = closed_cdps['drawn'].sum()
+    w_2 = closed_cdps['dripped'].sum()
     
-    return {'closed_cdps': closed_cdps, 'delta_v2': delta_v2, 'delta_u2': delta_u2, 'delta_w2': delta_w2}
+    return {'closed_cdps': closed_cdps, 'v_2': v_2, 'u_2': u_2, 'w_2': w_2}
 
 def p_liquidate_cdps(params, substep, state_history, state):
     eth_price = state['eth_price']
@@ -95,60 +95,60 @@ def p_liquidate_cdps(params, substep, state_history, state):
     events = []
     if len(liquidated_cdps.index) > 0:
         try:
-            delta_u3 = liquidated_cdps['drawn'].sum()
-            delta_v3 = (delta_u3 * target_price * (1 + liquidation_penalty)) / eth_price
+            u_3 = liquidated_cdps['drawn'].sum()
+            v_3 = (u_3 * target_price * (1 + liquidation_penalty)) / eth_price
             eth_locked = liquidated_cdps['locked'].sum()
-            assert delta_v3 >= 0, f'{delta_v3} !>= 0 ~ {state}'
-            assert delta_v3 <= eth_locked, f'Liquidation short of collateral: {delta_v3} !<= {eth_locked}'
+            assert v_3 >= 0, f'{v_3} !>= 0 ~ {state}'
+            assert v_3 <= eth_locked, f'Liquidation short of collateral: {v_3} !<= {eth_locked}'
             # Assume remaining collateral freed
-            delta_v2 = eth_locked - delta_v3
-            assert delta_v2 >= 0, f'{delta_v2} !>= {0}'
-            delta_w3 = liquidated_cdps['dripped'].sum()
-            assert delta_w3 > 0
+            v_2 = eth_locked - v_3
+            assert v_2 >= 0, f'{v_2} !>= {0}'
+            w_3 = liquidated_cdps['dripped'].sum()
+            assert w_3 > 0
         except AssertionError as err:
             events = [err]
-            delta_v3 = liquidated_cdps['locked'].sum()
-            delta_u3 = liquidated_cdps['drawn'].sum()
-            delta_v2 = 0
-            delta_w3 = liquidated_cdps['dripped'].sum()
+            v_3 = liquidated_cdps['locked'].sum()
+            u_2 = liquidated_cdps['drawn'].sum()
+            v_2 = 0
+            w_3 = liquidated_cdps['dripped'].sum()
     else:
-        delta_v3 = 0
-        delta_u3 = 0
-        delta_v2 = 0
-        delta_w3 = 0
+        v_3 = 0
+        u_3 = 0
+        v_2 = 0
+        w_3 = 0
     
-    return {'events': events, 'liquidated_cdps': liquidated_cdps, 'delta_v3': delta_v3, 'delta_u3': delta_u3, 'delta_v2': delta_v2, 'delta_w3': delta_w3}
+    return {'events': events, 'liquidated_cdps': liquidated_cdps, 'v_3': v_3, 'u_3': u_3, 'v_2': v_2, 'w_3': w_3}
 
 def s_store_v_1(params, substep, state_history, state, policy_input):
-    return 'v_1', policy_input['delta_v1']
+    return 'v_1', policy_input['v_1']
 
 def s_store_u_1(params, substep, state_history, state, policy_input):
-    return 'u_1', policy_input['delta_u1']
+    return 'u_1', policy_input['u_1']
     
 def s_store_w_1(params, substep, state_history, state, policy_input):
-    return 'w_1', policy_input['delta_w1']
+    return 'w_1', policy_input['w_1']
 
 def s_store_v_2(params, substep, state_history, state, policy_input):
-    return 'v_2', policy_input['delta_v2']
+    return 'v_2', policy_input['v_2']
 
 def s_store_u_2(params, substep, state_history, state, policy_input):
-    return 'u_2', policy_input['delta_u2']
+    return 'u_2', policy_input['u_3']
     
 def s_store_w_2(params, substep, state_history, state, policy_input):
-    return 'w_2', policy_input['delta_w2']
+    return 'w_2', policy_input['w_2']
 
 def s_store_v_3(params, substep, state_history, state, policy_input):
-    return 'v_3', policy_input['delta_v3']
+    return 'v_3', policy_input['v_3']
 
 def s_store_u_3(params, substep, state_history, state, policy_input):
-    return 'u_3', policy_input['delta_u3']
+    return 'u_3', policy_input['u_3']
 
 def s_store_w_3(params, substep, state_history, state, policy_input):
-    return 'w_3', policy_input['delta_w3']
+    return 'w_3', policy_input['w_3']
 
 def s_resolve_cdps(params, substep, state_history, state, policy_input):
-    delta_v1 = policy_input.get('delta_v1', 0)
-    delta_u1 = policy_input.get('delta_u1', 0)
+    v_1 = policy_input.get('v_1', 0)
+    u_1 = policy_input.get('u_1', 0)
     
     cdps = state['cdps']
     
@@ -174,17 +174,17 @@ def s_resolve_cdps(params, substep, state_history, state, policy_input):
             cdp['locked'] = locked + top_up_collateral
         return cdp
             
-    if delta_v1 > 0:
+    if v_1 > 0:
         cumulative_time = state['cumulative_time']
         total_top_ups = cdps.query(f'locked * {eth_price} < drawn * {target_price} * {cdp_top_up_buffer}').shape[0]
         if total_top_ups > 0:
-            top_up_collateral = (delta_v1 * 0.5) / total_top_ups
-            delta_v1 = delta_v1 * 0.5
+            top_up_collateral = (v_1 * 0.5) / total_top_ups
+            v_1 = v_1 * 0.5
             cdps = cdps.apply(lambda cdp: top_up_cdp(cdp, top_up_collateral), axis=1)
         cdps = cdps.append({
             'time': cumulative_time,
-            'locked': delta_v1,
-            'drawn': delta_u1,
+            'locked': v_1,
+            'drawn': u_1,
             'wiped': 0.0,
             'freed': 0.0,
             'dripped': 0.0
@@ -214,56 +214,56 @@ def s_update_principal_debt(params, substep, state_history, state, policy_input)
 
 def s_update_eth_locked(params, substep, state_history, state, policy_input):
     eth_locked = state['eth_locked']
-    delta_v1 = policy_input['delta_v1']
+    v_1 = policy_input['v_1']
     
-    assert delta_v1 >= 0
+    assert v_1 >= 0
     
-    return 'eth_locked', eth_locked + delta_v1
+    return 'eth_locked', eth_locked + v_1
 
 def s_update_eth_freed(params, substep, state_history, state, policy_input):
     eth_freed = state['eth_freed']
-    delta_v2 = policy_input['delta_v2']
+    v_2 = policy_input['v_2']
     
-    assert delta_v2 >= 0
+    assert v_2 >= 0
     
-    return 'eth_freed', eth_freed + delta_v2
+    return 'eth_freed', eth_freed + v_2
 
 def s_update_eth_bitten(params, substep, state_history, state, policy_input):
     eth_bitten = state['eth_bitten']
-    delta_v3 = policy_input['delta_v3']
+    v_3 = policy_input['v_3']
     
-    assert delta_v3 >= 0
+    assert v_3 >= 0
     
-    return 'eth_bitten', eth_bitten + delta_v3
+    return 'eth_bitten', eth_bitten + v_3
 
 def s_update_rai_drawn(params, substep, state_history, state, policy_input):
     rai_drawn = state['rai_drawn']
-    delta_u1 = policy_input['delta_u1']
+    u_1 = policy_input['u_1']
     
-    assert delta_u1 >= 0
+    assert u_1 >= 0
     
-    return 'rai_drawn', rai_drawn + delta_u1
+    return 'rai_drawn', rai_drawn + u_1
 
 def s_update_rai_wiped(params, substep, state_history, state, policy_input):
     rai_wiped = state['rai_wiped']
-    delta_u2 = policy_input['delta_u2']
+    u_2 = policy_input['u_2']
     
-    assert delta_u2 >= 0
+    assert u_2 >= 0
     
-    return 'rai_wiped', rai_wiped + delta_u2
+    return 'rai_wiped', rai_wiped + u_2
 
 def s_update_rai_bitten(params, substep, state_history, state, policy_input):
     rai_bitten = state['rai_bitten']
-    delta_u3 = policy_input['delta_u3']
+    u_3 = policy_input['u_3']
     
-    assert delta_u3 >= 0
+    assert u_3 >= 0
     
-    return 'rai_bitten', rai_bitten + delta_u3
+    return 'rai_bitten', rai_bitten + u_3
     
 def s_update_system_revenue(params, substep, state_history, state, policy_input):
     system_revenue = state['system_revenue']
-    delta_w2 = policy_input.get('delta_w2', 0)
-    return 'system_revenue', system_revenue + delta_w2
+    w_2 = policy_input.get('w_2', 0)
+    return 'system_revenue', system_revenue + w_2
 
 def s_update_accrued_interest(params, substep, state_history, state, policy_input):
     previous_accrued_interest = state['accrued_interest']
@@ -278,8 +278,8 @@ def s_update_accrued_interest(params, substep, state_history, state, policy_inpu
 
 def s_update_interest_bitten(params, substep, state_history, state, policy_input):
     previous_accrued_interest = state['accrued_interest']
-    delta_w3 = policy_input.get('delta_w3', 0)
-    return 'accrued_interest', previous_accrued_interest - delta_w3
+    w_3 = policy_input.get('w_3', 0)
+    return 'accrued_interest', previous_accrued_interest - w_3
 
 def s_update_cdp_interest(params, substep, state_history, state, policy_input):
     cdps = state['cdps']
