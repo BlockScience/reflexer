@@ -71,11 +71,18 @@ def p_close_cdps(params, substep, state_history, state):
     cumulative_time = state['cumulative_time']
     
     closed_cdps = cdps.query(f'{cumulative_time} - time >= {average_debt_age}')
-    v_2 = closed_cdps['locked'].sum()
-    u_2 = closed_cdps['drawn'].sum()
+    
+    v_2 = closed_cdps['freed'].sum()
+    u_2 = closed_cdps['wiped'].sum()
     w_2 = closed_cdps['dripped'].sum()
     
-    return {'closed_cdps': closed_cdps, 'v_2': v_2, 'u_2': u_2, 'w_2': w_2}
+    try:
+        cdps = cdps.drop(closed_cdps.index)
+    except KeyError:
+        print('Failed to drop CDPs')
+        raise
+    
+    return {'cdps': cdps, 'v_2': v_2, 'u_2': u_2, 'w_2': w_2}
 
 def p_liquidate_cdps(params, substep, state_history, state):
     eth_price = state['eth_price']
@@ -84,6 +91,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
     liquidation_ratio = params['liquidation_ratio']
     
     cdps = state['cdps']
+    cdps_copy = cdps.copy()
     liquidated_cdps = pd.DataFrame()
     if len(cdps) > 0:
         try:
@@ -92,32 +100,48 @@ def p_liquidate_cdps(params, substep, state_history, state):
             print(state)
             raise
     
-    events = []
-    if len(liquidated_cdps.index) > 0:
+    events = []  
+    for index, cdp in liquidated_cdps.iterrows():
+        locked = cdps.at[index, 'locked']
+        freed = cdps.at[index, 'freed']
+        v_bitten = cdps.at[index, 'v_bitten']
+        drawn = cdps.at[index, 'drawn']
+        wiped = cdps.at[index, 'wiped']
+        dripped = cdps.at[index, 'dripped']
+        u_bitten = cdps.at[index, 'u_bitten']
+        
         try:
-            u_3 = liquidated_cdps['drawn'].sum()
-            v_3 = (u_3 * target_price * (1 + liquidation_penalty)) / eth_price
-            eth_locked = liquidated_cdps['locked'].sum()
-            assert v_3 >= 0, f'{v_3} !>= 0 ~ {state}'
-            assert v_3 <= eth_locked, f'Liquidation short of collateral: {v_3} !<= {eth_locked}'
-            # Assume remaining collateral freed
-            v_2 = eth_locked - v_3
-            assert v_2 >= 0, f'{v_2} !>= {0}'
-            w_3 = liquidated_cdps['dripped'].sum()
-            assert w_3 > 0
+            # (locked + lock - freed - v_bitten) * eth_price = (drawn - wiped - u_bitten) * (liquidation_ratio * target_price)
+            v_bite = ((drawn - wiped - u_bitten) * target_price * (1 + liquidation_penalty)) / eth_price
+            assert v_bite >= 0, f'{v_bite} !>= 0 ~ {state}'
+            assert v_bite <= (locked - freed - v_bitten), f'Liquidation short of collateral: {v_bite} !<= {locked}'
+            free = locked - v_bite
+            assert free >= 0, f'{free} !>= {0}'
+            assert locked >= freed + free + v_bitten + v_bite
+            w_bite = dripped
+            assert w_bite > 0
         except AssertionError as err:
             events = [err]
-            v_3 = liquidated_cdps['locked'].sum()
-            u_2 = liquidated_cdps['drawn'].sum()
-            v_2 = 0
-            w_3 = liquidated_cdps['dripped'].sum()
-    else:
-        v_3 = 0
-        u_3 = 0
-        v_2 = 0
-        w_3 = 0
+            v_bite = locked
+            free = 0
+            w_bite = dripped
+        
+        cdps.at[index, 'v_bitten'] = v_bitten + v_bite
+        cdps.at[index, 'freed'] = freed + free
+        #cdps.at[index, 'dripped'] = dripped - w_bite
+        
+    v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
+    v_3 = cdps['v_bitten'].sum() - cdps_copy['v_bitten'].sum()
+    u_3 = cdps['u_bitten'].sum() - cdps_copy['u_bitten'].sum()
+    w_3 = cdps['dripped'].sum() - cdps_copy['dripped'].sum()
     
-    return {'events': events, 'liquidated_cdps': liquidated_cdps, 'v_3': v_3, 'u_3': u_3, 'v_2': v_2, 'w_3': w_3}
+    try:
+        cdps = cdps.drop(liquidated_cdps.index)
+    except KeyError:
+        print('Failed to drop CDPs')
+        raise
+    
+    return {'events': events, 'cdps': cdps, 'v_2': v_2, 'v_3': v_3, 'u_3': u_3, 'w_3': w_3}
 
 def s_store_v_1(params, substep, state_history, state, policy_input):
     return 'v_1', policy_input.get('v_1', 0)
@@ -219,7 +243,7 @@ def s_update_eth_collateral(params, substep, state_history, state, policy_input)
     eth_bitten = state['eth_bitten']
     
     eth_collateral = eth_locked - eth_freed - eth_bitten
-    assert eth_collateral >= 0
+    assert eth_collateral >= 0, f'{eth_collateral} ~ {state}'
     
     return 'eth_collateral', eth_collateral
 
@@ -229,7 +253,7 @@ def s_update_principal_debt(params, substep, state_history, state, policy_input)
     rai_bitten = state['rai_bitten']
     
     principal_debt = rai_drawn - rai_wiped - rai_bitten
-    assert principal_debt >= 0, f'{principal_debt}'
+    assert principal_debt >= 0, f'{principal_debt} ~ {state}'
     
     return 'principal_debt', principal_debt
 
@@ -299,7 +323,7 @@ def s_update_accrued_interest(params, substep, state_history, state, policy_inpu
 
 def s_update_interest_bitten(params, substep, state_history, state, policy_input):
     previous_accrued_interest = state['accrued_interest']
-    w_3 = policy_input.get('w_3', 0)
+    w_3 = state['w_3']
     return 'accrued_interest', previous_accrued_interest - w_3
 
 def s_update_cdp_interest(params, substep, state_history, state, policy_input):
@@ -311,7 +335,7 @@ def s_update_cdp_interest(params, substep, state_history, state, policy_input):
     def resolve_cdp_interest(cdp):
         principal_debt = cdp['drawn']
         previous_accrued_interest = cdp['dripped']
-        cdp['dripped'] = (((1 + stability_fee)*(1 + target_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
+        cdp['dripped'] = (((1 + stability_fee) * (1 + target_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
         return cdp
     
     cdps.apply(resolve_cdp_interest, axis=1)

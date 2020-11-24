@@ -57,13 +57,22 @@ partial_state_update_blocks = [
             'apt': p_apt_model
         },
         'variables': {
+            'cdps': s_store_cdps,
             'v_1': s_store_v_1,
-            #'v_2': s_store_v_2,
-            #'v_3': s_store_v_3,
             'u_1': s_store_u_1,
             'u_2': s_store_u_2,
-            'cdps': update_cdp_positions,
+            'v_2': s_store_v_2,
+            #'v_3': s_store_v_3,
             'p_expected': s_store_p_expected,
+        }
+    },
+    {
+        'policies': {},
+        'variables': {
+            'eth_locked': s_update_eth_locked,
+            'eth_freed': s_update_eth_freed,
+            'rai_drawn': s_update_rai_drawn,
+            'rai_wiped': s_update_rai_wiped
         }
     },
     {
@@ -85,14 +94,6 @@ partial_state_update_blocks = [
             'market_price': update_market_price
         }
     },
-    {
-        'policies': {},
-        'variables': {
-            'eth_locked': s_update_eth_locked,
-            'rai_drawn': s_update_rai_drawn,
-            'rai_wiped': s_update_rai_wiped
-        }
-    },
 #     {
 #         'details': '''
 #             Exogenous u,v activity: liquidate CDPs
@@ -102,16 +103,21 @@ partial_state_update_blocks = [
 #         },
 #         'variables': {
 #             'events': s_collect_events,
-#             'eth_bitten': s_update_eth_bitten,
-#             'eth_freed': s_update_eth_freed,
-#             'rai_bitten': s_update_rai_bitten,
-#             'accrued_interest': s_update_interest_bitten,
 #             'v_2': s_store_v_2,
 #             'v_3': s_store_v_3,
 #             'u_3': s_store_u_3,
 #             'w_3': s_store_w_3,
-#             'cdps': s_resolve_cdps,
+#             'cdps': s_store_cdps,
 #         }
+#     },
+#     {
+#       'policies': {},
+#       'variables': {
+#         'accrued_interest': s_update_interest_bitten,
+#         'eth_bitten': s_update_eth_bitten,
+#         'eth_freed': s_update_eth_freed,
+#         'rai_bitten': s_update_rai_bitten,
+#       }
 #     },
 #     {
 #         'details': '''
@@ -137,13 +143,18 @@ partial_state_update_blocks = [
 #             'close_cdps': p_close_cdps,
 #         },
 #         'variables': {
-#             'eth_freed': s_update_eth_freed,
-#             'rai_wiped': s_update_rai_wiped,
-#             'system_revenue': s_update_system_revenue,
 #             'v_2': s_store_v_2,
 #             'u_2': s_store_u_2,
 #             'w_2': s_store_w_2,
-#             'cdps': s_resolve_cdps,
+#             'cdps': s_store_cdps,
+#         }
+#     },
+#     {
+#         'policies': {},
+#         'variables': {
+#             'eth_freed': s_update_eth_freed,
+#             'rai_wiped': s_update_rai_wiped,
+#             'system_revenue': s_update_system_revenue,
 #         }
 #     },
     {

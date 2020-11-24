@@ -1,3 +1,5 @@
+import numpy as np
+
 def p_free_memory(params, substep, state_history, state):
     if state['timestep'] > 0:
         for key in params['free_memory_states']:

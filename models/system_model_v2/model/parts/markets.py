@@ -2,17 +2,17 @@ import scipy.stats as sts
 import numpy as np
 
 import options
-from utils import get_feature
+from .utils import get_feature
 
 def update_market_price(params, substep, state_history, state, policy_input):
     #value = params['market_price'](state['timestep'])    
-    p_expected = policy_input['p_expected']
+    p_expected = state['p_expected']
     previous_price = state['market_price']
     feature = get_feature(state)
     
     clearing_price = get_market_price(p_expected, previous_price, feature)
     
-    return 'market_price', value
+    return 'market_price', clearing_price
 
 features = ['beta', 'Q', 'v_1', 'v_2 + v_3', 
                     'D_1', 'u_1', 'u_2', 'u_3', 'u_2 + u_3', 

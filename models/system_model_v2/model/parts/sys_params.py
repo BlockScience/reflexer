@@ -31,7 +31,7 @@ params = {
     options.MarketPriceSource.__name__: [options.MarketPriceSource.DEFAULT.value],
     'controller_enabled': [True],
     'delta_output': [lambda state, timestep: 0],
-    'market_price': [lambda timestep: 2.0],
+    #'market_price': [lambda timestep: 2.0],
     # APT model
     'alpha_0': [-0.15945516088407055],
     'alpha_1': [1.159513245269044],

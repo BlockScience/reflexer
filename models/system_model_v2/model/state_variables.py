@@ -17,7 +17,9 @@ cdps = cdps.append({
     'drawn': principal_debt,
     'wiped': 0.0,
     'freed': 0.0,
-    'dripped': 0.0
+    'dripped': 0.0,
+    'u_bitten': 0.0,
+    'v_bitten': 0.0,
 }, ignore_index=True)
 
 state_variables = {
