@@ -120,10 +120,10 @@ def p_liquidate_cdps(params, substep, state_history, state):
     return {'events': events, 'liquidated_cdps': liquidated_cdps, 'v_3': v_3, 'u_3': u_3, 'v_2': v_2, 'w_3': w_3}
 
 def s_store_v_1(params, substep, state_history, state, policy_input):
-    return 'v_1', policy_input['v_1']
+    return 'v_1', policy_input.get('v_1', 0)
 
 def s_store_u_1(params, substep, state_history, state, policy_input):
-    return 'u_1', policy_input['u_1']
+    return 'u_1', policy_input.get('u_1', 0)
     
 def s_store_w_1(params, substep, state_history, state, policy_input):
     return 'w_1', policy_input['w_1']
@@ -132,7 +132,7 @@ def s_store_v_2(params, substep, state_history, state, policy_input):
     return 'v_2', policy_input['v_2']
 
 def s_store_u_2(params, substep, state_history, state, policy_input):
-    return 'u_2', policy_input['u_3']
+    return 'u_2', policy_input.get('u_2', 0)
     
 def s_store_w_2(params, substep, state_history, state, policy_input):
     return 'w_2', policy_input['w_2']
@@ -147,24 +147,44 @@ def s_store_w_3(params, substep, state_history, state, policy_input):
     return 'w_3', policy_input['w_3']
 
 def s_resolve_cdps(params, substep, state_history, state, policy_input):
-    v_1 = policy_input.get('v_1', 0)
-    u_1 = policy_input.get('u_1', 0)
+    v_1 = policy_input['v_1']
+    v_1_remainder = policy_input['v_1_remainder']
+    u_1 = policy_input['u_1']
+    u_2 = policy_input['u_2']
     
-    cdps = state['cdps']
-    
-    liquidated_cdps = policy_input['liquidated_cdps'].index if 'liquidated_cdps' in policy_input else pd.Index([])
-    closed_cdps = policy_input['closed_cdps'].index if 'closed_cdps' in policy_input else pd.Index([])
-
-    drop_index = liquidated_cdps.union(closed_cdps)
-    try:
-        cdps = cdps.drop(drop_index)
-    except KeyError:
-        print('Failed to drop CDPs')
-        raise
-
-    cdp_top_up_buffer = params['cdp_top_up_buffer']
     eth_price = state['eth_price']
     target_price = state['target_price']
+        
+    cdps = state['cdps']
+    
+    # TODO: re-enable liquidation
+#     liquidated_cdps = policy_input['liquidated_cdps'].index if 'liquidated_cdps' in policy_input else pd.Index([])
+    liquidated_cdps = pd.Index([])
+    #closed_cdps = policy_input['closed_cdps'].index if 'closed_cdps' in policy_input else pd.Index([])
+    cdps = cdps.sort_values(by=['time'], ascending=False)
+    
+    for index, cdp in cdps.iterrows():
+        drawn = cdps.at[index, 'drawn']
+        if drawn > u_2:
+            wiped = drawn - u_2
+            cdps.at[index, 'wiped'] = wiped
+        else:
+            wiped = 0
+            u_2 = u_2 - wiped
+            if u_2 <= 0:
+                break
+            cdps.at[index, 'wiped'] = wiped
+    #closed_cdps = cdps.query(f'drawn == 0')
+    #u_2 = closed_cdps['wiped'].sum()
+
+    #drop_index = liquidated_cdps.union(closed_cdps.index)
+    #try:
+    #    cdps = cdps.drop(drop_index)
+    #except KeyError:
+    #    print('Failed to drop CDPs')
+    #    raise
+
+    cdp_top_up_buffer = params['cdp_top_up_buffer']
     
     def top_up_cdp(cdp, top_up_collateral):
         locked = cdp['locked']
@@ -178,8 +198,9 @@ def s_resolve_cdps(params, substep, state_history, state, policy_input):
         cumulative_time = state['cumulative_time']
         total_top_ups = cdps.query(f'locked * {eth_price} < drawn * {target_price} * {cdp_top_up_buffer}').shape[0]
         if total_top_ups > 0:
-            top_up_collateral = (v_1 * 0.5) / total_top_ups
-            v_1 = v_1 * 0.5
+            #top_up_collateral = (v_1 * 0.5) / total_top_ups
+            top_up_collateral = v_1_remainder
+            #v_1 = v_1 * 0.5
             cdps = cdps.apply(lambda cdp: top_up_cdp(cdp, top_up_collateral), axis=1)
         cdps = cdps.append({
             'time': cumulative_time,
@@ -208,13 +229,13 @@ def s_update_principal_debt(params, substep, state_history, state, policy_input)
     rai_bitten = state['rai_bitten']
     
     principal_debt = rai_drawn - rai_wiped - rai_bitten
-    assert principal_debt >= 0
+    assert principal_debt >= 0, f'{principal_debt}'
     
     return 'principal_debt', principal_debt
 
 def s_update_eth_locked(params, substep, state_history, state, policy_input):
     eth_locked = state['eth_locked']
-    v_1 = policy_input['v_1']
+    v_1 = state['v_1']
     
     assert v_1 >= 0
     
@@ -222,7 +243,7 @@ def s_update_eth_locked(params, substep, state_history, state, policy_input):
 
 def s_update_eth_freed(params, substep, state_history, state, policy_input):
     eth_freed = state['eth_freed']
-    v_2 = policy_input['v_2']
+    v_2 = state['v_2']
     
     assert v_2 >= 0
     
@@ -230,7 +251,7 @@ def s_update_eth_freed(params, substep, state_history, state, policy_input):
 
 def s_update_eth_bitten(params, substep, state_history, state, policy_input):
     eth_bitten = state['eth_bitten']
-    v_3 = policy_input['v_3']
+    v_3 = state['v_3']
     
     assert v_3 >= 0
     
@@ -238,7 +259,7 @@ def s_update_eth_bitten(params, substep, state_history, state, policy_input):
 
 def s_update_rai_drawn(params, substep, state_history, state, policy_input):
     rai_drawn = state['rai_drawn']
-    u_1 = policy_input['u_1']
+    u_1 = state['u_1']
     
     assert u_1 >= 0
     
@@ -246,7 +267,7 @@ def s_update_rai_drawn(params, substep, state_history, state, policy_input):
 
 def s_update_rai_wiped(params, substep, state_history, state, policy_input):
     rai_wiped = state['rai_wiped']
-    u_2 = policy_input['u_2']
+    u_2 = state['u_2']
     
     assert u_2 >= 0
     
@@ -254,7 +275,7 @@ def s_update_rai_wiped(params, substep, state_history, state, policy_input):
 
 def s_update_rai_bitten(params, substep, state_history, state, policy_input):
     rai_bitten = state['rai_bitten']
-    u_3 = policy_input['u_3']
+    u_3 = state['u_3']
     
     assert u_3 >= 0
     

@@ -73,6 +73,7 @@ state_variables = {
     'w_3': 0,
     'target_price': target_price, # dollars == redemption price
     'target_rate': 0, # per second interest rate (X% per month) == redemption rate
+    'p_expected': target_price,
     # APT model
     'eth_return': 0,
     'eth_gross_return': 0,
