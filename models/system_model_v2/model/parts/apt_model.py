@@ -25,8 +25,8 @@ features = ['beta', 'Q', 'v_1', 'v_2 + v_3',
 def p_apt_model(params, substep, state_history, state):
     func = params['G_OLS']
     
-    #feature_0 = get_feature(state_history, index=0)
-    feature_0 = get_feature(state_history)
+    feature_0 = get_feature(state_history, index=0)
+    #feature_0 = get_feature(state_history)
     
     interest_rate = params['interest_rate']
     
