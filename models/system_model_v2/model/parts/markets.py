@@ -8,7 +8,7 @@ def update_market_price(params, substep, state_history, state, policy_input):
     #value = params['market_price'](state['timestep'])    
     p_expected = state['p_expected']
     previous_price = state['market_price']
-    feature = get_feature(state)
+    feature = get_feature(state_history)
     
     clearing_price = get_market_price(p_expected, previous_price, feature)
     

@@ -11,7 +11,8 @@ def p_free_memory(params, substep, state_history, state):
 def s_collect_events(params, substep, state_history, state, policy_input):
     return 'events', state['events'] + policy_input.get('events', [])
 
-def get_feature(state):
+def get_feature(state_history, index=-1):
+    state = state_history[index][-1]
     feature = [[
         state['stability_fee'] * 365 * 24 * 3600, # beta
         state['eth_collateral'], # Q

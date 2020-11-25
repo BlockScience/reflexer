@@ -72,9 +72,13 @@ def p_close_cdps(params, substep, state_history, state):
     
     closed_cdps = cdps.query(f'{cumulative_time} - time >= {average_debt_age}')
     
-    v_2 = closed_cdps['locked'].sum() - closed_cdps['freed'].sum() - closed_cdps['v_bitten'].sum() + 1e-6
-    u_2 = closed_cdps['drawn'].sum() - closed_cdps['wiped'].sum() - closed_cdps['u_bitten'].sum() + 1e-6
+    v_2 = closed_cdps['locked'].sum() - closed_cdps['freed'].sum() - closed_cdps['v_bitten'].sum()
+    u_2 = closed_cdps['drawn'].sum() - closed_cdps['wiped'].sum() - closed_cdps['u_bitten'].sum()
     w_2 = closed_cdps['dripped'].sum()
+    
+    v_2 = max(v_2, 0)
+    u_2 = max(u_2, 0)
+    w_2 = max(w_2, 0)
     
     try:
         cdps = cdps.drop(closed_cdps.index)
@@ -95,7 +99,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
     liquidated_cdps = pd.DataFrame()
     if len(cdps) > 0:
         try:
-            liquidated_cdps = cdps.query(f'locked * {eth_price} < drawn * {target_price} * {liquidation_ratio}')
+            liquidated_cdps = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio}')
         except:
             print(state)
             raise
@@ -104,36 +108,40 @@ def p_liquidate_cdps(params, substep, state_history, state):
     for index, cdp in liquidated_cdps.iterrows():
         locked = cdps.at[index, 'locked']
         freed = cdps.at[index, 'freed']
-        v_bitten = cdps.at[index, 'v_bitten']
         drawn = cdps.at[index, 'drawn']
         wiped = cdps.at[index, 'wiped']
         dripped = cdps.at[index, 'dripped']
-        u_bitten = cdps.at[index, 'u_bitten']
         
         try:
             # (locked + lock - freed - v_bitten) * eth_price = (drawn - wiped - u_bitten) * (liquidation_ratio * target_price)
-            v_bite = ((drawn - wiped - u_bitten) * target_price * (1 + liquidation_penalty)) / eth_price
+            v_bite = ((drawn - wiped) * target_price * (1 + liquidation_penalty)) / eth_price
             assert v_bite >= 0, f'{v_bite} !>= 0 ~ {state}'
-            assert v_bite <= (locked - freed - v_bitten), f'Liquidation short of collateral: {v_bite} !<= {locked}'
-            free = locked - freed - v_bitten - v_bite
+            assert v_bite <= (locked - freed), f'Liquidation short of collateral: {v_bite} !<= {locked}'
+            free = locked - freed - v_bite
             assert free >= 0, f'{free} !>= {0}'
-            assert locked >= freed + free + v_bitten + v_bite
+            assert locked >= freed + free + v_bite
             w_bite = dripped
             assert w_bite > 0
         except AssertionError as err:
             events = [err]
-            v_bite = locked - freed - v_bitten
+            v_bite = locked - freed
             free = 0
             w_bite = dripped
         
-        cdps.at[index, 'v_bitten'] = v_bitten + v_bite
+        cdps.at[index, 'v_bitten'] = v_bite
         cdps.at[index, 'freed'] = freed + free
-        #cdps.at[index, 'dripped'] = dripped - w_bite
+        cdps.at[index, 'u_bitten'] = drawn - wiped
+        cdps.at[index, 'w_bitten'] = w_bite
         
     v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
     v_3 = cdps['v_bitten'].sum() - cdps_copy['v_bitten'].sum()
     u_3 = cdps['u_bitten'].sum() - cdps_copy['u_bitten'].sum()
-    w_3 = cdps['dripped'].sum() - cdps_copy['dripped'].sum()
+    w_3 = cdps['w_bitten'].sum() - cdps_copy['w_bitten'].sum()
+    
+    v_2 = max(v_2, 0)
+    v_3 = max(v_3, 0)
+    u_3 = max(u_3, 0)
+    w_3 = max(w_3, 0)
     
     try:
         cdps = cdps.drop(liquidated_cdps.index)
@@ -234,7 +242,8 @@ def s_resolve_cdps(params, substep, state_history, state, policy_input):
             'freed': 0.0,
             'dripped': 0.0,
             'v_bitten': 0.0,
-            'u_bitten': 0.0
+            'u_bitten': 0.0,
+            'w_bitten': 0.0
         }, ignore_index=True)
     
     return 'cdps', cdps
@@ -244,7 +253,7 @@ def s_update_eth_collateral(params, substep, state_history, state, policy_input)
     eth_freed = state['eth_freed']
     eth_bitten = state['eth_bitten']
     
-    eth_collateral = eth_locked - eth_freed - eth_bitten
+    eth_collateral = max(eth_locked - eth_freed - eth_bitten, 0)
     assert eth_collateral >= 0, f'{eth_collateral} ~ {state}'
     
     return 'eth_collateral', eth_collateral

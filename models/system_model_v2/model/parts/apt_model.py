@@ -25,13 +25,14 @@ features = ['beta', 'Q', 'v_1', 'v_2 + v_3',
 def p_apt_model(params, substep, state_history, state):
     func = params['G_OLS']
     
-    feature_0 = get_feature(state)
+    #feature_0 = get_feature(state_history, index=0)
+    feature_0 = get_feature(state_history)
     
     interest_rate = params['interest_rate']
     
     eth_price = state['eth_price']
     try:
-        eth_p_mean = np.mean(state_history[1:][-1][-1]['eth_price'])
+        eth_p_mean = np.mean([x[-1]['eth_price'] for x in state_history[1:]])
     except IndexError as e:
         print(e)
         eth_p_mean = state['eth_price']
@@ -39,7 +40,7 @@ def p_apt_model(params, substep, state_history, state):
     #eth_returns = ((eth_price - eth_price.shift(1))/eth_price).to_numpy().flatten()
     eth_return = state['eth_return']
     try:
-        eth_returns = state_history[1:][-1][-1]['eth_return']
+        eth_returns = [x[-1]['eth_return'] for x in state_history[1:]]
         eth_returns_mean = np.mean(eth_returns)
     except IndexError as e:
         print(e)
@@ -48,7 +49,7 @@ def p_apt_model(params, substep, state_history, state):
     p = state['market_price']
     
     try:
-        mar_p_mean = np.mean(state_history[1:][-1][-1]['market_price'])
+        mar_p_mean = np.mean([x[-1]['market_price'] for x in state_history[1:]])
     except IndexError as e:
         print(e)
         mar_p_mean = p
@@ -113,14 +114,14 @@ def p_apt_model(params, substep, state_history, state):
     # _send_expected_price_to_market(p_expected)
     # p = _receive_price_from_market()
     
-    print(optimal_values)
+    #print(optimal_values)
     
     v_1 = optimal_values.get('v_1', 0)
+    v_2_v_3 = optimal_values.get('v_2 + v_3', 0)
     u_1 = optimal_values.get('u_1', 0)
     u_2 = optimal_values.get('u_2', 0)
-    v_2_v_3 = optimal_values.get('v_2 + v_3', 0)
 
-    cdp_position_state = resolve_cdp_positions(params, state, {'rising_eth': rising_eth, 'v_1': v_1, 'u_1': u_1, 'u_2': u_2, 'v_2 + v_3': v_2_v_3})
+    cdp_position_state = resolve_cdp_positions(params, state, {'rising_eth': rising_eth, 'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
     
     return {'p_expected': p_expected, **cdp_position_state}
     
@@ -165,7 +166,7 @@ def resolve_cdp_positions(params, state, policy_input):
             drawn = cdps.at[index, 'drawn']
             wiped = cdps.at[index, 'wiped']
             u_bitten = cdps.at[index, 'u_bitten']
-            # (locked - freed - free - v_bitten) * eth_price / (drawn - wiped - u_bitten) * target_price = liquidation_ratio * liquidation_buffer
+            # (locked - freed - free - v_bitten) * eth_price = (drawn - wiped - u_bitten) * target_price * liquidation_ratio * liquidation_buffer
             free = ((locked - freed - v_bitten) * eth_price - liquidation_ratio * liquidation_buffer * (drawn - wiped - u_bitten) * target_price) / eth_price
             
             assert free > 0
@@ -210,10 +211,12 @@ def resolve_cdp_positions(params, state, policy_input):
                 drawn = cdps.at[index, 'drawn']
                 wiped = cdps.at[index, 'wiped']
                 u_bitten = cdps.at[index, 'u_bitten']
-                # (locked - freed - v_bitten) * eth_price / (drawn + draw - wiped - u_bitten) * target_price = liquidation_ratio * liquidation_buffer
-                draw = ((locked - freed - v_bitten) * eth_price / liquidation_ratio * liquidation_buffer - (drawn - wiped - u_bitten) * target_price) / target_price
+                # (locked - freed - v_bitten) * eth_price = (drawn + draw - wiped - u_bitten) * target_price * liquidation_ratio * liquidation_buffer
+                draw = (locked - freed - v_bitten) * eth_price / (target_price * liquidation_ratio * liquidation_buffer) - (drawn - wiped - u_bitten)
                 
-                assert draw > 0
+                draw = max(draw, 0)
+                assert u_1 >= 0, u_1
+                assert draw >= 0, draw
                 
                 if u_1 - draw > 0:
                     cdps.at[index, 'drawn'] = drawn + draw
@@ -235,7 +238,8 @@ def resolve_cdp_positions(params, state, policy_input):
                 'freed': 0.0,
                 'dripped': 0.0,
                 'v_bitten': 0.0,
-                'u_bitten': 0.0
+                'u_bitten': 0.0,
+                'w_bitten': 0.0
             }, ignore_index=True)
         
     else: # Falling ETH
@@ -254,9 +258,10 @@ def resolve_cdp_positions(params, state, policy_input):
             drawn = cdps.at[index, 'drawn']
             wiped = cdps.at[index, 'wiped']
             u_bitten = cdps.at[index, 'u_bitten']
-            # (locked - freed - v_bitten) * eth_price / (drawn - wiped - wipe - u_bitten) * target_price = liquidation_ratio 
+            # (locked - freed - v_bitten) * eth_price = (drawn - wiped - wipe - u_bitten) * target_price * liquidation_ratio 
             wipe = (drawn - wiped - u_bitten) - (locked - freed - v_bitten) * eth_price / (liquidation_ratio * target_price)
             
+            assert u_2 >= 0
             assert wipe >= 0
             if drawn <= wiped + wipe + u_bitten:
                 continue
@@ -279,9 +284,10 @@ def resolve_cdp_positions(params, state, policy_input):
                 v_bitten = cdps.at[index, 'v_bitten']
                 wiped = cdps.at[index, 'wiped']
                 u_bitten = cdps.at[index, 'u_bitten']
-                # (locked - freed - v_bitten) * eth_price / (drawn - wiped - wipe - u_bitten) * target_price = liquidation_ratio * liquidation_buffer
+                # (locked - freed - v_bitten) * eth_price = (drawn - wiped - wipe - u_bitten) * target_price * liquidation_ratio * liquidation_buffer
                 wipe = (drawn - wiped - u_bitten) - (locked - freed - v_bitten) * eth_price / (liquidation_ratio * liquidation_buffer * target_price)
                 
+                assert u_2 >= 0
                 assert wipe >= 0
                 if drawn <= wiped + wipe + u_bitten:
                     continue
@@ -333,14 +339,25 @@ def resolve_cdp_positions(params, state, policy_input):
                 'freed': 0.0,
                 'dripped': 0.0,
                 'v_bitten': 0.0,
-                'u_bitten': 0.0
+                'u_bitten': 0.0,
+                'w_bitten': 0.0
             }, ignore_index=True)
             
-    u_1 = cdps['drawn'].sum() - cdps_copy['drawn'].sum() + 1e-6
-    u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum() + 1e-6
-    v_1 = cdps['locked'].sum() - cdps_copy['locked'].sum() + 1e-6
-    v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum() + 1e-6
+    u_1 = cdps['drawn'].sum() - cdps_copy['drawn'].sum()
+    u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum()
+    v_1 = cdps['locked'].sum() - cdps_copy['locked'].sum()
+    v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
     
-    print(f'CDP count: {len(cdps)}')
+    u_1 = max(u_1, 0)
+    u_2 = max(u_2, 0)
+    v_1 = max(v_1, 0)
+    v_2 = max(v_2, 0)
+    
+    assert u_1 >= 0, u_1
+    assert u_2 >= 0, u_2
+    assert v_1 >= 0, v_1
+    assert v_2 >= 0, v_2
+    
+    #print(f'CDP count: {len(cdps)}')
         
     return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_1': v_1, 'v_2': v_2, 'v_2 + v_3': v_2}

@@ -20,18 +20,13 @@ cdps = cdps.append({
     'dripped': 0.0,
     'u_bitten': 0.0,
     'v_bitten': 0.0,
+    'w_bitten': 0.0
 }, ignore_index=True)
 
 state_variables = {
     'events': [],
     'error_star': (0.0), #price units
-    'error_hat': (0.0), #price units
-    'old_error_star': (0.0), #price units
-    'old_error_hat': (0.0), #price units
     'error_star_integral': (0.0), #price units x seconds
-    'error_hat_integral': (0.0), #price units x seconds
-    'error_star_derivative': (0.0), #price units per second
-    'error_hat_derivative': (0.0), #price units per second
     #'target_rate': (0.0), #price units per second
     #'target_price': (2.0), #price units
     'market_price': target_price, #price units
