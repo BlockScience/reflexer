@@ -94,31 +94,31 @@ partial_state_update_blocks = [
             'market_price': update_market_price
         }
     },
-#     {
-#         'details': '''
-#             Exogenous u,v activity: liquidate CDPs
-#         ''',
-#         'policies': {
-#             'liquidate_cdps': p_liquidate_cdps
-#         },
-#         'variables': {
-#             'events': s_collect_events,
-#             'v_2': s_store_v_2,
-#             'v_3': s_store_v_3,
-#             'u_3': s_store_u_3,
-#             'w_3': s_store_w_3,
-#             'cdps': s_store_cdps,
-#         }
-#     },
-#     {
-#       'policies': {},
-#       'variables': {
-#         'accrued_interest': s_update_interest_bitten,
-#         'eth_bitten': s_update_eth_bitten,
-#         'eth_freed': s_update_eth_freed,
-#         'rai_bitten': s_update_rai_bitten,
-#       }
-#     },
+    {
+        'details': '''
+            Exogenous u,v activity: liquidate CDPs
+        ''',
+        'policies': {
+            'liquidate_cdps': p_liquidate_cdps
+        },
+        'variables': {
+            'events': s_collect_events,
+            'v_2': s_store_v_2,
+            'v_3': s_store_v_3,
+            'u_3': s_store_u_3,
+            'w_3': s_store_w_3,
+            'cdps': s_store_cdps,
+        }
+    },
+    {
+      'policies': {},
+      'variables': {
+        'accrued_interest': s_update_interest_bitten,
+        'eth_bitten': s_update_eth_bitten,
+        'eth_freed': s_update_eth_freed,
+        'rai_bitten': s_update_rai_bitten,
+      }
+    },
 #     {
 #         'details': '''
 #             Exogenous u,v activity: open CDPs
@@ -135,28 +135,28 @@ partial_state_update_blocks = [
 #             'cdps': s_resolve_cdps,
 #         }
 #     },
-#     {
-#         'details': '''
-#             Exogenous u,v activity: close CDPs
-#         ''',
-#         'policies': {
-#             'close_cdps': p_close_cdps,
-#         },
-#         'variables': {
-#             'v_2': s_store_v_2,
-#             'u_2': s_store_u_2,
-#             'w_2': s_store_w_2,
-#             'cdps': s_store_cdps,
-#         }
-#     },
-#     {
-#         'policies': {},
-#         'variables': {
-#             'eth_freed': s_update_eth_freed,
-#             'rai_wiped': s_update_rai_wiped,
-#             'system_revenue': s_update_system_revenue,
-#         }
-#     },
+    {
+        'details': '''
+            Exogenous u,v activity: close CDPs
+        ''',
+        'policies': {
+            'close_cdps': p_close_cdps,
+        },
+        'variables': {
+            'v_2': s_store_v_2,
+            'u_2': s_store_u_2,
+            'w_2': s_store_w_2,
+            'cdps': s_store_cdps,
+        }
+    },
+    {
+        'policies': {},
+        'variables': {
+            'eth_freed': s_update_eth_freed,
+            'rai_wiped': s_update_rai_wiped,
+            'system_revenue': s_update_system_revenue,
+        }
+    },
     {
         'details': '''
             Endogenous w activity

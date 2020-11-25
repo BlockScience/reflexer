@@ -216,10 +216,10 @@ def resolve_cdp_positions(params, state, policy_input):
                 assert draw > 0
                 
                 if u_1 - draw > 0:
-                    cdps.at[index, 'draw'] = drawn + draw
+                    cdps.at[index, 'drawn'] = drawn + draw
                     u_1 = u_1 - draw
                 else:
-                    cdps.at[index, 'draw'] = drawn + u_1
+                    cdps.at[index, 'drawn'] = drawn + u_1
                     u_1 = 0
                     break
         
@@ -233,7 +233,9 @@ def resolve_cdp_positions(params, state, policy_input):
                 'drawn': u_1,
                 'wiped': 0.0,
                 'freed': 0.0,
-                'dripped': 0.0
+                'dripped': 0.0,
+                'v_bitten': 0.0,
+                'u_bitten': 0.0
             }, ignore_index=True)
         
     else: # Falling ETH
@@ -305,7 +307,11 @@ def resolve_cdp_positions(params, state, policy_input):
                 # (locked + lock - freed - v_bitten) * eth_price = (drawn - wiped - u_bitten) * (liquidation_ratio * target_price)
                 lock = ((drawn - wiped - u_bitten) * target_price * liquidation_ratio - (locked - freed - v_bitten) * eth_price) / eth_price
                 
-                assert lock > 0
+                #print(lock)
+                #print(locked, freed, drawn, v_bitten, wiped, u_bitten)
+                
+                #assert lock > 0
+                lock = max(lock, 0)
                 
                 if v_1 - lock > 0:
                     cdps.at[index, 'locked'] = locked + lock
@@ -325,13 +331,16 @@ def resolve_cdp_positions(params, state, policy_input):
                 'drawn': u_1,
                 'wiped': 0.0,
                 'freed': 0.0,
-                'dripped': 0.0
+                'dripped': 0.0,
+                'v_bitten': 0.0,
+                'u_bitten': 0.0
             }, ignore_index=True)
             
-    u_1 = cdps['drawn'].sum() - cdps_copy['drawn'].sum()
-    u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum()
-    v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
+    u_1 = cdps['drawn'].sum() - cdps_copy['drawn'].sum() + 1e-6
+    u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum() + 1e-6
+    v_1 = cdps['locked'].sum() - cdps_copy['locked'].sum() + 1e-6
+    v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum() + 1e-6
     
-    print(len(cdps))
+    print(f'CDP count: {len(cdps)}')
         
-    return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_2': v_2, 'v_2 + v_3': v_2}
+    return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_1': v_1, 'v_2': v_2, 'v_2 + v_3': v_2}

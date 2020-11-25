@@ -72,8 +72,8 @@ def p_close_cdps(params, substep, state_history, state):
     
     closed_cdps = cdps.query(f'{cumulative_time} - time >= {average_debt_age}')
     
-    v_2 = closed_cdps['freed'].sum()
-    u_2 = closed_cdps['wiped'].sum()
+    v_2 = closed_cdps['locked'].sum() - closed_cdps['freed'].sum() - closed_cdps['v_bitten'].sum() + 1e-6
+    u_2 = closed_cdps['drawn'].sum() - closed_cdps['wiped'].sum() - closed_cdps['u_bitten'].sum() + 1e-6
     w_2 = closed_cdps['dripped'].sum()
     
     try:
@@ -81,7 +81,7 @@ def p_close_cdps(params, substep, state_history, state):
     except KeyError:
         print('Failed to drop CDPs')
         raise
-    
+        
     return {'cdps': cdps, 'v_2': v_2, 'u_2': u_2, 'w_2': w_2}
 
 def p_liquidate_cdps(params, substep, state_history, state):
@@ -115,14 +115,14 @@ def p_liquidate_cdps(params, substep, state_history, state):
             v_bite = ((drawn - wiped - u_bitten) * target_price * (1 + liquidation_penalty)) / eth_price
             assert v_bite >= 0, f'{v_bite} !>= 0 ~ {state}'
             assert v_bite <= (locked - freed - v_bitten), f'Liquidation short of collateral: {v_bite} !<= {locked}'
-            free = locked - v_bite
+            free = locked - freed - v_bitten - v_bite
             assert free >= 0, f'{free} !>= {0}'
             assert locked >= freed + free + v_bitten + v_bite
             w_bite = dripped
             assert w_bite > 0
         except AssertionError as err:
             events = [err]
-            v_bite = locked
+            v_bite = locked - freed - v_bitten
             free = 0
             w_bite = dripped
         
@@ -232,7 +232,9 @@ def s_resolve_cdps(params, substep, state_history, state, policy_input):
             'drawn': u_1,
             'wiped': 0.0,
             'freed': 0.0,
-            'dripped': 0.0
+            'dripped': 0.0,
+            'v_bitten': 0.0,
+            'u_bitten': 0.0
         }, ignore_index=True)
     
     return 'cdps', cdps
@@ -261,7 +263,7 @@ def s_update_eth_locked(params, substep, state_history, state, policy_input):
     eth_locked = state['eth_locked']
     v_1 = state['v_1']
     
-    assert v_1 >= 0
+    assert v_1 >= 0, v_1
     
     return 'eth_locked', eth_locked + v_1
 
@@ -269,7 +271,7 @@ def s_update_eth_freed(params, substep, state_history, state, policy_input):
     eth_freed = state['eth_freed']
     v_2 = state['v_2']
     
-    assert v_2 >= 0
+    assert v_2 >= 0, v_2
     
     return 'eth_freed', eth_freed + v_2
 
@@ -277,7 +279,7 @@ def s_update_eth_bitten(params, substep, state_history, state, policy_input):
     eth_bitten = state['eth_bitten']
     v_3 = state['v_3']
     
-    assert v_3 >= 0
+    assert v_3 >= 0, v_3
     
     return 'eth_bitten', eth_bitten + v_3
 
@@ -285,7 +287,7 @@ def s_update_rai_drawn(params, substep, state_history, state, policy_input):
     rai_drawn = state['rai_drawn']
     u_1 = state['u_1']
     
-    assert u_1 >= 0
+    assert u_1 >= 0, u_1
     
     return 'rai_drawn', rai_drawn + u_1
 
@@ -293,7 +295,7 @@ def s_update_rai_wiped(params, substep, state_history, state, policy_input):
     rai_wiped = state['rai_wiped']
     u_2 = state['u_2']
     
-    assert u_2 >= 0
+    assert u_2 >= 0, u_2
     
     return 'rai_wiped', rai_wiped + u_2
 
@@ -301,7 +303,7 @@ def s_update_rai_bitten(params, substep, state_history, state, policy_input):
     rai_bitten = state['rai_bitten']
     u_3 = state['u_3']
     
-    assert u_3 >= 0
+    assert u_3 >= 0, u_3
     
     return 'rai_bitten', rai_bitten + u_3
     

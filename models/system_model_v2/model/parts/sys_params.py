@@ -14,8 +14,8 @@ params = {
     'expected_control_delay': [lambda _timestep: 1200], #seconds
     'derivative_smoothing': [1], #unitless
     'debt_market_std':[.001], #defined price units per hour
-    'kp': [6.944e-06], #proportional term for the stability controller: units 1/USD
-    'ki': [lambda control_period=3600: 60.0 / control_period], #integral term for the stability controller: units 1/(USD*seconds)
+    'kp': [-1.5e-6], #proportional term for the stability controller: units 1/USD
+    'ki': [lambda control_period=3600: 0 / control_period], #integral term for the stability controller: units 1/(USD*seconds)
     'kp-star': [-0.5866], #proportional term for the market process: unitless
     'ki-star': [lambda control_period=3600: 0.0032 / control_period], #integral term for the market process to target price: units 1/seconds 
     'kd-star': [lambda control_period=3600: 0.4858 * control_period], #derivative term for the market process to target price: units seconds
