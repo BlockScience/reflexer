@@ -31,39 +31,242 @@ def s_update_eth_gross_return(params, substep, state_history, state, policy_inpu
     
     return 'eth_gross_return', eth_gross_return
 
-############################################################################################################################################
-
 def s_update_stability_fee(params, substep, state_history, state, policy_input):
     stability_fee = params['stability_fee'](state['timestep'])
     return 'stability_fee', stability_fee
 
-def p_open_cdps(params, substep, state_history, state):
-#     base_var = 100
-#     variance = float(base_var * state['timedelta'] / 3600.0)
-#     random_state = params['random_state']
-#     rvs = sts.norm.rvs(loc=0, scale=variance, random_state=random_state)
-#     v1 = max(rvs, 0) # total Eth value of new CDP
-    
-#     # cdps = state['cdps']
+############################################################################################################################################
 
-#     liquidation_ratio = params['liquidation_ratio']
-#     collateral_value = v1 * state['eth_price']
-#     target_price = state['target_price']
-#     u1 = collateral_value / (target_price * liquidation_ratio)
+def resolve_cdp_positions(params, state, policy_input):
+    eth_price = state['eth_price']
+    target_price = state['target_price']
+    liquidation_ratio = params['liquidation_ratio']
+    liquidation_buffer = params['liquidation_buffer']
     
-#     cumulative_time = state['cumulative_time']
-#     # Daily activity
-#     if cumulative_time % 1 == 0:
-#         return {'v_1': v1, 'u_1': u1}
-#     else:
-#         return {'v_1': 0, 'u_1': 0}
-
-    #v_1 = params['v_1'](state['timestep'])
-    #u_1 = params['u_1'](state['timestep'])
-    v_1 = params['v_1'](state, state_history)
-    u_1 = params['u_1'](state['timestep'])
+    cdps = state['cdps']
+    cdps_copy = cdps.copy()
+    cdps = cdps.sort_values(by=['time'], ascending=True) # Youngest to oldest
+    cdps_above_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} > (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
+    cdps_below_liquidation_ratio = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio}')
+    cdps_below_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
     
-    return {'v_1': v_1, 'u_1': u_1}
+    rising_eth = policy_input['rising_eth']
+    
+    v_2 = policy_input['v_2 + v_3'] # Free, no v_3 liquidations
+    u_1 = policy_input['u_1'] # Draw
+    u_2 = policy_input['u_2'] # Wipe
+    v_1 = policy_input['v_1'] # Lock
+    
+    if rising_eth: # Rising ETH
+        '''
+        If ETH price rises, then (u_1, v_2+v_3) = (draw, free). Start with frees, rebalance by taking out excess collateral until back to liquidation ratio + buffer. (No liquidation, no 'bites')
+        1. If run out of positions, then excess free. Distribute over all CDPs?
+        2. If run out of frees, then go to draws. Rebalance by minting new RAI and reducing to liquidation ratio + buffer
+        3. If run out of positions, then excess draws _could_ be applied to new positions opened with locks
+        '''
+        
+        for index, cdp in cdps_above_liquidation_buffer.iterrows():
+            locked = cdps.at[index, 'locked']
+            freed = cdps.at[index, 'freed']
+            v_bitten = cdps.at[index, 'v_bitten']
+            drawn = cdps.at[index, 'drawn']
+            wiped = cdps.at[index, 'wiped']
+            u_bitten = cdps.at[index, 'u_bitten']
+            # (locked - freed - free - v_bitten) * eth_price = (drawn - wiped - u_bitten) * target_price * liquidation_ratio * liquidation_buffer
+            free = ((locked - freed - v_bitten) * eth_price - liquidation_ratio * liquidation_buffer * (drawn - wiped - u_bitten) * target_price) / eth_price
+            
+            assert free > 0
+            if locked <= freed + free + v_bitten:
+                continue
+            
+            if v_2 - free > 0:
+                cdps.at[index, 'freed'] = freed + free
+                v_2 = v_2 - free
+            else:
+                cdps.at[index, 'freed'] = freed + v_2
+                v_2 = 0
+                break
+        
+        # If excess frees, distribute over all CDPs
+        if v_2 > 0:
+            cdp_count = len(cdps)
+            free_distributed = v_2 / cdp_count
+            
+            assert free_distributed > 0
+            
+            for index, cdp in cdps.iterrows():
+                locked = cdps.at[index, 'locked']
+                freed = cdps.at[index, 'freed']
+                v_bitten = cdps.at[index, 'v_bitten']
+                drawn = cdps.at[index, 'drawn']
+                wiped = cdps.at[index, 'wiped']
+                u_bitten = cdps.at[index, 'u_bitten']
+                
+                if locked <= freed + free_distributed + v_bitten:
+                    continue
+                
+                cdps.at[index, 'freed'] = freed + free_distributed
+        
+        # If run out of frees, go to draws
+        cdps_above_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} > (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
+        if u_1 > 0:
+            for index, cdp in cdps_above_liquidation_buffer.iterrows():
+                locked = cdps.at[index, 'locked']
+                freed = cdps.at[index, 'freed']
+                v_bitten = cdps.at[index, 'v_bitten']
+                drawn = cdps.at[index, 'drawn']
+                wiped = cdps.at[index, 'wiped']
+                u_bitten = cdps.at[index, 'u_bitten']
+                # (locked - freed - v_bitten) * eth_price = (drawn + draw - wiped - u_bitten) * target_price * liquidation_ratio * liquidation_buffer
+                draw = (locked - freed - v_bitten) * eth_price / (target_price * liquidation_ratio * liquidation_buffer) - (drawn - wiped - u_bitten)
+                
+                draw = max(draw, 0)
+                assert u_1 >= 0, u_1
+                assert draw >= 0, draw
+                
+                if u_1 - draw > 0:
+                    cdps.at[index, 'drawn'] = drawn + draw
+                    u_1 = u_1 - draw
+                else:
+                    cdps.at[index, 'drawn'] = drawn + u_1
+                    u_1 = 0
+                    break
+        
+        # If run out of positions, excess draws applied to new positions opened with locks
+        if u_1 > 0:
+            cumulative_time = state['cumulative_time']
+            v_1 = u_1 * target_price * liquidation_ratio / eth_price
+            cdps = cdps.append({
+                'time': cumulative_time,
+                'locked': v_1,
+                'drawn': u_1,
+                'wiped': 0.0,
+                'freed': 0.0,
+                'dripped': 0.0,
+                'v_bitten': 0.0,
+                'u_bitten': 0.0,
+                'w_bitten': 0.0
+            }, ignore_index=True)
+        
+    else: # Falling ETH
+        '''
+        If ETH price falls, then (u_2, v_1) = (wipe, lock). Start with wipes, rebalance by paying off those obligations that are below liquidation ratio. Position order is always youngest to oldest.
+        1. If run out of positions, then excess wipe? Excess RAI left over => buffer up different positions until wipe runs out, up to data-derived buffer above liquidation ratio (from data, 3x vs. 1.5 min). 
+        2. If run out of wipe, then go to locks: rebalance by adding collateral
+        3. If run out of positions, then open new positions with excess lock
+        '''
+        
+        # Wipe to reach liquidation ratio
+        for index, cdp in cdps_below_liquidation_ratio.iterrows():
+            locked = cdps.at[index, 'locked']
+            freed = cdps.at[index, 'freed']
+            v_bitten = cdps.at[index, 'v_bitten']
+            drawn = cdps.at[index, 'drawn']
+            wiped = cdps.at[index, 'wiped']
+            u_bitten = cdps.at[index, 'u_bitten']
+            # (locked - freed - v_bitten) * eth_price = (drawn - wiped - wipe - u_bitten) * target_price * liquidation_ratio 
+            wipe = (drawn - wiped - u_bitten) - (locked - freed - v_bitten) * eth_price / (liquidation_ratio * target_price)
+            
+            assert u_2 >= 0
+            assert wipe >= 0
+            if drawn <= wiped + wipe + u_bitten:
+                continue
+            
+            if u_2 - wipe > 0:
+                cdps.at[index, 'wiped'] = wiped + wipe
+                u_2 = u_2 - wipe
+            else:
+                cdps.at[index, 'wiped'] = wiped + u_2
+                u_2 = 0
+                break
+        
+        # Wipe to reach liquidation buffer
+        if u_2 > 0:
+            cdps_below_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
+            for index, cdp in cdps_below_liquidation_buffer.iterrows():
+                locked = cdps.at[index, 'locked']
+                freed = cdps.at[index, 'freed']
+                drawn = cdps.at[index, 'drawn']
+                v_bitten = cdps.at[index, 'v_bitten']
+                wiped = cdps.at[index, 'wiped']
+                u_bitten = cdps.at[index, 'u_bitten']
+                # (locked - freed - v_bitten) * eth_price = (drawn - wiped - wipe - u_bitten) * target_price * liquidation_ratio * liquidation_buffer
+                wipe = (drawn - wiped - u_bitten) - (locked - freed - v_bitten) * eth_price / (liquidation_ratio * liquidation_buffer * target_price)
+                
+                assert u_2 >= 0
+                assert wipe >= 0
+                if drawn <= wiped + wipe + u_bitten:
+                    continue
+                
+                if u_2 - wipe > 0:
+                    cdps.at[index, 'wiped'] = wiped + wipe
+                    u_2 = u_2 - wipe
+                else:
+                    cdps.at[index, 'wiped'] = wiped + u_2
+                    u_2 = 0
+                    break
+                 
+        # Lock collateral
+        if v_1 > 0:
+            cdps_below_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
+            for index, cdp in cdps_below_liquidation_buffer.iterrows():
+                locked = cdps.at[index, 'locked']
+                freed = cdps.at[index, 'freed']
+                drawn = cdps.at[index, 'drawn']
+                v_bitten = cdps.at[index, 'v_bitten']
+                wiped = cdps.at[index, 'wiped']
+                u_bitten = cdps.at[index, 'u_bitten']
+                # (locked + lock - freed - v_bitten) * eth_price = (drawn - wiped - u_bitten) * (liquidation_ratio * target_price)
+                lock = ((drawn - wiped - u_bitten) * target_price * liquidation_ratio - (locked - freed - v_bitten) * eth_price) / eth_price
+                
+                #print(lock)
+                #print(locked, freed, drawn, v_bitten, wiped, u_bitten)
+                
+                #assert lock > 0
+                lock = max(lock, 0)
+                
+                if v_1 - lock > 0:
+                    cdps.at[index, 'locked'] = locked + lock
+                    v_1 = v_1 - lock
+                else:
+                    cdps.at[index, 'locked'] = locked + v_1
+                    v_1 = 0
+                    break
+        
+        # Open new CDPs with remaining collateral
+        if v_1 > 0:
+            cumulative_time = state['cumulative_time']
+            u_1 = v_1 * eth_price / (target_price * liquidation_ratio)
+            cdps = cdps.append({
+                'time': cumulative_time,
+                'locked': v_1,
+                'drawn': u_1,
+                'wiped': 0.0,
+                'freed': 0.0,
+                'dripped': 0.0,
+                'v_bitten': 0.0,
+                'u_bitten': 0.0,
+                'w_bitten': 0.0
+            }, ignore_index=True)
+            
+    u_1 = cdps['drawn'].sum() - cdps_copy['drawn'].sum()
+    u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum()
+    v_1 = cdps['locked'].sum() - cdps_copy['locked'].sum()
+    v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
+    
+    u_1 = max(u_1, 0)
+    u_2 = max(u_2, 0)
+    v_1 = max(v_1, 0)
+    v_2 = max(v_2, 0)
+    
+    assert u_1 >= 0, u_1
+    assert u_2 >= 0, u_2
+    assert v_1 >= 0, v_1
+    assert v_2 >= 0, v_2
+    
+    #print(f'CDP count: {len(cdps)}')
+        
+    return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_1': v_1, 'v_2': v_2, 'v_2 + v_3': v_2}
 
 def p_close_cdps(params, substep, state_history, state):    
     cdps = state['cdps']
@@ -151,6 +354,9 @@ def p_liquidate_cdps(params, substep, state_history, state):
     
     return {'events': events, 'cdps': cdps, 'v_2': v_2, 'v_3': v_3, 'u_3': u_3, 'w_3': w_3}
 
+def s_store_cdps(params, substep, state_history, state, policy_input):
+    return 'cdps', policy_input['cdps']
+
 def s_store_v_1(params, substep, state_history, state, policy_input):
     return 'v_1', policy_input.get('v_1', 0)
 
@@ -177,76 +383,6 @@ def s_store_u_3(params, substep, state_history, state, policy_input):
 
 def s_store_w_3(params, substep, state_history, state, policy_input):
     return 'w_3', policy_input['w_3']
-
-def s_resolve_cdps(params, substep, state_history, state, policy_input):
-    v_1 = policy_input['v_1']
-    v_1_remainder = policy_input['v_1_remainder']
-    u_1 = policy_input['u_1']
-    u_2 = policy_input['u_2']
-    
-    eth_price = state['eth_price']
-    target_price = state['target_price']
-        
-    cdps = state['cdps']
-    
-    # TODO: re-enable liquidation
-#     liquidated_cdps = policy_input['liquidated_cdps'].index if 'liquidated_cdps' in policy_input else pd.Index([])
-    liquidated_cdps = pd.Index([])
-    #closed_cdps = policy_input['closed_cdps'].index if 'closed_cdps' in policy_input else pd.Index([])
-    cdps = cdps.sort_values(by=['time'], ascending=False)
-    
-    for index, cdp in cdps.iterrows():
-        drawn = cdps.at[index, 'drawn']
-        if drawn > u_2:
-            wiped = drawn - u_2
-            cdps.at[index, 'wiped'] = wiped
-        else:
-            wiped = 0
-            u_2 = u_2 - wiped
-            if u_2 <= 0:
-                break
-            cdps.at[index, 'wiped'] = wiped
-    #closed_cdps = cdps.query(f'drawn == 0')
-    #u_2 = closed_cdps['wiped'].sum()
-
-    #drop_index = liquidated_cdps.union(closed_cdps.index)
-    #try:
-    #    cdps = cdps.drop(drop_index)
-    #except KeyError:
-    #    print('Failed to drop CDPs')
-    #    raise
-
-    cdp_top_up_buffer = params['cdp_top_up_buffer']
-    
-    def top_up_cdp(cdp, top_up_collateral):
-        locked = cdp['locked']
-        drawn = cdp['drawn']
-        top_up = locked * eth_price < drawn * target_price * cdp_top_up_buffer
-        if top_up:
-            cdp['locked'] = locked + top_up_collateral
-        return cdp
-            
-    if v_1 > 0:
-        cumulative_time = state['cumulative_time']
-        total_top_ups = cdps.query(f'locked * {eth_price} < drawn * {target_price} * {cdp_top_up_buffer}').shape[0]
-        if total_top_ups > 0:
-            #top_up_collateral = (v_1 * 0.5) / total_top_ups
-            top_up_collateral = v_1_remainder
-            #v_1 = v_1 * 0.5
-            cdps = cdps.apply(lambda cdp: top_up_cdp(cdp, top_up_collateral), axis=1)
-        cdps = cdps.append({
-            'time': cumulative_time,
-            'locked': v_1,
-            'drawn': u_1,
-            'wiped': 0.0,
-            'freed': 0.0,
-            'dripped': 0.0,
-            'v_bitten': 0.0,
-            'u_bitten': 0.0,
-            'w_bitten': 0.0
-        }, ignore_index=True)
-    
-    return 'cdps', cdps
 
 def s_update_eth_collateral(params, substep, state_history, state, policy_input):
     eth_locked = state['eth_locked']
