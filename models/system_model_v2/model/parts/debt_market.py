@@ -1,5 +1,6 @@
 import scipy.stats as sts
 import pandas as pd
+import math
 
 ############################################################################################################################################
 
@@ -10,7 +11,7 @@ def p_resolve_eth_price(params, substep, state_history, state):
     #delta_eth_price = sts.norm.rvs(loc=0, scale=variance, random_state=random_state)
     eth_price = params['eth_price'](state['timestep'])
     delta_eth_price = eth_price - state_history[-1][-1]['eth_price']
-    
+        
     return {'delta_eth_price': delta_eth_price}
 
 def s_update_eth_price(params, substep, state_history, state, policy_input):
@@ -146,7 +147,7 @@ def resolve_cdp_positions(params, state, policy_input):
                 'v_bitten': 0.0,
                 'u_bitten': 0.0,
                 'w_bitten': 0.0
-            }, ignore_index=True)
+            }, ignore_index=True)            
         
     else: # Falling ETH
         '''
@@ -205,7 +206,24 @@ def resolve_cdp_positions(params, state, policy_input):
                     cdps.at[index, 'wiped'] = wiped + u_2
                     u_2 = 0
                     break
-                 
+        
+        # If excess wipes, distribute over all CDPs
+        if u_2 > 0:
+            cdp_count = len(cdps)
+            wipe_distributed = u_2 / cdp_count
+            
+            assert wipe_distributed > 0
+            
+            for index, cdp in cdps.iterrows():
+                drawn = cdps.at[index, 'drawn']
+                wiped = cdps.at[index, 'wiped']
+                u_bitten = cdps.at[index, 'u_bitten']
+                
+                if drawn <= wiped + wipe_distributed + u_bitten:
+                    continue
+                
+                cdps.at[index, 'wiped'] = wiped + wipe_distributed
+                         
         # Lock collateral
         if v_1 > 0:
             cdps_below_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
@@ -250,9 +268,22 @@ def resolve_cdp_positions(params, state, policy_input):
             }, ignore_index=True)
             
     u_1 = cdps['drawn'].sum() - cdps_copy['drawn'].sum()
+    if policy_input['u_1']:
+        assert math.isclose(u_1, policy_input['u_1'], rel_tol=1e-6, abs_tol=0.0), (u_1, policy_input['u_1'])
+    
     u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum()
+    #if policy_input['u_2']:
+    #    assert math.isclose(u_2, policy_input['u_2'], rel_tol=1e-6, abs_tol=0.0), (u_2, policy_input['u_2'])
+    #print(u_2, policy_input['u_2'])
+    
     v_1 = cdps['locked'].sum() - cdps_copy['locked'].sum()
+    if policy_input['v_1']:
+        assert math.isclose(v_1, policy_input['v_1'], rel_tol=1e-6, abs_tol=0.0), (v_1, policy_input['v_1'])
+    
     v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
+    #if policy_input['v_2 + v_3']:
+    #    assert math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0), (v_2, policy_input['v_2 + v_3'])
+    #print(v_2, policy_input['v_2 + v_3'])
     
     u_1 = max(u_1, 0)
     u_2 = max(u_2, 0)
@@ -354,6 +385,8 @@ def p_liquidate_cdps(params, substep, state_history, state):
     
     return {'events': events, 'cdps': cdps, 'v_2': v_2, 'v_3': v_3, 'u_3': u_3, 'w_3': w_3}
 
+############################################################################################################################################
+
 def s_store_cdps(params, substep, state_history, state, policy_input):
     return 'cdps', policy_input['cdps']
 
@@ -389,7 +422,7 @@ def s_update_eth_collateral(params, substep, state_history, state, policy_input)
     eth_freed = state['eth_freed']
     eth_bitten = state['eth_bitten']
     
-    eth_collateral = max(eth_locked - eth_freed - eth_bitten, 0)
+    eth_collateral = eth_locked - eth_freed - eth_bitten
     assert eth_collateral >= 0, f'{eth_collateral} ~ {state}'
     
     return 'eth_collateral', eth_collateral

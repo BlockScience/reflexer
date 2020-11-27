@@ -1,4 +1,4 @@
-import pandas as pd
+#import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from autosklearn.regression import AutoSklearnRegressor
@@ -16,6 +16,7 @@ import seaborn as sns
 import pickle
 
 from .utils import get_feature
+from .debt_market import resolve_cdp_positions
 
 features = ['beta', 'Q', 'v_1', 'v_2 + v_3', 
                     'D_1', 'u_1', 'u_2', 'u_3', 'u_2 + u_3', 
@@ -23,37 +24,33 @@ features = ['beta', 'Q', 'v_1', 'v_2 + v_3',
                     'D']
 
 def p_apt_model(params, substep, state_history, state):
+    debug = params['debug']
+    
+    # Set the index to zero to use the same feature vector for every step
+    #feature_0 = get_feature(state_history, index=0)
+    feature_0 = get_feature(state_history)
+    if debug: print(feature_0)
+    
     func = params['G_OLS']
     
-    feature_0 = get_feature(state_history, index=0)
-    #feature_0 = get_feature(state_history)
-    
+    eth_return = state['eth_return']
+    eth_p_mean = params['eth_p_mean']
+    eth_returns_mean = params['eth_returns_mean']
+    p = state['market_price']
     interest_rate = params['interest_rate']
     
-    eth_price = state['eth_price']
     try:
-        eth_p_mean = np.mean([x[-1]['eth_price'] for x in state_history[1:]])
+        eth_price = state_history[-1][-1]['eth_price']
     except IndexError as e:
         print(e)
-        eth_p_mean = state['eth_price']
-
-    #eth_returns = ((eth_price - eth_price.shift(1))/eth_price).to_numpy().flatten()
-    eth_return = state['eth_return']
+        eth_price = state['eth_price']
+                    
     try:
-        eth_returns = [x[-1]['eth_return'] for x in state_history[1:]]
-        eth_returns_mean = np.mean(eth_returns)
-    except IndexError as e:
-        print(e)
-        eth_returns_mean = eth_return
-    
-    p = state['market_price']
-    
-    try:
-        mar_p_mean = np.mean([x[-1]['market_price'] for x in state_history[1:]])
+        mar_p_mean = np.mean([x[-1]['market_price'] for x in state_history]) #[1:]
     except IndexError as e:
         print(e)
         mar_p_mean = p
-    
+        
     # assign CDP levers in response to disequilibrium
     # remember: unexpected realized ETH price increase *lowers* expected return!
     rising_eth = eth_return < eth_returns_mean
@@ -75,10 +72,12 @@ def p_apt_model(params, substep, state_history, state):
     beta_2 = params['beta_2']
         
     # find root of non-arbitrage condition
-    p_expected = (1/alpha_1) * p * (interest_rate + beta_2 * (eth_p_mean - eth_price*interest_rate)
-                                 + beta_1 * (mar_p_mean - p*interest_rate)
+    p_expected = (1/alpha_1) * p * (interest_rate + beta_2 * (eth_p_mean - eth_price * interest_rate)
+                                 + beta_1 * (mar_p_mean - p * interest_rate)
                  ) - (alpha_0/alpha_1)
     
+    #print(alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected)
+        
     optindex = [features.index(i) for i in optvars]
     
     x0 = feature_0[:,optindex][0]
@@ -102,6 +101,10 @@ def p_apt_model(params, substep, state_history, state):
     
     optimal_values = dict((var, x_star[i]) for i, var in enumerate(optvars))
     
+    if debug:
+        print(f'x_star: {x_star}')
+        print(f'optimal_values: {optimal_values}')
+    
     # EXTERNAL HANDLER: pass optimal values to CDP handler (here, as dict)
     # EXTERNAL HANDLER: receive new initial condition from CDP handler (as numpy array)
     # This is done automatically via state
@@ -114,6 +117,7 @@ def p_apt_model(params, substep, state_history, state):
     # _send_expected_price_to_market(p_expected)
     # p = _receive_price_from_market()
     
+    #print(rising_eth)
     #print(optimal_values)
     
     v_1 = optimal_values.get('v_1', 0)
@@ -123,7 +127,12 @@ def p_apt_model(params, substep, state_history, state):
 
     cdp_position_state = resolve_cdp_positions(params, state, {'rising_eth': rising_eth, 'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
     
-    return {'p_expected': p_expected, **cdp_position_state}
+    #print(cdp_position_state)
+    
+    return {'p_expected': p_expected, **cdp_position_state, 'optimal_values': optimal_values}
     
 def s_store_p_expected(params, substep, state_history, state, policy_input):
     return 'p_expected', policy_input['p_expected']
+
+def s_store_optimal_values(params, substep, state_history, state, policy_input):
+    return 'optimal_values', policy_input['optimal_values']

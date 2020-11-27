@@ -7,7 +7,7 @@ eth_price = 386.71
 liquidation_ratio = 1.5 # 150%
 liquidation_buffer = 2
 collateral_value = eth_collateral * eth_price
-target_price = 2.0
+target_price = 1.0
 principal_debt = collateral_value / (target_price * liquidation_ratio * liquidation_buffer)
 
 cdps = pd.DataFrame()
@@ -74,4 +74,5 @@ state_variables = {
     # APT model
     'eth_return': 0,
     'eth_gross_return': 0,
+    'optimal_values': {}
 }
