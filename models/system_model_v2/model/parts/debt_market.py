@@ -107,6 +107,22 @@ def resolve_cdp_positions(params, state, policy_input):
                     continue
                 
                 cdps.at[index, 'freed'] = freed + free_distributed
+                
+#         if v_2 > 0:
+#             v_1 = v_2
+#             u_1_ = v_1 * eth_price / target_price * liquidation_ratio
+#             u_2 = u_1_
+#             cdps = cdps.append({
+#                 'time': cumulative_time,
+#                 'locked': v_1,
+#                 'drawn': u_1_,
+#                 'wiped': u_2,
+#                 'freed': v_2,
+#                 'dripped': 0.0,
+#                 'v_bitten': 0.0,
+#                 'u_bitten': 0.0,
+#                 'w_bitten': 0.0
+#             }, ignore_index=True)  
         
         # If run out of frees, go to draws
         cdps_above_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} > (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
@@ -272,8 +288,8 @@ def resolve_cdp_positions(params, state, policy_input):
         assert math.isclose(u_1, policy_input['u_1'], rel_tol=1e-6, abs_tol=0.0), (u_1, policy_input['u_1'])
     
     u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum()
-    #if policy_input['u_2']:
-    #    assert math.isclose(u_2, policy_input['u_2'], rel_tol=1e-6, abs_tol=0.0), (u_2, policy_input['u_2'])
+    if policy_input['u_2']:
+        assert math.isclose(u_2, policy_input['u_2'], rel_tol=1e-6, abs_tol=0.0), (u_2, policy_input['u_2'])
     #print(u_2, policy_input['u_2'])
     
     v_1 = cdps['locked'].sum() - cdps_copy['locked'].sum()
@@ -281,8 +297,8 @@ def resolve_cdp_positions(params, state, policy_input):
         assert math.isclose(v_1, policy_input['v_1'], rel_tol=1e-6, abs_tol=0.0), (v_1, policy_input['v_1'])
     
     v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
-    #if policy_input['v_2 + v_3']:
-    #    assert math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0), (v_2, policy_input['v_2 + v_3'])
+    if policy_input['v_2 + v_3']:
+        assert math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0), (v_2, policy_input['v_2 + v_3'])
     #print(v_2, policy_input['v_2 + v_3'])
     
     u_1 = max(u_1, 0)

@@ -76,10 +76,9 @@ def p_apt_model(params, substep, state_history, state):
                                  + beta_1 * (mar_p_mean - p * interest_rate)
                  ) - (alpha_0/alpha_1)
     
-    #print(alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected)
+    if debug: print(alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected)
         
-    optindex = [features.index(i) for i in optvars]
-    
+    optindex = [features.index(i) + 1 for i in optvars]
     x0 = feature_0[:,optindex][0]
 
     #print('x0: ', x0)
