@@ -43,7 +43,8 @@ partial_state_update_blocks = [
             APT model
         """,
         'policies': {
-            'apt': p_apt_model
+            # 'apt': p_apt_model
+            'apt': p_apt_model_unified
         },
         'variables': {
             'cdps': s_store_cdps,

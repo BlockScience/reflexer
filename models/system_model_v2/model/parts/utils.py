@@ -17,7 +17,6 @@ def s_collect_events(params, substep, state_history, state, policy_input):
     return 'events', state['events'] + policy_input.get('events', [])
 
 def get_feature(state_history, features, index=-1):
-    
     # Update the state with the optimal values from the last timestep for the APT model
     state = state_history[index][-1].copy()
     state.update(state['optimal_values'])
@@ -43,4 +42,4 @@ def get_feature(state_history, features, index=-1):
     
     feature = [feature_dict[k] for k in features]
             
-    return np.reshape(feature, (-1,len(features))).copy()
+    return np.reshape(feature, (-1, len(features))).copy()
