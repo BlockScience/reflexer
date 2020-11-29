@@ -1,4 +1,3 @@
-#import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from autosklearn.regression import AutoSklearnRegressor
@@ -18,20 +17,12 @@ import pickle
 from .utils import get_feature
 from .debt_market import resolve_cdp_positions
 
-features = ['beta', 'Q', 'v_1', 'v_2 + v_3', 
-                    'D_1', 'u_1', 'u_2', 'u_3', 'u_2 + u_3', 
-                    'D_2', 'w_1', 'w_2', 'w_3', 'w_2 + w_3',
-                    'D']
-
 def p_apt_model(params, substep, state_history, state):
+    use_APT_ML_model = params['use_APT_ML_model']
+    
     debug = params['debug']
     
-    # Set the index to zero to use the same feature vector for every step
-    #feature_0 = get_feature(state_history, index=0)
-    feature_0 = get_feature(state_history)
-    if debug: print(feature_0)
-    
-    func = params['G_OLS']
+    func = params['root_function']
     
     eth_return = state['eth_return']
     eth_p_mean = params['eth_p_mean']
@@ -78,7 +69,20 @@ def p_apt_model(params, substep, state_history, state):
     
     if debug: print(alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected)
         
-    optindex = [features.index(i) + 1 for i in optvars]
+    features = params['features']
+    
+    if use_APT_ML_model:
+        optindex = [features.index(i) for i in optvars]
+        feature_0 = get_feature(state_history, features)
+    else:
+        # add regression constant; this shifts index for optimal values
+        optindex = [features.index(i) + 1 for i in optvars]
+        # Set the index to zero to use the same feature vector for every step
+        #feature_0 = get_feature(state_history, features, index=0)
+        feature_0 = get_feature(state_history, features)
+        feature_0 = np.insert(feature_0, 0, 1, axis=1)
+    if debug: print(feature_0)
+    
     x0 = feature_0[:,optindex][0]
 
     #print('x0: ', x0)

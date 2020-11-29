@@ -5,32 +5,29 @@ import options
 from .utils import get_feature
 
 def update_market_price(params, substep, state_history, state, policy_input):
-    #value = params['market_price'](state['timestep'])    
     p_expected = state['p_expected']
     previous_price = state['market_price']
     
-    feature = get_feature(state_history)
+    features = params['features']
+    feature = get_feature(state_history, features)
     
-    clearing_price = get_market_price(p_expected, previous_price, feature)
+    clearing_price = get_market_price(p_expected, previous_price, features, feature)
     
     return 'market_price', clearing_price
-
-features = ['beta', 'Q', 'v_1', 'v_2 + v_3', 
-                    'D_1', 'u_1', 'u_2', 'u_3', 'u_2 + u_3', 
-                    'D_2', 'w_1', 'w_2', 'w_3', 'w_2 + w_3',
-                    'D']
 
 # Secondary market function
 # Zero-intelligence market-clearing price: 
 # cf. Gode & Sunder (JPE v 101 n 1, 1993)
 order_book = np.array([0,0])
-bidvars = ['u_2']
-askvars = ['u_1']
-bidindex = [features.index(i) for i in bidvars]
-askindex = [features.index(i) for i in askvars]
 
-def get_market_price(expected_price, previous_price, feature):
+def get_market_price(expected_price, previous_price, features, feature):
     global order_book
+    
+    bidvars = ['u_2']
+    askvars = ['u_1']
+    bidindex = [features.index(i) for i in bidvars]
+    askindex = [features.index(i) for i in askvars]
+    
     order_book = order_book + np.array([np.sum(feature[:,bidindex][0]), 
                     np.sum(feature[:,askindex][0])]
     )
