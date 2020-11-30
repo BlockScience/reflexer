@@ -58,6 +58,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     v_2 = policy_input['v_2 + v_3'] # Free, no v_3 liquidations
     u_1 = policy_input['u_1'] # Draw
     u_2 = policy_input['u_2'] # Wipe
+    w_2 = 0
     
     # CDP rebalancing
     for index, cdp in cdps_newest.iterrows():
@@ -142,8 +143,9 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
             _v_2 = locked - freed - v_bitten
             _u_2 = drawn - wiped - u_bitten
-            # TODO: handle w_2
             _w_2 = dripped
+
+            w_2 += _w_2
 
             if u_2 - _u_2 > 0:
                 cdps.at[index, 'wiped'] = wiped + _u_2
@@ -247,7 +249,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     assert cdps['drawn'].sum() - cdps['wiped'].sum() - cdps['u_bitten'].sum() >= 0
     assert cdps['locked'].sum() - cdps['freed'].sum() - cdps['v_bitten'].sum() >= 0
             
-    return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_1': v_1, 'v_2': v_2, 'v_2 + v_3': v_2}
+    return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_1': v_1, 'v_2': v_2, 'v_2 + v_3': v_2, 'w_2': w_2}
 
 def resolve_cdp_positions(params, state, policy_input):
     eth_price = state['eth_price']
@@ -528,7 +530,7 @@ def resolve_cdp_positions(params, state, policy_input):
 
 def p_close_cdps(params, substep, state_history, state):
     debug = params['debug']
-     
+
     cdps = state['cdps']
     average_debt_age = params['average_debt_age']
     cumulative_time = state['cumulative_time']
@@ -539,9 +541,9 @@ def p_close_cdps(params, substep, state_history, state):
     u_2 = closed_cdps['drawn'].sum() - closed_cdps['wiped'].sum() - closed_cdps['u_bitten'].sum()
     w_2 = closed_cdps['dripped'].sum()
     
-    v_2 = max(v_2, 0)
-    u_2 = max(u_2, 0)
-    w_2 = max(w_2, 0)
+    assert v_2 >= 0, v_2
+    assert u_2 >= 0, u_2
+    assert w_2 >= 0, w_2
     
     try:
         cdps = cdps.drop(closed_cdps.index)
@@ -605,10 +607,10 @@ def p_liquidate_cdps(params, substep, state_history, state):
     u_3 = cdps['u_bitten'].sum() - cdps_copy['u_bitten'].sum()
     w_3 = cdps['w_bitten'].sum() - cdps_copy['w_bitten'].sum()
     
-    v_2 = max(v_2, 0)
-    v_3 = max(v_3, 0)
-    u_3 = max(u_3, 0)
-    w_3 = max(w_3, 0)
+    assert v_2 >= 0, v_2
+    assert v_3 >= 0, v_3
+    assert u_3 >= 0, u_3
+    assert w_3 >= 0, w_3
     
     try:
         cdps = cdps.drop(liquidated_cdps.index)

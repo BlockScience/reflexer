@@ -19,7 +19,7 @@ def s_collect_events(params, substep, state_history, state, policy_input):
 def get_feature(state_history, features, index=-1):
     # Update the state with the optimal values from the last timestep for the APT model
     state = state_history[index][-1].copy()
-    #state.update(state['optimal_values'])
+    state.update(state['optimal_values'])
     
     feature_dict = {
         'beta': state['stability_fee'] * 365 * 24 * 3600, # beta - yearly interest rate

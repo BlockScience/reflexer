@@ -23,6 +23,7 @@ cdps = cdps.append({
     'w_bitten': 0.0
 }, ignore_index=True)
 
+# NB: These initial states may be overriden in the relevant notebook
 state_variables = {
     'events': [],
     'error_star': (0.0), #price units

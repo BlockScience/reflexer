@@ -52,6 +52,7 @@ partial_state_update_blocks = [
             'v_2': s_store_v_2,
             'u_1': s_store_u_1,
             'u_2': s_store_u_2,
+            'w_2': s_store_w_2,
             'p_expected': s_store_p_expected,
             'optimal_values': s_store_optimal_values,
         }
@@ -62,7 +63,8 @@ partial_state_update_blocks = [
             'eth_locked': s_update_eth_locked,
             'eth_freed': s_update_eth_freed,
             'rai_drawn': s_update_rai_drawn,
-            'rai_wiped': s_update_rai_wiped
+            'rai_wiped': s_update_rai_wiped,
+            'system_revenue': s_update_system_revenue,
         }
     },
     {
