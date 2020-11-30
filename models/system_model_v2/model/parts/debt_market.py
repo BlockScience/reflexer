@@ -48,10 +48,12 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     cdps_copy = cdps.copy()
     cdps = cdps.sort_values(by=['time'], ascending=True) # Youngest to oldest
     cdps_oldest = cdps.sort_values(by=['time'], ascending=False) # Oldest to youngest
-    cdps_above_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} > (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
-    cdps_below_liquidation_ratio = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio}')
-    cdps_below_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
+    #cdps_above_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} > (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
+    #cdps_below_liquidation_ratio = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio}')
+    #cdps_below_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
         
+    assert cdps.at[0, 'locked'] == cdps_oldest.at[0, 'locked']
+
     v_1 = policy_input['v_1'] # Lock
     v_2 = policy_input['v_2 + v_3'] # Free, no v_3 liquidations
     u_1 = policy_input['u_1'] # Draw
@@ -87,6 +89,8 @@ def resolve_cdp_positions_unified(params, state, policy_input):
                     cdps.at[index, 'wiped'] = wiped + u_2
                     u_2 = 0
             else:
+                # If positions are not cycled, but wipes and draws are exhausted, then proceed to applying any non-exhausted frees and locks:
+                # If L<¯L+Δ, apply a lock from QL until L=¯L+Δ, if possible;
                 lock = ((drawn - wiped - u_bitten) * target_price * liquidation_ratio - (locked - freed - v_bitten) * eth_price) / eth_price
 
                 if v_1 - lock >= 0:
@@ -111,6 +115,8 @@ def resolve_cdp_positions_unified(params, state, policy_input):
                     cdps.at[index, 'drawn'] = drawn + u_1
                     u_1 = 0
             else:
+                # If positions are not cycled, but wipes and draws are exhausted, then proceed to applying any non-exhausted frees and locks:
+                # If L>¯L+Δ, apply a free from QF until L=¯L+Δ, if possible.
                 free = ((locked - freed - v_bitten) * eth_price - liquidation_ratio * liquidation_buffer * (drawn - wiped - u_bitten) * target_price) / eth_price
                 
                 if v_2 - free >= 0:
@@ -176,22 +182,58 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             'w_bitten': 0.0
         }, ignore_index=True)
 
+    if v_1 > 0:
+        cumulative_time = state['cumulative_time']
+        assert u_1 == 0
+        cdps = cdps.append({
+            'time': cumulative_time,
+            'locked': v_1,
+            'drawn': u_1,
+            'wiped': 0.0,
+            'freed': 0.0,
+            'dripped': 0.0,
+            'v_bitten': 0.0,
+            'u_bitten': 0.0,
+            'w_bitten': 0.0
+        }, ignore_index=True)
+        v_1 = 0
+
+    if v_2 > 0:
+        for index, cdp in cdps_oldest.iterrows():
+            locked = cdps.at[index, 'locked']
+            freed = cdps.at[index, 'freed']
+            drawn = cdps.at[index, 'drawn']
+            v_bitten = cdps.at[index, 'v_bitten']
+            wiped = cdps.at[index, 'wiped']
+            dripped = cdps.at[index, 'dripped']
+            u_bitten = cdps.at[index, 'u_bitten']
+
+            _v_2 = locked - freed - v_bitten
+
+            if v_2 - _v_2 >= 0:
+                cdps.at[index, 'freed'] = freed + _v_2
+                v_2 = v_2 - _v_2
+            else:
+                cdps.at[index, 'freed'] = freed + v_2
+                v_2 = 0
+                break
+
     u_1 = cdps['drawn'].sum() - cdps_copy['drawn'].sum()
-    #if policy_input['u_1']:
-    #    assert math.isclose(u_1, policy_input['u_1'], rel_tol=1e-6, abs_tol=0.0), (u_1, policy_input['u_1'])
+    if policy_input['u_1']:
+        assert math.isclose(u_1, policy_input['u_1'], rel_tol=1e-6, abs_tol=0.0), (u_1, policy_input['u_1'])
     
     u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum()
-    #if policy_input['u_2']:
-    #    assert math.isclose(u_2, policy_input['u_2'], rel_tol=1e-6, abs_tol=0.0), (u_2, policy_input['u_2'])
+    if policy_input['u_2']:
+        assert math.isclose(u_2, policy_input['u_2'], rel_tol=1e-6, abs_tol=0.0), (u_2, policy_input['u_2'])
     #print(u_2, policy_input['u_2'])
     
     v_1 = cdps['locked'].sum() - cdps_copy['locked'].sum()
-    #if policy_input['v_1']:
-    #    assert math.isclose(v_1, policy_input['v_1'], rel_tol=1e-6, abs_tol=0.0), (v_1, policy_input['v_1'])
+    if policy_input['v_1']:
+        assert math.isclose(v_1, policy_input['v_1'], rel_tol=1e-6, abs_tol=0.0), (v_1, policy_input['v_1'])
     
     v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
-    #if policy_input['v_2 + v_3']:
-    #    assert math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0), (v_2, policy_input['v_2 + v_3'])
+    if policy_input['v_2 + v_3']:
+        assert math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0), (v_2, policy_input['v_2 + v_3'])
     #print(v_2, policy_input['v_2 + v_3'])
     
     u_1 = max(u_1, 0)
