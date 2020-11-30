@@ -627,32 +627,37 @@ def p_liquidate_cdps(params, substep, state_history, state):
 def s_store_cdps(params, substep, state_history, state, policy_input):
     return 'cdps', policy_input['cdps']
 
+def get_cdps_state_change(state, state_history, key):
+    cdps = state['cdps']
+    previous_cdps = state_history[-1][-1]['cdps']
+    return cdps[key].sum() - previous_cdps[key].sum()
+
 def s_store_v_1(params, substep, state_history, state, policy_input):
-    return 'v_1', policy_input.get('v_1', 0)
+    return 'v_1', get_cdps_state_change(state, state_history, 'locked')
 
 def s_store_u_1(params, substep, state_history, state, policy_input):
-    return 'u_1', policy_input.get('u_1', 0)
+    return 'u_1', get_cdps_state_change(state, state_history, 'drawn')
     
 def s_store_w_1(params, substep, state_history, state, policy_input):
-    return 'w_1', policy_input['w_1']
+    return 'w_1', get_cdps_state_change(state, state_history, 'dripped')
 
 def s_store_v_2(params, substep, state_history, state, policy_input):
-    return 'v_2', policy_input['v_2']
+    return 'v_2', get_cdps_state_change(state, state_history, 'freed')
 
 def s_store_u_2(params, substep, state_history, state, policy_input):
-    return 'u_2', policy_input.get('u_2', 0)
+    return 'u_2', get_cdps_state_change(state, state_history, 'wiped')
     
 def s_store_w_2(params, substep, state_history, state, policy_input):
     return 'w_2', policy_input['w_2']
 
 def s_store_v_3(params, substep, state_history, state, policy_input):
-    return 'v_3', policy_input['v_3']
+    return 'v_3', get_cdps_state_change(state, state_history, 'v_bitten')
 
 def s_store_u_3(params, substep, state_history, state, policy_input):
-    return 'u_3', policy_input['u_3']
+    return 'u_3', get_cdps_state_change(state, state_history, 'u_bitten')
 
 def s_store_w_3(params, substep, state_history, state, policy_input):
-    return 'w_3', policy_input['w_3']
+    return 'w_3', get_cdps_state_change(state, state_history, 'w_bitten')
 
 def s_update_eth_collateral(params, substep, state_history, state, policy_input):
     eth_locked = state['eth_locked']

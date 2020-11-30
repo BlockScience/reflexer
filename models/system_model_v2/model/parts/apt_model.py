@@ -59,7 +59,7 @@ def p_apt_model_unified(params, substep, state_history, state):
                                  + beta_1 * (mar_p_mean - p * interest_rate)
                  ) - (alpha_0/alpha_1)
     
-    if debug: print(alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected)
+    if debug: print(f'p_expected terms: {alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected}')
         
     features = params['features']
     

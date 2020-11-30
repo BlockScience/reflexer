@@ -48,13 +48,18 @@ partial_state_update_blocks = [
         },
         'variables': {
             'cdps': s_store_cdps,
+            'w_2': s_store_w_2,
+            'p_expected': s_store_p_expected,
+            'optimal_values': s_store_optimal_values,
+        }
+    },
+    {
+        'policies': {},
+        'variables': {
             'v_1': s_store_v_1,
             'v_2': s_store_v_2,
             'u_1': s_store_u_1,
             'u_2': s_store_u_2,
-            'w_2': s_store_w_2,
-            'p_expected': s_store_p_expected,
-            'optimal_values': s_store_optimal_values,
         }
     },
     {
@@ -106,11 +111,16 @@ partial_state_update_blocks = [
         },
         'variables': {
             'events': s_collect_events,
+            'cdps': s_store_cdps,
+        }
+    },
+    {
+        'policies': {},
+        'variables': {
             'v_2': s_store_v_2,
             'v_3': s_store_v_3,
             'u_3': s_store_u_3,
             'w_3': s_store_w_3,
-            'cdps': s_store_cdps,
         }
     },
     {
@@ -130,10 +140,15 @@ partial_state_update_blocks = [
             'close_cdps': p_close_cdps,
         },
         'variables': {
+            'cdps': s_store_cdps,
+            'w_2': s_store_w_2,
+        }
+    },
+    {
+        'policies': {},
+        'variables': {
             'v_2': s_store_v_2,
             'u_2': s_store_u_2,
-            'w_2': s_store_w_2,
-            'cdps': s_store_cdps,
         }
     },
     {
@@ -152,6 +167,12 @@ partial_state_update_blocks = [
         'variables': {
             'accrued_interest': s_update_accrued_interest,
             'cdps': s_update_cdp_interest
+        }
+    },
+    {
+        'policies': {},
+        'variables': {
+            'w_1': s_store_w_1,
         }
     },
     {
