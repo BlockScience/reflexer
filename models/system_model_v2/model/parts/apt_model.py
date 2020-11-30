@@ -18,6 +18,10 @@ from .utils import get_feature
 from .debt_market import resolve_cdp_positions, resolve_cdp_positions_unified
 
 def p_apt_model_unified(params, substep, state_history, state):
+    # Assert:
+    # ETH volatility passed to optimal values
+    # Optimal values don't run away
+
     use_APT_ML_model = params['use_APT_ML_model']
     
     debug = params['debug']
@@ -73,15 +77,16 @@ def p_apt_model_unified(params, substep, state_history, state):
     
     x0 = feature_0[:,optindex][0]
 
-    #print('x0: ', x0)
-    #print('optvars:', optvars)
-    #print('p_expected: ', p_expected)
+    print('x0: ', x0)
+    print('optvars:', optvars)
+    print('p_expected: ', p_expected)
     
     try:
         x_star = newton(func, x0, args=(optindex, feature_0, p_expected))
         #print('xstar: ' ,x_star)
         # Feasibility check, non-negativity
         if any(x_star[x_star < 0]):
+            if debug: print('Negative x_star')
             x_star = x0
     except RuntimeError as e:
         # For OLS, usually indicates non-convergence after 50 iterations (default)
@@ -107,9 +112,6 @@ def p_apt_model_unified(params, substep, state_history, state):
     # _send_feature_to_market(feature_0)
     # _send_expected_price_to_market(p_expected)
     # p = _receive_price_from_market()
-    
-    #print(rising_eth)
-    #print(optimal_values)
     
     v_1 = optimal_values.get('v_1', 0)
     v_2_v_3 = optimal_values.get('v_2 + v_3', 0)

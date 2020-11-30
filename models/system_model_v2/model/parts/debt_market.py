@@ -46,13 +46,13 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     
     cdps = state['cdps']
     cdps_copy = cdps.copy()
-    cdps = cdps.sort_values(by=['time'], ascending=True) # Youngest to oldest
+    cdps_newest = cdps.sort_values(by=['time'], ascending=True) # Youngest to oldest
     cdps_oldest = cdps.sort_values(by=['time'], ascending=False) # Oldest to youngest
     #cdps_above_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} > (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
     #cdps_below_liquidation_ratio = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio}')
     #cdps_below_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
         
-    assert cdps.at[0, 'locked'] == cdps_oldest.at[0, 'locked']
+    # assert cdps.at[0, 'locked'] == cdps_oldest.at[0, 'locked']
 
     v_1 = policy_input['v_1'] # Lock
     v_2 = policy_input['v_2 + v_3'] # Free, no v_3 liquidations
@@ -60,7 +60,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     u_2 = policy_input['u_2'] # Wipe
     
     # CDP rebalancing
-    for index, cdp in cdps.iterrows():
+    for index, cdp in cdps_newest.iterrows():
         locked = cdps.at[index, 'locked']
         freed = cdps.at[index, 'freed']
         drawn = cdps.at[index, 'drawn']
@@ -93,7 +93,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
                 # If L<¯L+Δ, apply a lock from QL until L=¯L+Δ, if possible;
                 lock = ((drawn - wiped - u_bitten) * target_price * liquidation_ratio - (locked - freed - v_bitten) * eth_price) / eth_price
 
-                if v_1 - lock >= 0:
+                if v_1 - lock > 0:
                     cdps.at[index, 'locked'] = locked + lock
                     v_1 = v_1 - lock
                 else:
@@ -130,6 +130,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             break
     
     if u_2 > 0:
+        # Closes CDPs
         for index, cdp in cdps_oldest.iterrows():
             locked = cdps.at[index, 'locked']
             freed = cdps.at[index, 'freed']
@@ -141,9 +142,10 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
             _v_2 = locked - freed - v_bitten
             _u_2 = drawn - wiped - u_bitten
+            # TODO: handle w_2
             _w_2 = dripped
 
-            if u_2 - _u_2 >= 0:
+            if u_2 - _u_2 > 0:
                 cdps.at[index, 'wiped'] = wiped + _u_2
                 u_2 = u_2 - _u_2
                 if v_2 - _v_2 >= 0:
@@ -155,9 +157,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             else:
                 cdps.at[index, 'wiped'] = wiped + u_2
                 u_2 = 0
-            # TODO: what if excess v_2? Liquidation of last position.
     
-
     if u_1 > 0:
         cumulative_time = state['cumulative_time']
         _u_1 = u_1
@@ -198,7 +198,10 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         }, ignore_index=True)
         v_1 = 0
 
+    # Index reset in 'append'
+    cdps_oldest = cdps.sort_values(by=['time'], ascending=False) # Oldest to youngest
     if v_2 > 0:
+        # TODO: remove the CDP when closed?
         for index, cdp in cdps_oldest.iterrows():
             locked = cdps.at[index, 'locked']
             freed = cdps.at[index, 'freed']
@@ -210,7 +213,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
             _v_2 = locked - freed - v_bitten
 
-            if v_2 - _v_2 >= 0:
+            if v_2 - _v_2 > 0:
                 cdps.at[index, 'freed'] = freed + _v_2
                 v_2 = v_2 - _v_2
             else:
@@ -236,15 +239,13 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         assert math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0), (v_2, policy_input['v_2 + v_3'])
     #print(v_2, policy_input['v_2 + v_3'])
     
-    u_1 = max(u_1, 0)
-    u_2 = max(u_2, 0)
-    v_1 = max(v_1, 0)
-    v_2 = max(v_2, 0)
-    
     assert u_1 >= 0, u_1
     assert u_2 >= 0, u_2
     assert v_1 >= 0, v_1
     assert v_2 >= 0, v_2
+
+    assert cdps['drawn'].sum() - cdps['wiped'].sum() - cdps['u_bitten'].sum() >= 0
+    assert cdps['locked'].sum() - cdps['freed'].sum() - cdps['v_bitten'].sum() >= 0
             
     return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_1': v_1, 'v_2': v_2, 'v_2 + v_3': v_2}
 
@@ -525,7 +526,9 @@ def resolve_cdp_positions(params, state, policy_input):
         
     return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_1': v_1, 'v_2': v_2, 'v_2 + v_3': v_2}
 
-def p_close_cdps(params, substep, state_history, state):    
+def p_close_cdps(params, substep, state_history, state):
+    debug = params['debug']
+     
     cdps = state['cdps']
     average_debt_age = params['average_debt_age']
     cumulative_time = state['cumulative_time']
@@ -545,10 +548,14 @@ def p_close_cdps(params, substep, state_history, state):
     except KeyError:
         print('Failed to drop CDPs')
         raise
+
+    if debug: print(f'{len(closed_cdps)} CDPs closed with v_2 {v_2} u_2 {u_2} w_2 {w_2}')
         
     return {'cdps': cdps, 'v_2': v_2, 'u_2': u_2, 'w_2': w_2}
 
 def p_liquidate_cdps(params, substep, state_history, state):
+    debug = params['debug']
+
     eth_price = state['eth_price']
     target_price = state['target_price']
     liquidation_penalty = params['liquidation_penalty']
@@ -608,6 +615,8 @@ def p_liquidate_cdps(params, substep, state_history, state):
     except KeyError:
         print('Failed to drop CDPs')
         raise
+
+    if debug: print(f'{len(liquidated_cdps)} CDPs liquidated with v_2 {v_2} v_3 {v_3} u_3 {u_3} w_3 {w_3}')
     
     return {'events': events, 'cdps': cdps, 'v_2': v_2, 'v_3': v_3, 'u_3': u_3, 'w_3': w_3}
 
