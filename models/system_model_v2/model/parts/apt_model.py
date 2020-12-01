@@ -13,11 +13,13 @@ from scipy.optimize import root, show_options, newton, minimize
 import numpy as np
 import seaborn as sns
 import pickle
+import time
 
 from .utils import get_feature
 from .debt_market import resolve_cdp_positions, resolve_cdp_positions_unified
 
 def p_apt_model_unified(params, substep, state_history, state):
+    start_time = time.time()
     # Assert:
     # ETH volatility passed to optimal values
     # Optimal values don't run away
@@ -85,11 +87,11 @@ def p_apt_model_unified(params, substep, state_history, state):
     try:
         if use_APT_ML_model:
             results = minimize(func, x0, method='Powell', 
-                args=(optindex, feature_0, p_expected), 
+                args=(optindex, feature_0, p_expected),
                 bounds = bounds,
                 options={'disp':True}
             )
-            if debug: 
+            if debug:
                 print('Success:', results['success'])
                 print('Message:', results['message'])
                 print('Function value:', results['fun'])
@@ -134,6 +136,8 @@ def p_apt_model_unified(params, substep, state_history, state):
     cdp_position_state = resolve_cdp_positions_unified(params, state, {'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
     
     #print(cdp_position_state)
+
+    print("--- %s seconds ---" % (time.time() - start_time))
     
     return {'p_expected': p_expected, **cdp_position_state, 'optimal_values': optimal_values}
 
