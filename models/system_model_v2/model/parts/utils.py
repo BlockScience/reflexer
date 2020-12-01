@@ -8,9 +8,14 @@ import numpy as np
 def p_free_memory(params, substep, state_history, state):
     if state['timestep'] > 0:
         for key in params['free_memory_states']:
-            substates = state_history[-1]
-            for substate in substates:
-                substate[key] = None
+            try:
+                # Clear states older than 2nd last
+                substates = state_history[-2]
+                for substate in substates:
+                    substate[key] = None
+            except IndexError as e:
+                print(e)
+                continue
     return {}
 
 def s_collect_events(params, substep, state_history, state, policy_input):
@@ -19,7 +24,7 @@ def s_collect_events(params, substep, state_history, state, policy_input):
 def get_feature(state_history, features, index=-1):
     # Update the state with the optimal values from the last timestep for the APT model
     state = state_history[index][-1].copy()
-    state.update(state['optimal_values'])
+    #state.update(state['optimal_values'])
     
     feature_dict = {
         'beta': state['stability_fee'] * 365 * 24 * 3600, # beta - yearly interest rate

@@ -9,7 +9,7 @@ from functools import partial
 import statsmodels.api as sm
 from statsmodels.regression.linear_model import OLSResults
 from statsmodels.tsa.ar_model import AutoReg
-from scipy.optimize import root, show_options, newton
+from scipy.optimize import root, show_options, newton, minimize
 import numpy as np
 import seaborn as sns
 import pickle
@@ -30,9 +30,12 @@ def p_apt_model_unified(params, substep, state_history, state):
     
     eth_return = state['eth_return']
     eth_p_mean = params['eth_p_mean']
+    mar_p_mean = params['mar_p_mean']
     eth_returns_mean = params['eth_returns_mean']
     p = state['market_price']
     interest_rate = params['interest_rate']
+    bounds = params['bounds']
+    optvars = params['optvars']
     
     try:
         eth_price = state_history[-1][-1]['eth_price']
@@ -40,14 +43,12 @@ def p_apt_model_unified(params, substep, state_history, state):
         print(e)
         eth_price = state['eth_price']
                     
-    try:
-        mar_p_mean = np.mean([x[-1]['market_price'] for x in state_history]) #[1:]
-    except IndexError as e:
-        print(e)
-        mar_p_mean = p
-        
-    optvars = ['u_1', 'u_2', 'v_1', 'v_2 + v_3']
-            
+    # try:
+    #     mar_p_mean = np.mean([x[-1]['market_price'] for x in state_history]) #[1:]
+    # except IndexError as e:
+    #     print(e)
+    #     mar_p_mean = p
+
     alpha_0 = params['alpha_0']
     alpha_1 = params['alpha_1']
     beta_0 = params['beta_0']
@@ -65,13 +66,13 @@ def p_apt_model_unified(params, substep, state_history, state):
     
     if use_APT_ML_model:
         optindex = [features.index(i) for i in optvars]
-        feature_0 = get_feature(state_history, features)
+        feature_0 = get_feature(state_history, features, index=(0 if params['freeze_feature_vector'] else -1))
     else:
         # add regression constant; this shifts index for optimal values
         optindex = [features.index(i) + 1 for i in optvars]
         # Set the index to zero to use the same feature vector for every step
         #feature_0 = get_feature(state_history, features, index=0)
-        feature_0 = get_feature(state_history, features)
+        feature_0 = get_feature(state_history, features, index=(0 if params['freeze_feature_vector'] else -1))
         feature_0 = np.insert(feature_0, 0, 1, axis=1)
     if debug: print(feature_0)
     
@@ -82,12 +83,24 @@ def p_apt_model_unified(params, substep, state_history, state):
     print('p_expected: ', p_expected)
     
     try:
-        x_star = newton(func, x0, args=(optindex, feature_0, p_expected))
-        #print('xstar: ' ,x_star)
+        if use_APT_ML_model:
+            results = minimize(func, x0, method='Powell', 
+                args=(optindex, feature_0, p_expected), 
+                bounds = bounds,
+                options={'disp':True}
+            )
+            if debug: 
+                print('Success:', results['success'])
+                print('Message:', results['message'])
+                print('Function value:', results['fun'])
+            x_star = results['x']
+        else:
+            x_star = newton(func, x0, args=(optindex, feature_0, p_expected))
         # Feasibility check, non-negativity
-        if any(x_star[x_star < 0]):
-            if debug: print('Negative x_star')
-            x_star = x0
+        negindex = np.where(x_star < 0)[0]
+        if len(negindex) > 0:
+            if debug: print('negative root found, resetting')
+            x_star[negindex] = x0[negindex]
     except RuntimeError as e:
         # For OLS, usually indicates non-convergence after 50 iterations (default)
         # Indicates not feasible to update CDP for this price/feature combination

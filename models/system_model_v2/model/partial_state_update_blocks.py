@@ -48,18 +48,13 @@ partial_state_update_blocks = [
         },
         'variables': {
             'cdps': s_store_cdps,
-            'w_2': s_store_w_2,
+            'v_1': s_set_v_1,
+            'v_2': s_set_v_2,
+            'u_1': s_set_u_1,
+            'u_2': s_set_u_2,
+            'w_2': s_set_w_2,
             'p_expected': s_store_p_expected,
             'optimal_values': s_store_optimal_values,
-        }
-    },
-    {
-        'policies': {},
-        'variables': {
-            'v_1': s_store_v_1,
-            'v_2': s_store_v_2,
-            'u_1': s_store_u_1,
-            'u_2': s_store_u_2,
         }
     },
     {
@@ -111,16 +106,11 @@ partial_state_update_blocks = [
         },
         'variables': {
             'events': s_collect_events,
+            'v_2': s_set_v_2,
+            'v_3': s_set_v_3,
+            'u_3': s_set_u_3,
+            'w_3': s_set_w_3,
             'cdps': s_store_cdps,
-        }
-    },
-    {
-        'policies': {},
-        'variables': {
-            'v_2': s_store_v_2,
-            'v_3': s_store_v_3,
-            'u_3': s_store_u_3,
-            'w_3': s_store_w_3,
         }
     },
     {
@@ -132,33 +122,28 @@ partial_state_update_blocks = [
         'accrued_interest': s_update_interest_bitten,
       }
     },
-    {
-        'details': '''
-            Exogenous u,v activity: close CDPs
-        ''',
-        'policies': {
-            'close_cdps': p_close_cdps,
-        },
-        'variables': {
-            'cdps': s_store_cdps,
-            'w_2': s_store_w_2,
-        }
-    },
-    {
-        'policies': {},
-        'variables': {
-            'v_2': s_store_v_2,
-            'u_2': s_store_u_2,
-        }
-    },
-    {
-        'policies': {},
-        'variables': {
-            'eth_freed': s_update_eth_freed,
-            'rai_wiped': s_update_rai_wiped,
-            'system_revenue': s_update_system_revenue,
-        }
-    },
+    # {
+    #     'details': '''
+    #         Exogenous u,v activity: close CDPs
+    #     ''',
+    #     'policies': {
+    #         'close_cdps': p_close_cdps,
+    #     },
+    #     'variables': {
+    #         'cdps': s_store_cdps,
+    #         'v_2': s_set_v_2,
+    #         'u_2': s_set_u_2,
+    #         'w_2': s_set_w_2,
+    #     }
+    # },
+    # {
+    #     'policies': {},
+    #     'variables': {
+    #         'eth_freed': s_update_eth_freed,
+    #         'rai_wiped': s_update_rai_wiped,
+    #         'system_revenue': s_update_system_revenue,
+    #     }
+    # },
     {
         'details': '''
             Endogenous w activity
@@ -167,12 +152,6 @@ partial_state_update_blocks = [
         'variables': {
             'accrued_interest': s_update_accrued_interest,
             'cdps': s_update_cdp_interest
-        }
-    },
-    {
-        'policies': {},
-        'variables': {
-            'w_1': s_store_w_1,
         }
     },
     {
@@ -193,4 +172,18 @@ partial_state_update_blocks = [
             'target_price': update_target_price,
         }
     },
+    {
+        'policies': {},
+        'variables': {
+            'v_1': s_aggregate_v_1,
+            'v_2': s_aggregate_v_2,
+            'v_3': s_aggregate_v_3,
+            'u_1': s_aggregate_u_1,
+            'u_2': s_aggregate_u_2,
+            'u_3': s_aggregate_u_3,
+            'w_1': s_aggregate_w_1,
+            # w_2 is calculated using a policy input
+            'w_3': s_aggregate_w_3,
+        }
+    }
 ]
