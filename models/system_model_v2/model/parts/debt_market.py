@@ -219,11 +219,11 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
             if v_2 - _v_2 > 0:
                 cdps.at[index, 'freed'] = freed + _v_2
-                cdps.at[index, 'open'] = False
+                cdps.at[index, 'open'] = 0
                 v_2 = v_2 - _v_2
             else:
                 cdps.at[index, 'freed'] = freed + v_2
-                cdps.at[index, 'open'] = False
+                cdps.at[index, 'open'] = 0
                 v_2 = 0
                 break
 
