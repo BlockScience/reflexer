@@ -183,6 +183,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
             w_2 += _w_2
 
+            cdps.at[index, 'open'] = 0
             if u_2 - _u_2 > 0:
                 cdps.at[index, 'wiped'] = wiped + _u_2
                 u_2 = u_2 - _u_2
