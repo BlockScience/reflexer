@@ -39,6 +39,41 @@ def s_update_stability_fee(params, substep, state_history, state, policy_input):
 
 ############################################################################################################################################
 
+def p_rebalance_cdps(params, substep, state_history, state):
+    cdps = state['cdps']
+
+    eth_price = state['eth_price']
+    target_price = state['target_price']
+    liquidation_ratio = params['liquidation_ratio']
+    liquidation_buffer = params['liquidation_buffer']
+
+    for index, cdp in cdps.query('open == 1').iterrows():
+        locked = cdps.at[index, 'locked']
+        freed = cdps.at[index, 'freed']
+        drawn = cdps.at[index, 'drawn']
+        v_bitten = cdps.at[index, 'v_bitten']
+        wiped = cdps.at[index, 'wiped']
+        u_bitten = cdps.at[index, 'u_bitten']
+
+        cdp_below_liquidation_buffer = (locked - freed - v_bitten) * eth_price < (drawn - wiped - u_bitten) * target_price * liquidation_ratio * liquidation_buffer
+        cdp_above_liquidation_buffer = (locked - freed - v_bitten) * eth_price > (drawn - wiped - u_bitten) * target_price * liquidation_ratio * liquidation_buffer
+
+        if cdp_below_liquidation_buffer:
+            wipe = (drawn - wiped - u_bitten) - (locked - freed - v_bitten) * eth_price / (liquidation_ratio * liquidation_buffer * target_price)
+
+            assert_print(wipe >= 0, wipe, params['raise_on_assert'])
+            if drawn <= wiped + wipe + u_bitten:
+                continue
+            else:
+                cdps.at[index, 'wiped'] = wiped + wipe
+        elif cdp_above_liquidation_buffer:
+            draw = (locked - freed - v_bitten) * eth_price / (target_price * liquidation_ratio * liquidation_buffer) - (drawn - wiped - u_bitten)
+            
+            assert_print(draw >= 0, draw, params['raise_on_assert'])
+            cdps.at[index, 'drawn'] = drawn + draw
+
+    return {'cdps': cdps}
+
 def resolve_cdp_positions_unified(params, state, policy_input):
     eth_price = state['eth_price']
     target_price = state['target_price']

@@ -18,27 +18,15 @@ import time
 from .utils import get_feature
 from .debt_market import resolve_cdp_positions_unified
 
-def p_apt_model_unified(params, substep, state_history, state):
-    start_time = time.time()
+def p_resolve_p_expected(params, substep, state_history, state):
     debug = params['debug']
-    if debug:
-        print('##### APT model run #####')
-        print(f'Timestep: {state["timestep"]}')
-    # Assert:
-    # ETH volatility passed to optimal values
-    # Optimal values don't run away
 
-    use_APT_ML_model = params['use_APT_ML_model']
-    func = params['root_function']
-    
     eth_return = state['eth_return']
     eth_p_mean = params['eth_p_mean']
     mar_p_mean = params['mar_p_mean']
     eth_returns_mean = params['eth_returns_mean']
     p = state['market_price']
     interest_rate = params['interest_rate']
-    bounds = params['bounds']
-    optvars = params['optvars']
     
     try:
         eth_price = state_history[-1][-1]['eth_price']
@@ -64,8 +52,26 @@ def p_apt_model_unified(params, substep, state_history, state):
                  ) - (alpha_0/alpha_1)
     
     if debug: print(f'p_expected terms: {alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected}')
-        
+
+    return {'p_expected': p_expected}
+
+def s_store_p_expected(params, substep, state_history, state, policy_input):
+    return 'p_expected', policy_input['p_expected']
+
+def p_apt_model_unified(params, substep, state_history, state):
+    start_time = time.time()
+    debug = params['debug']
+    if debug:
+        print('##### APT model run #####')
+        print(f'Timestep: {state["timestep"]}')
+
+    use_APT_ML_model = params['use_APT_ML_model']
+    func = params['root_function']
+    bounds = params['bounds']
+    optvars = params['optvars']
     features = params['features']
+
+    p_expected = state['p_expected']
     
     if use_APT_ML_model:
         optindex = [features.index(i) for i in optvars]
@@ -138,10 +144,7 @@ def p_apt_model_unified(params, substep, state_history, state):
     
     print("--- %s seconds ---" % (time.time() - start_time))
     
-    return {'p_expected': p_expected, **cdp_position_state, 'optimal_values': optimal_values}
-    
-def s_store_p_expected(params, substep, state_history, state, policy_input):
-    return 'p_expected', policy_input['p_expected']
+    return {**cdp_position_state, 'optimal_values': optimal_values}
 
 def s_store_optimal_values(params, substep, state_history, state, policy_input):
     return 'optimal_values', policy_input['optimal_values']

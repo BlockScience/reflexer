@@ -27,15 +27,13 @@ partial_state_update_blocks = [
     },
     {
         'details': '''
-            Exogenous ETH price process
+            Resolve expected price and store in state
         ''',
         'policies': {
-            'exogenous_eth_process': p_resolve_eth_price,
+            'apt': p_resolve_p_expected
         },
         'variables': {
-            'eth_price': s_update_eth_price,
-            'eth_return': s_update_eth_return,
-            'eth_gross_return': s_update_eth_gross_return
+            'p_expected': s_store_p_expected
         }
     },
     {
@@ -53,7 +51,6 @@ partial_state_update_blocks = [
             'u_1': s_set_u_1,
             'u_2': s_set_u_2,
             'w_2': s_set_w_2,
-            'p_expected': s_store_p_expected,
             'optimal_values': s_store_optimal_values,
         }
     },
@@ -91,12 +88,13 @@ partial_state_update_blocks = [
             'error_star_integral': update_error_star_integral,
         }
     },
-    {
-        'policies': {},
-        'variables': {
-            'market_price': update_market_price
-        }
-    },
+    # {
+    #     'policies': {},
+    #     'variables': {
+    #         'market_price': update_market_price
+    #     }
+    # },
+    #################################################################
     {
         'details': '''
             Exogenous u,v activity: liquidate CDPs
@@ -144,6 +142,7 @@ partial_state_update_blocks = [
             'system_revenue': s_update_system_revenue,
         }
     },
+    #################################################################
     {
         'details': '''
             Endogenous w activity
@@ -172,6 +171,19 @@ partial_state_update_blocks = [
             'target_price': update_target_price,
         }
     },
+    #################################################################
+    {
+        'details': """
+        Rebalance CDPs using wipes and frees 
+        """,
+        'policies': {
+            'rebalance_cdps': p_rebalance_cdps,
+        },
+        'variables': {
+            'cdps': s_store_cdps
+        }
+    },
+    #################################################################
     {
         'policies': {},
         'variables': {
@@ -186,6 +198,37 @@ partial_state_update_blocks = [
             'w_3': s_aggregate_w_3,
         }
     },
+    {
+        'details': '''
+            Resolve expected price and store in state
+        ''',
+        'policies': {
+            'apt': p_resolve_p_expected
+        },
+        'variables': {
+            'p_expected': s_store_p_expected
+        }
+    },
+    {
+        'policies': {},
+        'variables': {
+            'market_price': update_market_price
+        }
+    },
+    {
+        'details': '''
+            Exogenous ETH price process
+        ''',
+        'policies': {
+            'exogenous_eth_process': p_resolve_eth_price,
+        },
+        'variables': {
+            'eth_price': s_update_eth_price,
+            'eth_return': s_update_eth_return,
+            'eth_gross_return': s_update_eth_gross_return
+        }
+    },
+    #################################################################
     {
         'policies': {
             'partial_results': save_partial_results
