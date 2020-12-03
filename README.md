@@ -88,6 +88,12 @@ npm setup-network
 # Open and run notebook_solidity_validation.ipynb
 ```
 
+# Tests
+
+## Unit Tests
+
+`python -m pytest ./tests`
+
 ## System Shock Tests
 
 See `test/run_shock_tests.py` for the set of Ki and Kp parameter sweeps.
@@ -100,7 +106,7 @@ Outputs:
 * `exports/_.png` - metric grid for each set of parameters
 * `shock_tests.ipynb` - template notebook for running test and generating grid
 
-# Simulation Profiling
+## Simulation Profiling
 
 ```python
 python3 -m cProfile -s time models/run.py
