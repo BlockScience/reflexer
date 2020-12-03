@@ -251,6 +251,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             dripped = cdps.at[index, 'dripped']
             u_bitten = cdps.at[index, 'u_bitten']
 
+            w_2 += dripped
             _v_2 = locked - freed - v_bitten
 
             if v_2 - _v_2 > 0:
