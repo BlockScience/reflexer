@@ -203,10 +203,10 @@ partial_state_update_blocks = [
             Resolve expected price and store in state
         ''',
         'policies': {
-            'apt': p_resolve_p_expected
+            'apt': p_resolve_p_debt_expected
         },
         'variables': {
-            'p_expected': s_store_p_expected
+            'p_debt_expected': s_store_p_debt_expected
         }
     },
     {

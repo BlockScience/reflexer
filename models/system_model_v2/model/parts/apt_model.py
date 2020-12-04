@@ -14,13 +14,26 @@ import numpy as np
 import seaborn as sns
 import pickle
 import time
+import logging
+import pandas as pd
 
 from .utils import get_feature
 from .debt_market import resolve_cdp_positions_unified
 
-def p_resolve_p_expected(params, substep, state_history, state):
-    debug = params['debug']
+def p_resolve_p_debt_expected(params, substep, state_history, state):
+    model = params['model']
+    features = params['features']
+    feature_0 = get_feature(state_history, features, index=(0 if params['freeze_feature_vector'] else -1))
+    p_debt_expected = model.predict(feature_0)[0]
+    
+    logging.debug(f'p_debt_expected: {p_debt_expected}')
 
+    return {'p_debt_expected': p_debt_expected}
+
+def s_store_p_debt_expected(params, substep, state_history, state, policy_input):
+    return 'p_debt_expected', policy_input['p_debt_expected']
+
+def p_resolve_p_expected(params, substep, state_history, state):
     eth_return = state['eth_return']
     eth_p_mean = params['eth_p_mean']
     mar_p_mean = params['mar_p_mean']
@@ -31,7 +44,7 @@ def p_resolve_p_expected(params, substep, state_history, state):
     try:
         eth_price = state_history[-1][-1]['eth_price']
     except IndexError as e:
-        print(e)
+        logging.warning(e)
         eth_price = state['eth_price']
                     
     # try:
@@ -51,7 +64,7 @@ def p_resolve_p_expected(params, substep, state_history, state):
                                  + beta_1 * (mar_p_mean - p * interest_rate)
                  ) - (alpha_0/alpha_1)
     
-    if debug: print(f'p_expected terms: {alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected}')
+    logging.debug(f'p_expected terms: {alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected}')
 
     return {'p_expected': p_expected}
 
@@ -60,10 +73,11 @@ def s_store_p_expected(params, substep, state_history, state, policy_input):
 
 def p_apt_model_unified(params, substep, state_history, state):
     start_time = time.time()
-    debug = params['debug']
-    if debug:
-        print('##### APT model run #####')
-        print(f'Timestep: {state["timestep"]}')
+
+    logging.debug(f'''
+    ##### APT model run #####
+    Timestep: {state["timestep"]}
+    ''')
 
     use_APT_ML_model = params['use_APT_ML_model']
     func = params['root_function']
@@ -83,45 +97,51 @@ def p_apt_model_unified(params, substep, state_history, state):
         #feature_0 = get_feature(state_history, features, index=0)
         feature_0 = get_feature(state_history, features, index=(0 if params['freeze_feature_vector'] else -1))
         feature_0 = np.insert(feature_0, 0, 1, axis=1)
-    if debug: print(feature_0)
-    
+        
     x0 = feature_0[:,optindex][0]
 
-    print('x0: ', x0)
-    print('optvars:', optvars)
-    print('p_expected: ', p_expected)
-    
+    logging.debug(f'''
+    feature_0: {feature_0}
+    x0: {x0}
+    optvars: {optvars}
+    p_expected: {p_expected}
+    ''')
+
     try:
         if use_APT_ML_model:
             results = minimize(func, x0, method='Powell', 
-                args=(optindex, feature_0, p_expected),
+                args=(optindex, feature_0, p_expected, state['timestep']),
                 bounds = bounds,
                 options={'disp':True}
             )
-            if debug:
-                print('Success:', results['success'])
-                print('Message:', results['message'])
-                print('Function value:', results['fun'])
+
+            logging.debug(f'''
+            Success: {results['success']}
+            Message: {results['message']}
+            Function value: {results['fun']}
+            ''')
+            
             x_star = results['x']
         else:
             x_star = newton(func, x0, args=(optindex, feature_0, p_expected))
         # Feasibility check, non-negativity
         negindex = np.where(x_star < 0)[0]
         if len(negindex) > 0:
-            if debug: print('negative root found, resetting')
+            logging.warning('Negative root found, resetting')
             x_star[negindex] = x0[negindex]
     except RuntimeError as e:
         # For OLS, usually indicates non-convergence after 50 iterations (default)
         # Indicates not feasible to update CDP for this price/feature combination
         # Default to historical values here
-        print('Error: {}, default to historical values...'.format(e))
+        logging.error('Error: {}, default to historical values...'.format(e))
         x_star = x0
     
     optimal_values = dict((var, x_star[i]) for i, var in enumerate(optvars))
     
-    if debug:
-        print(f'x_star: {x_star}')
-        print(f'optimal_values: {optimal_values}')
+    logging.debug(f'''
+    x_star: {x_star}
+    optimal_values: {optimal_values}
+    ''')
     
     # EXTERNAL HANDLER: pass optimal values to CDP handler (here, as dict)
     # EXTERNAL HANDLER: receive new initial condition from CDP handler (as numpy array)
@@ -142,7 +162,7 @@ def p_apt_model_unified(params, substep, state_history, state):
 
     cdp_position_state = resolve_cdp_positions_unified(params, state, {'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
     
-    print("--- %s seconds ---" % (time.time() - start_time))
+    logging.debug("--- %s seconds ---" % (time.time() - start_time))
     
     return {**cdp_position_state, 'optimal_values': optimal_values}
 

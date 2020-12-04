@@ -5,13 +5,13 @@ import options
 from .utils import get_feature
 
 def update_market_price(params, substep, state_history, state, policy_input):
-    p_expected = state['p_expected']
+    p_debt_expected = state['p_debt_expected']
     previous_price = state['market_price']
     
     features = params['features']
     feature = get_feature(state_history, features)
     
-    clearing_price = get_market_price(p_expected, previous_price, features, feature)
+    clearing_price = get_market_price(p_debt_expected, previous_price, features, feature)
     
     return 'market_price', clearing_price
 

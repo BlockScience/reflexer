@@ -3,6 +3,8 @@ import pandas as pd
 import math
 from .utils import approx_greater_equal_zero, assert_print
 
+import logging
+
 ############################################################################################################################################
 
 def p_resolve_eth_price(params, substep, state_history, state):
@@ -461,8 +463,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
         except:
             print(state)
             raise
-    
-    events = []  
+     
     for index, cdp in liquidated_cdps.iterrows():
         locked = cdps.at[index, 'locked']
         freed = cdps.at[index, 'freed']
@@ -483,7 +484,6 @@ def p_liquidate_cdps(params, substep, state_history, state):
         assert_print(w_bitten >=0, w_bitten, params['raise_on_assert'])
         
         try:
-            # (locked + lock - freed - v_bitten) * eth_price = (drawn - wiped - u_bitten) * (liquidation_ratio * target_price)
             v_bite = ((drawn - wiped - u_bitten) * target_price * (1 + liquidation_penalty)) / eth_price
             assert v_bite >= 0, f'{v_bite} !>= 0 ~ {state}'
             assert v_bite <= (locked - freed - v_bitten), f'Liquidation short of collateral: {v_bite} !<= {locked}'
@@ -495,7 +495,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
             u_bite = drawn - wiped - u_bitten
             assert u_bite >= 0
         except AssertionError as err:
-            events = [err]
+            logging.warning(err)
             v_bite = locked - freed - v_bitten
             u_bite = drawn - wiped - u_bitten
             free = 0
@@ -525,7 +525,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
 
     if debug: print(f'{len(liquidated_cdps)} CDPs liquidated with v_2 {v_2} v_3 {v_3} u_3 {u_3} w_3 {w_3}')
     
-    return {'events': events, 'cdps': cdps, 'v_2': v_2, 'v_3': v_3, 'u_3': u_3, 'w_3': w_3}
+    return {'cdps': cdps, 'v_2': v_2, 'v_3': v_3, 'u_3': u_3, 'w_3': w_3}
 
 ############################################################################################################################################
 

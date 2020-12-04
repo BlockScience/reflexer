@@ -1,17 +1,33 @@
 import pandas as pd
 
+import logging
+from datetime import datetime
+
 from cadCAD.engine import ExecutionMode, ExecutionContext, Executor
 from cadCAD.configuration import Experiment
 from cadCAD import configs
 
 
 def run(drop_midsteps: bool=True) -> pd.DataFrame:
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    # logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # logger.addHandler(logging.StreamHandler())
+    file_handler = logging.FileHandler(filename=f'logs/simulation-{datetime.now()}.log')
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    logging.info('Started simulation')
+    
     exec_mode = ExecutionMode()
     exec_context = ExecutionContext(exec_mode.local_mode)
     run = Executor(exec_context=exec_context, configs=configs)
     results = pd.DataFrame()
 
     (system_events, tensor_field, sessions) = run.execute()
+
+    logging.info('Finished simulation')
 
     df = pd.DataFrame(system_events)
 
