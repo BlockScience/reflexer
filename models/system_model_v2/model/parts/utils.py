@@ -65,7 +65,7 @@ def assert_log(condition, message="", _raise=True):
     try:
         assert condition
     except AssertionError as e:
-        logging.warning(e)
+        logging.warning(message)
         if _raise: raise e
 
     return condition

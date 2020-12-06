@@ -79,6 +79,21 @@ def p_apt_model_unified(params, substep, state_history, state):
     Timestep: {state["timestep"]}
     ''')
 
+    if params['test']['enable']:
+        logging.info('APT test enabled')
+        optimal_values = params['test']['params']['optimal_values']
+        optimal_values = {k: optimal_values[k]() for k in optimal_values}
+
+        v_1 = optimal_values.get('v_1', 0)
+        v_2_v_3 = optimal_values.get('v_2 + v_3', 0)
+        u_1 = optimal_values.get('u_1', 0)
+        u_2 = optimal_values.get('u_2', 0)
+        
+        cdp_position_state = resolve_cdp_positions_unified(params, state, {'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
+        
+        return {**cdp_position_state, 'optimal_values': optimal_values}
+
+
     use_APT_ML_model = params['use_APT_ML_model']
     func = params['root_function']
     bounds = params['bounds']

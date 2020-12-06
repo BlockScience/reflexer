@@ -61,7 +61,7 @@ def is_cdp_at_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio)
 
     return (locked - freed - v_bitten) * eth_price == (drawn - wiped - u_bitten) * target_price * liquidation_ratio
 
-def wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
+def wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio, _raise=False):
     locked = cdp['locked']
     freed = cdp['freed']
     drawn = cdp['drawn']
@@ -70,7 +70,7 @@ def wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
     u_bitten = cdp['u_bitten']
 
     wipe = (drawn - wiped - u_bitten) - (locked - freed - v_bitten) * eth_price / (liquidation_ratio * target_price)
-    assert_log(wipe >= 0, wipe, _raise=False)
+    assert_log(approx_greater_equal_zero(wipe, abs_tol=1e-3), f'wipe: {wipe} ~ cdp: {cdp}', _raise=_raise)
     wipe = max(wipe, 0)
 
     if drawn <= wiped + wipe + u_bitten:
@@ -78,7 +78,7 @@ def wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
 
     return wipe
 
-def draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
+def draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio, _raise=False):
     locked = cdp['locked']
     freed = cdp['freed']
     drawn = cdp['drawn']
@@ -87,12 +87,12 @@ def draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
     u_bitten = cdp['u_bitten']
 
     draw = (locked - freed - v_bitten) * eth_price / (target_price * liquidation_ratio) - (drawn - wiped - u_bitten)
-    assert_log(draw >= 0, draw, _raise=False)
+    assert_log(approx_greater_equal_zero(draw, abs_tol=1e-3), f'draw: {draw}', _raise=_raise)
     draw = max(draw, 0)
 
     return draw
 
-def lock_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
+def lock_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio, _raise=False):
     locked = cdp['locked']
     freed = cdp['freed']
     drawn = cdp['drawn']
@@ -101,12 +101,12 @@ def lock_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
     u_bitten = cdp['u_bitten']
 
     lock = ((drawn - wiped - u_bitten) * target_price * liquidation_ratio - (locked - freed - v_bitten) * eth_price) / eth_price
-    assert_log(lock >= 0, lock, _raise=False)
+    assert_log(approx_greater_equal_zero(lock, abs_tol=1e-3), f'lock: {lock}', _raise=_raise)
     lock = max(lock, 0)
 
     return lock
 
-def free_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
+def free_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio, _raise=False):
     locked = cdp['locked']
     freed = cdp['freed']
     drawn = cdp['drawn']
@@ -115,7 +115,7 @@ def free_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
     u_bitten = cdp['u_bitten']
 
     free = ((locked - freed - v_bitten) * eth_price - liquidation_ratio * (drawn - wiped - u_bitten) * target_price) / eth_price
-    assert_log(free >= 0, free, _raise=False)
+    assert_log(approx_greater_equal_zero(free, abs_tol=1e-3), f'free: {free}', _raise=_raise)
     free = max(free, 0)
 
     return free 
@@ -129,6 +129,7 @@ def open_cdp_lock(lock, eth_price, target_price, liquidation_ratio):
         'drawn': draw,
         'wiped': 0.0,
         'freed': 0.0,
+        'w_wiped': 0.0,
         'dripped': 0.0,
         'v_bitten': 0.0,
         'u_bitten': 0.0,
@@ -144,6 +145,7 @@ def open_cdp_draw(draw, eth_price, target_price, liquidation_ratio):
         'drawn': draw,
         'wiped': 0.0,
         'freed': 0.0,
+        'w_wiped': 0.0,
         'dripped': 0.0,
         'v_bitten': 0.0,
         'u_bitten': 0.0,
@@ -163,11 +165,11 @@ def p_rebalance_cdps(params, substep, state_history, state):
 
         if not cdp_above_liquidation_buffer:
             wiped = cdps.at[index, 'wiped']
-            wipe = wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio)
+            wipe = wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer, params['raise_on_assert'])
             cdps.at[index, 'wiped'] = wiped + wipe
         else:
             drawn = cdps.at[index, 'drawn']
-            draw = draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio)            
+            draw = draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer, params['raise_on_assert'])            
             cdps.at[index, 'drawn'] = drawn + draw
 
     return {'cdps': cdps}
@@ -208,7 +210,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         # If L<¯L+Δ, apply a wipe from QW until L=¯L+Δ, if possible;
         if not cdp_above_liquidation_buffer:
             if u_2 >= 0:
-                wipe = wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer)
+                wipe = wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer, params['raise_on_assert'])
                 
                 if u_2 - wipe > 0:
                     cdps.at[index, 'wiped'] = wiped + wipe
@@ -219,7 +221,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             else:
                 # If positions are not cycled, but wipes and draws are exhausted, then proceed to applying any non-exhausted frees and locks:
                 # If L<¯L+Δ, apply a lock from QL until L=¯L+Δ, if possible;
-                lock = lock_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer)
+                lock = lock_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer, params['raise_on_assert'])
 
                 if v_1 - lock > 0:
                     cdps.at[index, 'locked'] = locked + lock
@@ -231,7 +233,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         # If L>¯L+Δ, apply a draw from QD until L=¯L+Δ, if possible;
         else:
             if u_1 >= 0:
-                draw = draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer)
+                draw = draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer, params['raise_on_assert'])
                                 
                 if u_1 - draw > 0:
                     cdps.at[index, 'drawn'] = drawn + draw
@@ -242,7 +244,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             else:
                 # If positions are not cycled, but wipes and draws are exhausted, then proceed to applying any non-exhausted frees and locks:
                 # If L>¯L+Δ, apply a free from QF until L=¯L+Δ, if possible.
-                free = free_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer)
+                free = free_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer, params['raise_on_assert'])
                 
                 if v_2 - free >= 0:
                     cdps.at[index, 'freed'] = freed + free
@@ -272,6 +274,8 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             w_2 += _w_2
 
             cdps.at[index, 'open'] = 0
+            cdps.at[index, 'w_wiped'] = dripped
+            
             if u_2 - _u_2 > 0:
                 cdps.at[index, 'wiped'] = wiped + _u_2
                 u_2 = u_2 - _u_2
@@ -304,6 +308,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             'drawn': _u_1,
             'wiped': 0.0,
             'freed': 0.0,
+            'w_wiped': 0.0,
             'dripped': 0.0,
             'v_bitten': 0.0,
             'u_bitten': 0.0,
@@ -320,6 +325,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             'drawn': u_1,
             'wiped': 0.0,
             'freed': 0.0,
+            'w_wiped': 0.0,
             'dripped': 0.0,
             'v_bitten': 0.0,
             'u_bitten': 0.0,
@@ -344,10 +350,12 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
             if v_2 - _v_2 > 0:
                 cdps.at[index, 'freed'] = freed + _v_2
+                cdps.at[index, 'w_wiped'] = dripped
                 cdps.at[index, 'open'] = 0
                 v_2 = v_2 - _v_2
             else:
                 cdps.at[index, 'freed'] = freed + v_2
+                cdps.at[index, 'w_wiped'] = dripped
                 cdps.at[index, 'open'] = 0
                 v_2 = 0
                 break
@@ -402,8 +410,6 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     return {'cdps': cdps, 'u_1': u_1, 'u_2': u_2, 'v_1': v_1, 'v_2': v_2, 'v_2 + v_3': v_2, 'w_2': w_2}
 
 def p_close_cdps(params, substep, state_history, state):
-    debug = params['debug']
-
     cdps = state['cdps']
     average_debt_age = params['average_debt_age']
     cumulative_time = state['cumulative_time']
@@ -425,6 +431,7 @@ def p_close_cdps(params, substep, state_history, state):
         v_bitten = cdps.at[index, 'v_bitten']
         wiped = cdps.at[index, 'wiped']
         u_bitten = cdps.at[index, 'u_bitten']
+        dripped = cdps.at[index, 'dripped']
 
         free = locked - freed - v_bitten 
         assert_log(free >=0, free, params['raise_on_assert'])
@@ -434,6 +441,8 @@ def p_close_cdps(params, substep, state_history, state):
         assert_log(wipe >=0, wipe, params['raise_on_assert'])
         cdps.at[index, 'wiped'] = wiped + wipe
 
+        cdps.at[index, 'w_wiped'] = dripped
+
         cdps.at[index, 'open'] = 0
     
     #try:
@@ -442,13 +451,11 @@ def p_close_cdps(params, substep, state_history, state):
     #    print('Failed to drop CDPs')
     #    raise
 
-    if debug: print(f'{len(closed_cdps)} CDPs closed with v_2 {v_2} u_2 {u_2} w_2 {w_2}')
+    logging.debug(f'{len(closed_cdps)} CDPs closed with v_2 {v_2} u_2 {u_2} w_2 {w_2}')
         
     return {'cdps': cdps, 'v_2': v_2, 'u_2': u_2, 'w_2': w_2}
 
 def p_liquidate_cdps(params, substep, state_history, state):
-    debug = params['debug']
-
     eth_price = state['eth_price']
     target_price = state['target_price']
     liquidation_penalty = params['liquidation_penalty']
@@ -486,14 +493,15 @@ def p_liquidate_cdps(params, substep, state_history, state):
         try:
             v_bite = ((drawn - wiped - u_bitten) * target_price * (1 + liquidation_penalty)) / eth_price
             assert v_bite >= 0, f'{v_bite} !>= 0 ~ {state}'
-            assert v_bite <= (locked - freed - v_bitten), f'Liquidation short of collateral: {v_bite} !<= {locked}'
-            free = locked - freed - v_bite
+            assert v_bite <= (locked - freed - v_bitten), f'Liquidation short of collateral: {v_bite} !<= {locked - free - v_bitten}'
+            free = locked - freed - v_bitten - v_bite
             assert free >= 0, f'{free} !>= {0}'
-            assert locked >= freed + free + v_bitten + v_bite
+            assert locked >= freed + free + v_bitten + v_bite, f'locked eq check: {(locked, freed, free, v_bitten, v_bite)}'
             w_bite = dripped
-            assert w_bite >= 0
+            assert w_bite >= 0, f'w_bite: {w_bite}'
             u_bite = drawn - wiped - u_bitten
-            assert u_bite >= 0
+            assert u_bite >= 0, f'u_bite: {u_bite}'
+            assert u_bite <= drawn - wiped - u_bitten, f'Liquidation invalid u_bite: {u_bite} !<= {drawn - wiped - u_bitten}'
         except AssertionError as err:
             logging.warning(err)
             v_bite = locked - freed - v_bitten
@@ -523,7 +531,7 @@ def p_liquidate_cdps(params, substep, state_history, state):
     #     print('Failed to drop CDPs')
     #     raise
 
-    if debug: print(f'{len(liquidated_cdps)} CDPs liquidated with v_2 {v_2} v_3 {v_3} u_3 {u_3} w_3 {w_3}')
+    logging.debug(f'{len(liquidated_cdps)} CDPs liquidated with v_2 {v_2} v_3 {v_3} u_3 {u_3} w_3 {w_3}')
     
     return {'cdps': cdps, 'v_2': v_2, 'v_3': v_3, 'u_3': u_3, 'w_3': w_3}
 
@@ -556,6 +564,9 @@ def s_aggregate_v_2(params, substep, state_history, state, policy_input):
 
 def s_aggregate_u_2(params, substep, state_history, state, policy_input):
     return 'u_2', get_cdps_state_change(state, state_history, 'wiped')
+
+def s_aggregate_w_2(params, substep, state_history, state, policy_input):
+    return 'w_2', get_cdps_state_change(state, state_history, 'w_wiped')
 
 def s_aggregate_v_3(params, substep, state_history, state, policy_input):
     return 'v_3', get_cdps_state_change(state, state_history, 'v_bitten')
@@ -661,7 +672,7 @@ def s_update_rai_wiped(params, substep, state_history, state, policy_input):
     rai_wiped = state['rai_wiped']
     u_2 = state['u_2']
     
-    assert_log(u_2 >= 0, u_2, False)
+    assert_log(u_2 >= 0, u_2, params['raise_on_assert'])
     
     return 'rai_wiped', rai_wiped + u_2
 
@@ -675,7 +686,7 @@ def s_update_rai_bitten(params, substep, state_history, state, policy_input):
     
 def s_update_system_revenue(params, substep, state_history, state, policy_input):
     system_revenue = state['system_revenue']
-    w_2 = policy_input.get('w_2', 0)
+    w_2 = state['w_2']
     return 'system_revenue', system_revenue + w_2
 
 def s_update_accrued_interest(params, substep, state_history, state, policy_input):
@@ -701,11 +712,12 @@ def s_update_cdp_interest(params, substep, state_history, state, policy_input):
     timedelta = state['timedelta']
     
     def resolve_cdp_interest(cdp):
-        principal_debt = cdp['drawn']
-        previous_accrued_interest = cdp['dripped']
-        cdp['dripped'] = (((1 + stability_fee) * (1 + target_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
+        if cdp['open']:
+            principal_debt = cdp['drawn']
+            previous_accrued_interest = cdp['dripped']
+            cdp['dripped'] = (((1 + stability_fee) * (1 + target_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
         return cdp
     
-    cdps.query('open == 1').apply(resolve_cdp_interest, axis=1)
+    cdps = cdps.apply(resolve_cdp_interest, axis=1)
     
     return 'cdps', cdps

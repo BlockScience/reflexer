@@ -194,7 +194,7 @@ partial_state_update_blocks = [
             'u_2': s_aggregate_u_2,
             'u_3': s_aggregate_u_3,
             'w_1': s_aggregate_w_1,
-            # w_2 is calculated using a policy input
+            'w_2': s_aggregate_w_2,
             'w_3': s_aggregate_w_3,
         }
     },
