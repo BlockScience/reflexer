@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
+import logging
 
 # features = ['beta', 'Q', 'v_1', 'v_2 + v_3', 
 #                     'D_1', 'u_1', 'u_2', 'u_3', 'u_2 + u_3', 
@@ -60,11 +61,11 @@ def get_feature(state_history, features, index=-1):
 def approx_greater_equal_zero(value, rel_tol=0.0, abs_tol=1e-10):
     return value >= 0 or math.isclose(value, 0, rel_tol=rel_tol, abs_tol=abs_tol)
 
-def assert_print(condition, message="", _raise=True):
+def assert_log(condition, message="", _raise=True):
     try:
         assert condition
     except AssertionError as e:
-        print(e)
+        logging.warning(e)
         if _raise: raise e
 
     return condition

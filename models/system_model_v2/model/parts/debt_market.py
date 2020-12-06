@@ -1,7 +1,7 @@
 import scipy.stats as sts
 import pandas as pd
 import math
-from .utils import approx_greater_equal_zero, assert_print
+from .utils import approx_greater_equal_zero, assert_log
 
 import logging
 
@@ -70,7 +70,7 @@ def wipe_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
     u_bitten = cdp['u_bitten']
 
     wipe = (drawn - wiped - u_bitten) - (locked - freed - v_bitten) * eth_price / (liquidation_ratio * target_price)
-    assert_print(wipe >= 0, wipe, _raise=False)
+    assert_log(wipe >= 0, wipe, _raise=False)
     wipe = max(wipe, 0)
 
     if drawn <= wiped + wipe + u_bitten:
@@ -87,7 +87,7 @@ def draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
     u_bitten = cdp['u_bitten']
 
     draw = (locked - freed - v_bitten) * eth_price / (target_price * liquidation_ratio) - (drawn - wiped - u_bitten)
-    assert_print(draw >= 0, draw, _raise=False)
+    assert_log(draw >= 0, draw, _raise=False)
     draw = max(draw, 0)
 
     return draw
@@ -101,7 +101,7 @@ def lock_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
     u_bitten = cdp['u_bitten']
 
     lock = ((drawn - wiped - u_bitten) * target_price * liquidation_ratio - (locked - freed - v_bitten) * eth_price) / eth_price
-    assert_print(lock >= 0, lock, _raise=False)
+    assert_log(lock >= 0, lock, _raise=False)
     lock = max(lock, 0)
 
     return lock
@@ -115,7 +115,7 @@ def free_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio):
     u_bitten = cdp['u_bitten']
 
     free = ((locked - freed - v_bitten) * eth_price - liquidation_ratio * (drawn - wiped - u_bitten) * target_price) / eth_price
-    assert_print(free >= 0, free, _raise=False)
+    assert_log(free >= 0, free, _raise=False)
     free = max(free, 0)
 
     return free 
@@ -312,7 +312,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
     if v_1 > 0:
         cumulative_time = state['cumulative_time']
-        assert_print(u_1 == 0, u_1, params['raise_on_assert'])
+        assert_log(u_1 == 0, u_1, params['raise_on_assert'])
         cdps = cdps.append({
             'open': 1,
             'time': cumulative_time,
@@ -382,18 +382,18 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             print(event)
     #print(v_2, policy_input['v_2 + v_3'])
     
-    assert_print(u_1 >= 0, u_1, params['raise_on_assert'])
-    assert_print(u_2 >= 0, u_2, params['raise_on_assert'])
-    assert_print(v_1 >= 0, v_1, params['raise_on_assert'])
-    assert_print(v_2 >= 0, v_2, params['raise_on_assert'])
+    assert_log(u_1 >= 0, u_1, params['raise_on_assert'])
+    assert_log(u_2 >= 0, u_2, params['raise_on_assert'])
+    assert_log(v_1 >= 0, v_1, params['raise_on_assert'])
+    assert_log(v_2 >= 0, v_2, params['raise_on_assert'])
 
-    assert_print(
+    assert_log(
         approx_greater_equal_zero(cdps['drawn'].sum() - cdps['wiped'].sum() - cdps['u_bitten'].sum(), abs_tol=1e-2),
         (cdps['drawn'].sum(), cdps['wiped'].sum(), cdps['u_bitten'].sum()),
         params['raise_on_assert']
     )
 
-    assert_print(
+    assert_log(
         approx_greater_equal_zero(cdps['locked'].sum() - cdps['freed'].sum() - cdps['v_bitten'].sum(), abs_tol=1e-2),
         (cdps['locked'].sum(), cdps['freed'].sum(), cdps['v_bitten'].sum()),
         params['raise_on_assert']
@@ -414,9 +414,9 @@ def p_close_cdps(params, substep, state_history, state):
     u_2 = closed_cdps['drawn'].sum() - closed_cdps['wiped'].sum() - closed_cdps['u_bitten'].sum()
     w_2 = closed_cdps['dripped'].sum()
     
-    assert_print(v_2 >=0, v_2, params['raise_on_assert'])
-    assert_print(u_2 >=0, u_2, params['raise_on_assert'])
-    assert_print(w_2 >=0, w_2, params['raise_on_assert'])
+    assert_log(v_2 >=0, v_2, params['raise_on_assert'])
+    assert_log(u_2 >=0, u_2, params['raise_on_assert'])
+    assert_log(w_2 >=0, w_2, params['raise_on_assert'])
 
     for index, cdp in closed_cdps.iterrows():
         locked = cdps.at[index, 'locked']
@@ -427,11 +427,11 @@ def p_close_cdps(params, substep, state_history, state):
         u_bitten = cdps.at[index, 'u_bitten']
 
         free = locked - freed - v_bitten 
-        assert_print(free >=0, free, params['raise_on_assert'])
+        assert_log(free >=0, free, params['raise_on_assert'])
         cdps.at[index, 'freed'] = freed + free
 
         wipe = drawn - wiped - u_bitten
-        assert_print(wipe >=0, wipe, params['raise_on_assert'])
+        assert_log(wipe >=0, wipe, params['raise_on_assert'])
         cdps.at[index, 'wiped'] = wiped + wipe
 
         cdps.at[index, 'open'] = 0
@@ -474,14 +474,14 @@ def p_liquidate_cdps(params, substep, state_history, state):
         u_bitten = cdps.at[index, 'u_bitten']
         w_bitten = cdps.at[index, 'w_bitten']
 
-        assert_print(locked >=0, locked, params['raise_on_assert'])
-        assert_print(freed >=0, freed, params['raise_on_assert'])
-        assert_print(drawn >=0, drawn, params['raise_on_assert'])
-        assert_print(wiped >=0, wiped, params['raise_on_assert'])
-        assert_print(dripped >=0, dripped, params['raise_on_assert'])
-        assert_print(v_bitten >=0, v_bitten, params['raise_on_assert'])
-        assert_print(u_bitten >=0, u_bitten, params['raise_on_assert'])
-        assert_print(w_bitten >=0, w_bitten, params['raise_on_assert'])
+        assert_log(locked >=0, locked, params['raise_on_assert'])
+        assert_log(freed >=0, freed, params['raise_on_assert'])
+        assert_log(drawn >=0, drawn, params['raise_on_assert'])
+        assert_log(wiped >=0, wiped, params['raise_on_assert'])
+        assert_log(dripped >=0, dripped, params['raise_on_assert'])
+        assert_log(v_bitten >=0, v_bitten, params['raise_on_assert'])
+        assert_log(u_bitten >=0, u_bitten, params['raise_on_assert'])
+        assert_log(w_bitten >=0, w_bitten, params['raise_on_assert'])
         
         try:
             v_bite = ((drawn - wiped - u_bitten) * target_price * (1 + liquidation_penalty)) / eth_price
@@ -512,10 +512,10 @@ def p_liquidate_cdps(params, substep, state_history, state):
     u_3 = cdps['u_bitten'].sum() - cdps_copy['u_bitten'].sum()
     w_3 = cdps['w_bitten'].sum() - cdps_copy['w_bitten'].sum()
 
-    assert_print(v_2 >= 0, v_2, params['raise_on_assert'])
-    assert_print(v_3 >= 0, v_3, params['raise_on_assert'])
-    assert_print(u_3 >= 0, u_3, params['raise_on_assert'])
-    assert_print(w_3 >= 0, w_3, params['raise_on_assert'])
+    assert_log(v_2 >= 0, v_2, params['raise_on_assert'])
+    assert_log(v_3 >= 0, v_3, params['raise_on_assert'])
+    assert_log(u_3 >= 0, u_3, params['raise_on_assert'])
+    assert_log(w_3 >= 0, w_3, params['raise_on_assert'])
     
     # try:
     #     cdps = cdps.drop(liquidated_cdps.index)
@@ -607,7 +607,7 @@ def s_update_eth_collateral(params, substep, state_history, state, policy_input)
     
     eth_collateral = eth_locked - eth_freed - eth_bitten
     event = f'ETH collateral < 0: {eth_collateral} ~ {(eth_locked, eth_freed, eth_bitten)}'
-    if not assert_print(approx_greater_equal_zero(eth_collateral, 1e-2), event, params['raise_on_assert']):
+    if not assert_log(approx_greater_equal_zero(eth_collateral, 1e-2), event, params['raise_on_assert']):
         eth_collateral = 0
 
     return 'eth_collateral', eth_collateral
@@ -620,7 +620,7 @@ def s_update_principal_debt(params, substep, state_history, state, policy_input)
     principal_debt = rai_drawn - rai_wiped - rai_bitten
 
     event = f'Principal debt < 0: {principal_debt} ~ {(rai_drawn, rai_wiped, rai_bitten)}'
-    if not assert_print(approx_greater_equal_zero(principal_debt, 1e-2), event, params['raise_on_assert']):
+    if not assert_log(approx_greater_equal_zero(principal_debt, 1e-2), event, params['raise_on_assert']):
         principal_debt = 0
     
     return 'principal_debt', principal_debt
@@ -629,7 +629,7 @@ def s_update_eth_locked(params, substep, state_history, state, policy_input):
     eth_locked = state['eth_locked']
     v_1 = state['v_1']
     
-    assert_print(v_1 >= 0, v_1, params['raise_on_assert'])
+    assert_log(v_1 >= 0, v_1, params['raise_on_assert'])
     
     return 'eth_locked', eth_locked + v_1
 
@@ -637,7 +637,7 @@ def s_update_eth_freed(params, substep, state_history, state, policy_input):
     eth_freed = state['eth_freed']
     v_2 = state['v_2']
     
-    assert_print(v_2 >= 0, v_2, params['raise_on_assert'])
+    assert_log(v_2 >= 0, v_2, params['raise_on_assert'])
     
     return 'eth_freed', eth_freed + v_2
 
@@ -645,7 +645,7 @@ def s_update_eth_bitten(params, substep, state_history, state, policy_input):
     eth_bitten = state['eth_bitten']
     v_3 = state['v_3']
     
-    assert_print(v_3 >= 0, v_3, params['raise_on_assert'])
+    assert_log(v_3 >= 0, v_3, params['raise_on_assert'])
     
     return 'eth_bitten', eth_bitten + v_3
 
@@ -653,7 +653,7 @@ def s_update_rai_drawn(params, substep, state_history, state, policy_input):
     rai_drawn = state['rai_drawn']
     u_1 = state['u_1']
     
-    assert_print(u_1 >= 0, u_1, params['raise_on_assert'])
+    assert_log(u_1 >= 0, u_1, params['raise_on_assert'])
     
     return 'rai_drawn', rai_drawn + u_1
 
@@ -661,7 +661,7 @@ def s_update_rai_wiped(params, substep, state_history, state, policy_input):
     rai_wiped = state['rai_wiped']
     u_2 = state['u_2']
     
-    assert_print(u_2 >= 0, u_2, False)
+    assert_log(u_2 >= 0, u_2, False)
     
     return 'rai_wiped', rai_wiped + u_2
 
@@ -669,7 +669,7 @@ def s_update_rai_bitten(params, substep, state_history, state, policy_input):
     rai_bitten = state['rai_bitten']
     u_3 = state['u_3']
     
-    assert_print(u_3 >= 0, u_3, params['raise_on_assert'])
+    assert_log(u_3 >= 0, u_3, params['raise_on_assert'])
 
     return 'rai_bitten', rai_bitten + u_3
     
