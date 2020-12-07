@@ -33,7 +33,6 @@ debt_market_df
 debt_market_df.insert(0, 'seconds_passed', 24 * 3600)
 debt_market_df['cumulative_v_1'] = debt_market_df['v_1'].cumsum()
 
-
 # %%
 debt_market_df.plot()
 
@@ -233,6 +232,7 @@ print(f'''
 
 assert math.isclose(principal_debt, rai_drawn - rai_wiped - rai_bitten, abs_tol=1e-6)
 
+print(f'Collateralization ratio: {eth_collateral * eth_price_ / principal_debt * target_price}')
 
 # %%
 # At historical start date:
@@ -355,13 +355,16 @@ initial_state = {
 
 initial_state.update(historical_initial_state)
 
+# Set dataframe to start from start date
+debt_market_df = debt_market_df.loc[start_date:]
+
 parameters = {
     'debug': [True], # Print debug messages (see APT model)
     'raise_on_assert': [False], # See assert_log() in utils.py
     'test': [
-        # {
-        #     'enable': False
-        # },
+        {
+            'enable': False
+        },
         # {
         #     'enable': False,
         #     'params': {
@@ -388,17 +391,17 @@ parameters = {
         #         }
         #     }
         # },
-        {
-            'enable': True,
-            'params': {
-                'optimal_values': {
-                    'v_1': lambda timestep=0: 1000,
-                    'v_2 + v_3': lambda timestep=0: 500,
-                    'u_1': lambda timestep=0: 100,
-                    'u_2': lambda timestep=0: 50
-                }
-            }
-        },
+        # {
+        #     'enable': True,
+        #     'params': {
+        #         'optimal_values': {
+        #             'v_1': lambda timestep=0: 1000,
+        #             'v_2 + v_3': lambda timestep=0: 500,
+        #             'u_1': lambda timestep=0: 100,
+        #             'u_2': lambda timestep=0: 50
+        #         }
+        #     }
+        # },
         # {
         #     'enable': True,
         #     'params': {
@@ -480,7 +483,7 @@ MONTE_CARLO_RUNS = 1
 from models.config_wrapper import ConfigWrapper
 import models.system_model_v2 as system_model_v2
 
-system_simulation = ConfigWrapper(system_model_v2, T=range(10), M=parameters, initial_state=initial_state)
+system_simulation = ConfigWrapper(system_model_v2, T=range(SIMULATION_TIMESTEPS), M=parameters, initial_state=initial_state)
 
 
 # %%

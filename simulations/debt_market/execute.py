@@ -29,7 +29,8 @@ def run_papermill(parameters):
     pm.execute_notebook(
         notebook,
         output_path,
-        parameters=parameters
+        parameters=parameters,
+        log_output=True
     )
 
     print(f'Analysing simulation {simulation_directory}/{simulation_id}')
@@ -45,7 +46,8 @@ def run_papermill(parameters):
     pm.execute_notebook(
         notebook,
         output_path,
-        parameters=parameters
+        parameters=parameters,
+        log_output=True
     )
 
     print(f'Simulation {simulation_directory}/{simulation_id} analysis complete')
