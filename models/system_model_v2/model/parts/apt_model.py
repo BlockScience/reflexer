@@ -127,7 +127,11 @@ def p_apt_model_unified(params, substep, state_history, state):
             results = minimize(func, x0, method='Powell', 
                 args=(optindex, feature_0, p_expected, state['timestep']),
                 bounds = bounds,
-                options={'disp':True}
+                options={
+                    'disp': True,
+                    'maxiter': 10,
+                    'maxfev': 10
+                }
             )
 
             logging.debug(f'''
