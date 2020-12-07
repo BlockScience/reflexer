@@ -172,6 +172,10 @@ def p_rebalance_cdps(params, substep, state_history, state):
             draw = draw_to_liquidation_ratio(cdp, eth_price, target_price, liquidation_ratio * liquidation_buffer, params['raise_on_assert'])            
             cdps.at[index, 'drawn'] = drawn + draw
 
+    open_cdps = len(cdps.query('open == 1'))
+    closed_cdps = len(cdps.query('open == 0'))
+    logging.debug(f'p_rebalance_cdps() ~ Number of open CDPs: {open_cdps}; Number of closed CDPs: {closed_cdps}')
+
     return {'cdps': cdps}
 
 def resolve_cdp_positions_unified(params, state, policy_input):
@@ -310,9 +314,9 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
         if u_1 <= 0 and u_2 <= 0:
             break
-    
+
+    # Close CDPs with excess wipes
     if u_2 > 0:
-        # Closes CDPs
         for index, cdp in cdps_oldest.query('open == 1').iterrows():
             locked = cdps.at[index, 'locked']
             freed = cdps.at[index, 'freed']
@@ -388,6 +392,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         }, ignore_index=True)
         v_1 = 0
 
+    # Close CDPs with excess frees
     # Index reset in 'append'
     cdps_oldest = cdps.sort_values(by=['time'], ascending=False) # Oldest to youngest
     if v_2 > 0:
@@ -445,7 +450,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
     open_cdps = len(cdps.query('open == 1'))
     closed_cdps = len(cdps.query('open == 0'))
-    logging.debug(f'Number of open CDPs: {open_cdps}; Number of closed CDPs: {closed_cdps}')
+    logging.debug(f'resolve_cdp_positions_unified() ~ Number of open CDPs: {open_cdps}; Number of closed CDPs: {closed_cdps}')
     
     assert_log(u_1 >= 0, u_1, params['raise_on_assert'])
     assert_log(u_2 >= 0, u_2, params['raise_on_assert'])
