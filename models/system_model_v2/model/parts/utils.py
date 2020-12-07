@@ -63,9 +63,9 @@ def approx_greater_equal_zero(value, rel_tol=0.0, abs_tol=1e-10):
 
 def assert_log(condition, message="", _raise=True):
     try:
-        assert condition
+        assert condition, message
     except AssertionError as e:
-        logging.warning(message)
+        logging.warning(e)
         if _raise: raise e
 
     return condition

@@ -195,6 +195,61 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     u_1 = policy_input['u_1'] # Draw
     u_2 = policy_input['u_2'] # Wipe
     w_2 = 0
+
+    # If v_1 >= (u_1 * (targe_rate * ratio + buffer) / eth_price), then:
+    # Take half of u_1 for creation of new CDPs, take ratio + buffer equivalent of v_1 towards creation of CDPs
+    # Else:
+    # Take half of v_1 for creation of new CDPs, take ratio + buffer equivalent of u_1 towards creation of CDPs
+    if v_1 >= (u_1 * target_price * liquidation_ratio * liquidation_buffer) / eth_price:
+        new_cdps_draw = u_1 / 2
+        u_1 = u_1 - new_cdps_draw
+        new_cdps_lock = (new_cdps_draw * target_price * liquidation_ratio * liquidation_buffer) / eth_price
+        v_1 = v_1 - new_cdps_lock
+
+        assert_log(v_1 >= 0, f'New CDP creation: v_1 ~ {v_1} !>= 0', params['raise_on_assert'])
+        assert_log(u_1 >= 0, f'New CDP creation: u_1 ~ {u_1} !>= 0', params['raise_on_assert'])
+
+        new_cdps_count = 10
+        cumulative_time = state['cumulative_time']
+
+        cdps = cdps.append([{
+            'open': 1,
+            'time': cumulative_time,
+            'locked': new_cdps_lock / new_cdps_count,
+            'drawn': new_cdps_draw / new_cdps_count,
+            'wiped': 0.0,
+            'freed': 0.0,
+            'w_wiped': 0.0,
+            'dripped': 0.0,
+            'v_bitten': 0.0,
+            'u_bitten': 0.0,
+            'w_bitten': 0.0
+        } for _ in range(10)], ignore_index=True)
+    else:
+        new_cdps_lock = v_1 / 2
+        v_1 = v_1 - new_cdps_lock
+        new_cdps_draw = (new_cdps_lock * eth_price) / (target_price * liquidation_ratio * liquidation_buffer)
+        u_1 = u_1 - new_cdps_draw
+
+        assert_log(v_1 >= 0, f'New CDP creation: v_1 ~ {v_1} !>= 0', params['raise_on_assert'])
+        assert_log(u_1 >= 0, f'New CDP creation: u_1 ~ {u_1} !>= 0', params['raise_on_assert'])
+
+        new_cdps_count = 10
+        cumulative_time = state['cumulative_time']
+
+        cdps = cdps.append([{
+            'open': 1,
+            'time': cumulative_time,
+            'locked': new_cdps_lock / new_cdps_count,
+            'drawn': new_cdps_draw / new_cdps_count,
+            'wiped': 0.0,
+            'freed': 0.0,
+            'w_wiped': 0.0,
+            'dripped': 0.0,
+            'v_bitten': 0.0,
+            'u_bitten': 0.0,
+            'w_bitten': 0.0
+        } for _ in range(10)], ignore_index=True)
     
     # CDP rebalancing
     for index, cdp in cdps_newest.query('open == 1').iterrows():
@@ -363,32 +418,34 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     u_1 = cdps['drawn'].sum() - cdps_copy['drawn'].sum()
     if policy_input['u_1']:
         event = f'u_1 not balanced: {(u_1, policy_input["u_1"])}'
-        #assert math.isclose(u_1, policy_input['u_1'], rel_tol=1e-6, abs_tol=0.0), event
-        if not math.isclose(u_1, policy_input['u_1'], rel_tol=1e-6, abs_tol=0.0):
-            print(event)
+        assert_log(math.isclose(u_1, policy_input['u_1'], rel_tol=0.0, abs_tol=1e-6), event, params['raise_on_assert'])
+        # if not math.isclose(u_1, policy_input['u_1'], rel_tol=1e-6, abs_tol=0.0):
+        #     print(event)
     
     u_2 = cdps['wiped'].sum() - cdps_copy['wiped'].sum()
     if policy_input['u_2']:
         event = f'u_2 not balanced: {(u_2, policy_input["u_2"])}'
-        #assert math.isclose(u_2, policy_input['u_2'], rel_tol=1e-6, abs_tol=0.0), event
-        if not math.isclose(u_2, policy_input['u_2'], rel_tol=1e-6, abs_tol=0.0):
-            print(event)
-    #print(u_2, policy_input['u_2'])
+        assert_log(math.isclose(u_2, policy_input['u_2'], rel_tol=0.0, abs_tol=1e-6), event, params['raise_on_assert'])
+        # if not math.isclose(u_2, policy_input['u_2'], rel_tol=1e-6, abs_tol=0.0):
+        #     print(event)
     
     v_1 = cdps['locked'].sum() - cdps_copy['locked'].sum()
     if policy_input['v_1']:
         event = f'v_1 not balanced: {(v_1, policy_input["v_1"])}'
-        #assert math.isclose(v_1, policy_input['v_1'], rel_tol=1e-6, abs_tol=0.0), event
-        if not math.isclose(v_1, policy_input['v_1'], rel_tol=1e-6, abs_tol=0.0):
-            print(event)
+        assert_log(math.isclose(v_1, policy_input['v_1'], rel_tol=0.0, abs_tol=1e-6), event, params['raise_on_assert'])
+        # if not math.isclose(v_1, policy_input['v_1'], rel_tol=1e-6, abs_tol=0.0):
+        #     print(event)
     
     v_2 = cdps['freed'].sum() - cdps_copy['freed'].sum()
     if policy_input['v_2 + v_3']:
-        event = f'v_2 not balanced: {(policy_input["v_2 + v_3"])}'
-        #assert math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0), event
-        if not math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0):
-            print(event)
-    #print(v_2, policy_input['v_2 + v_3'])
+        event = f'v_2 not balanced: {(v_2, policy_input["v_2 + v_3"])}'
+        assert_log(math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=0.0, abs_tol=1e-6), event, params['raise_on_assert'])
+        # if not math.isclose(v_2, policy_input['v_2 + v_3'], rel_tol=1e-6, abs_tol=0.0):
+        #     print(event)
+
+    open_cdps = len(cdps.query('open == 1'))
+    closed_cdps = len(cdps.query('open == 0'))
+    logging.debug(f'Number of open CDPs: {open_cdps}; Number of closed CDPs: {closed_cdps}')
     
     assert_log(u_1 >= 0, u_1, params['raise_on_assert'])
     assert_log(u_2 >= 0, u_2, params['raise_on_assert'])
@@ -689,6 +746,10 @@ def s_update_system_revenue(params, substep, state_history, state, policy_input)
     w_2 = state['w_2']
     return 'system_revenue', system_revenue + w_2
 
+## TODO: verify/test logic for negative interest rates
+def calculate_accrued_interest(stability_fee, target_rate, timedelta, debt, accrued_interest):
+    return (((1 + stability_fee) * (1 + target_rate))**timedelta - 1) * (debt + accrued_interest)
+
 def s_update_accrued_interest(params, substep, state_history, state, policy_input):
     previous_accrued_interest = state['accrued_interest']
     principal_debt = state['principal_debt']
@@ -697,7 +758,7 @@ def s_update_accrued_interest(params, substep, state_history, state, policy_inpu
     target_rate = state['target_rate']
     timedelta = state['timedelta']
     
-    accrued_interest = (((1 + stability_fee)*(1 + target_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
+    accrued_interest = calculate_accrued_interest(stability_fee, target_rate, timedelta, principal_debt, previous_accrued_interest)
     return 'accrued_interest', previous_accrued_interest + accrued_interest
 
 def s_update_interest_bitten(params, substep, state_history, state, policy_input):
@@ -715,7 +776,7 @@ def s_update_cdp_interest(params, substep, state_history, state, policy_input):
         if cdp['open']:
             principal_debt = cdp['drawn']
             previous_accrued_interest = cdp['dripped']
-            cdp['dripped'] = (((1 + stability_fee) * (1 + target_rate))**timedelta - 1) * (principal_debt + previous_accrued_interest)
+            cdp['dripped'] = calculate_accrued_interest(stability_fee, target_rate, timedelta, principal_debt, previous_accrued_interest)
         return cdp
     
     cdps = cdps.apply(resolve_cdp_interest, axis=1)

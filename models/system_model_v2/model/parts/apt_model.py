@@ -82,7 +82,7 @@ def p_apt_model_unified(params, substep, state_history, state):
     if params['test']['enable']:
         logging.info('APT test enabled')
         optimal_values = params['test']['params']['optimal_values']
-        optimal_values = {k: optimal_values[k]() for k in optimal_values}
+        optimal_values = {k: optimal_values[k](timestep=state['timestep']) for k in optimal_values}
 
         v_1 = optimal_values.get('v_1', 0)
         v_2_v_3 = optimal_values.get('v_2 + v_3', 0)
