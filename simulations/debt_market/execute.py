@@ -46,7 +46,7 @@ def run_papermill(config):
     pm.execute_notebook(
         notebook,
         output_path,
-        parameters=parameters,
+        parameters=config,
         log_output=True
     )
 

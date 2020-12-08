@@ -151,3 +151,6 @@ data/.ipynb_checkpoints
 
 models/pickles/*.pickle
 models/apt_model/*.pickle
+
+**/results*/
+**/simulation_results/
