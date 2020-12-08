@@ -464,7 +464,7 @@ parameters = {
     'beta_1': [0.6756295152422528],
     'beta_2': [3.86810578185312e-06],    
     # Controller
-    'controller_enabled': [False],
+    'controller_enabled': [execution_parameters['controller_enabled']],
     'kp': [-1.5e-6], #5e-7 #proportional term for the stability controller: units 1/USD
     'ki': [lambda control_period=3600: 0 / control_period], #-1e-7 #integral term for the stability controller: units 1/(USD*seconds)
     'partial_results': [partial_results_file],
@@ -487,7 +487,7 @@ MONTE_CARLO_RUNS = 1
 from models.config_wrapper import ConfigWrapper
 import models.system_model_v2 as system_model_v2
 
-system_simulation = ConfigWrapper(system_model_v2, T=range(100), M=parameters, initial_state=initial_state)
+system_simulation = ConfigWrapper(system_model_v2, T=range(SIMULATION_TIMESTEPS), M=parameters, initial_state=initial_state)
 
 
 # %%
