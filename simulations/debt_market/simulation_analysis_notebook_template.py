@@ -195,3 +195,35 @@ df.plot(x='timestamp', y=['system_revenue'])
 
 # %%
 df.plot(x='timestamp', y=['collateralization_ratio']) #, 'historical_collateralization_ratio'
+
+# %% [markdown]
+# ## Simulation statistics
+
+# %%
+std_mkt = df['market_price'].rolling(7).std()
+plt.plot(std_mkt)
+
+
+# %%
+np.std(df['market_price'])
+
+
+# %%
+err_m_t = df['market_price'] - df['target_price']
+plt.plot(err_m_t)
+
+
+# %%
+np.sqrt(abs(df['market_price'] - df['target_price']).mean())
+
+
+# %%
+np.corrcoef(df['market_price'],df['eth_price'])
+
+
+# %%
+np.corrcoef(df['market_price'],df['target_price'])
+
+
+# %%
+np.corrcoef(df['market_price'],df['target_rate'])
