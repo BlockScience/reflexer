@@ -82,6 +82,9 @@ import numpy as np
 import datetime as dt
 import pandas as pd
 
+import plotly.io as pio
+pio.renderers.default = "png"
+
 # %% [markdown]
 # # Historic MakerDAO Dai debt market activity
 

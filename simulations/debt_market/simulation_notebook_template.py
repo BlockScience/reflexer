@@ -21,6 +21,9 @@ import numpy as np
 import datetime as dt
 import pandas as pd
 
+import plotly.io as pio
+pio.renderers.default = "png"
+
 # %% [markdown]
 # # Historic MakerDAO Dai debt market activity
 
@@ -237,6 +240,7 @@ print(f'Collateralization ratio: {eth_collateral * eth_price_ / principal_debt *
 # %%
 # At historical start date:
 median_cdp_size = 2500 # dollars
+average_cdp_size = 50 # dollars
 genesis_cdp_count = int(eth_collateral / median_cdp_size)
 genesis_cdp_count
 
@@ -460,7 +464,7 @@ parameters = {
     'beta_1': [0.6756295152422528],
     'beta_2': [3.86810578185312e-06],    
     # Controller
-    'controller_enabled': [True],
+    'controller_enabled': [False],
     'kp': [-1.5e-6], #5e-7 #proportional term for the stability controller: units 1/USD
     'ki': [lambda control_period=3600: 0 / control_period], #-1e-7 #integral term for the stability controller: units 1/(USD*seconds)
     'partial_results': [partial_results_file],
@@ -483,7 +487,7 @@ MONTE_CARLO_RUNS = 1
 from models.config_wrapper import ConfigWrapper
 import models.system_model_v2 as system_model_v2
 
-system_simulation = ConfigWrapper(system_model_v2, T=range(SIMULATION_TIMESTEPS), M=parameters, initial_state=initial_state)
+system_simulation = ConfigWrapper(system_model_v2, T=range(100), M=parameters, initial_state=initial_state)
 
 
 # %%
