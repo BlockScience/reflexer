@@ -57,10 +57,14 @@ if __name__ == '__main__':
 
     config = {
         'simulation_directory': 'simulations/debt_market' ,
-        'simulation_id': f'controller_enabled_{now}',
+        'simulation_id': f'{now}',
+        'simulation_timesteps': 100,
         # Overrides model parameters
         'execution_parameters': {
-            'controller_enabled': [True]
+            'controller_enabled': [True],
+            'kp': [-1.5e-6],
+            # Functions not serializable
+            #'ki': [lambda control_period=3600: 0 / control_period],
         }
     }
     p = multiprocessing.Process(

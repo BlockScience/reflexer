@@ -481,7 +481,7 @@ parameters.update(execution_parameters)
 # # Simulation Execution
 
 # %%
-SIMULATION_TIMESTEPS = len(debt_market_df) - 1 # approx. 600
+SIMULATION_TIMESTEPS = simulation_timesteps #len(debt_market_df) - 1 # approx. 600
 MONTE_CARLO_RUNS = 1
 
 
@@ -498,7 +498,7 @@ del configs[:]
 
 system_simulation.append()
 
-(simulation_result, tensor_field, sessions) = run(drop_midsteps=True)
+(simulation_result, tensor_field, sessions) = run(drop_midsteps=False)
 
 # %%
 partial_results: pd.DataFrame = pd.read_pickle(partial_results_file)
