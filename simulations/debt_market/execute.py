@@ -54,24 +54,13 @@ def run_papermill(config):
 
 if __name__ == '__main__':
     now = datetime.now()
-    config = {
-        'simulation_directory': 'simulations/debt_market' ,
-        'simulation_id': f'controller_enabled_{now}',
-        'execution_parameters': {
-            'controller_enabled': True
-        }
-    }
-    p = multiprocessing.Process(
-        target=run_papermill,
-        args=(config,)
-    )
-    p.start()
 
     config = {
         'simulation_directory': 'simulations/debt_market' ,
-        'simulation_id': f'controller_disabled_{now}',
+        'simulation_id': f'controller_enabled_{now}',
+        # Overrides model parameters
         'execution_parameters': {
-            'controller_enabled': False
+            'controller_enabled': [True]
         }
     }
     p = multiprocessing.Process(

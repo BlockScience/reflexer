@@ -464,11 +464,13 @@ parameters = {
     'beta_1': [0.6756295152422528],
     'beta_2': [3.86810578185312e-06],    
     # Controller
-    'controller_enabled': [execution_parameters['controller_enabled']],
+    'controller_enabled': [True],
     'kp': [-1.5e-6], #5e-7 #proportional term for the stability controller: units 1/USD
     'ki': [lambda control_period=3600: 0 / control_period], #-1e-7 #integral term for the stability controller: units 1/(USD*seconds)
     'partial_results': [partial_results_file],
 }
+
+parameters.update(execution_parameters)
 
 # parameters = parameters.update({
 #     'delta_v1': [lambda state, state_history: delta_v1(state, state_history)],
