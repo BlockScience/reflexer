@@ -47,10 +47,12 @@ features = ['beta', 'Q', 'v_1', 'v_2 + v_3',
                     'D_1', 'u_1', 'u_2', 'u_3', 'u_2 + u_3', 
                     'D_2', 'w_1', 'w_2', 'w_3', 'w_2 + w_3',
                     'D']
+
 features_ml = ['beta', 'Q', 'v_1', 'v_2 + v_3', 'u_1', 'u_2', 'u_3', 'w_1', 'w_2', 'w_3', 'D']
 optvars = ['u_1', 'u_2', 'v_1', 'v_2 + v_3']
 
-start_date = '2018-11-05'
+# start_date = '2018-11-05' # Dropping ETH price
+start_date = '2018-05-06' # Rising ETH price
 
 historical_initial_state = {k: debt_market_df.loc[start_date][k] for k in features}
 historical_initial_state

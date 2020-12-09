@@ -106,6 +106,10 @@ debt_market_df.plot()
 
 # %%
 simulation_result = pd.read_pickle(f'{simulation_directory}/results/{simulation_id}/results.pickle')
+max_substep = max(simulation_result.substep)
+is_droppable = (simulation_result.substep != max_substep)
+is_droppable &= (simulation_result.substep != 0)
+simulation_result = simulation_result.loc[~is_droppable]
 simulation_result
 
 # %% [markdown]
@@ -227,3 +231,56 @@ np.corrcoef(df['market_price'],df['target_price'])
 
 # %%
 np.corrcoef(df['market_price'],df['target_rate'])
+
+# %%
+
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+# Create figure with secondary y-axis
+fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+# Add traces
+fig.add_trace(
+    go.Scatter(x=df['timestamp'], y=df['target_price'], name="Target price"),
+    secondary_y=False,
+)
+
+fig.add_trace(
+    go.Scatter(x=df['timestamp'], y=df['market_price'], name="Market price"),
+    secondary_y=False,
+)
+
+fig.add_trace(
+    go.Scatter(x=df['timestamp'], y=df['eth_price'], name="ETH price"),
+    secondary_y=True,
+)
+
+# Add figure title
+fig.update_layout(
+    title_text="Market and Target Price vs. ETH Price"
+)
+
+# Set x-axis title
+fig.update_xaxes(title_text="Timestamp")
+
+# Set y-axes titles
+fig.update_yaxes(title_text="Market and target price ($)", secondary_y=False)
+fig.update_yaxes(title_text="ETH price ($)", secondary_y=True)
+
+fig.show()
+
+# %%
+
+import plotly.express as px
+
+df['market_price_rolling'] = df['market_price'].rolling(7).std()
+fig = px.histogram(df, x="market_price_rolling", nbins=25)
+
+fig.update_layout(
+    title="7-Day Rolling Standard Deviation Histogram, Market Price (Controller On)",
+    xaxis_title="Standard Deviation",
+    yaxis_title="Frequency",
+)
+
+fig.show()
