@@ -213,7 +213,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     # Else:
     # Take half of v_1 for creation of new CDPs, take ratio + buffer equivalent of u_1 towards creation of CDPs
     if v_1 >= (u_1 * target_price * liquidation_ratio * liquidation_buffer) / eth_price:
-        new_cdps_draw = u_1 / 2
+        new_cdps_draw = u_1 / params['new_cdp_proportion']
         u_1 = u_1 - new_cdps_draw
         new_cdps_lock = (new_cdps_draw * target_price * liquidation_ratio * liquidation_buffer) / eth_price
         v_1 = v_1 - new_cdps_lock
@@ -221,7 +221,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         assert_log(v_1 >= 0, f'New CDP creation: v_1 ~ {v_1} !>= 0', params['raise_on_assert'])
         assert_log(u_1 >= 0, f'New CDP creation: u_1 ~ {u_1} !>= 0', params['raise_on_assert'])
 
-        new_cdps_count = int(new_cdps_lock / params['median_cdp_collateral'])
+        new_cdps_count = int(new_cdps_lock / params['new_cdp_collateral'])
         cumulative_time = state['cumulative_time']
 
         cdps = cdps.append([{
@@ -238,7 +238,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             'w_bitten': 0.0
         } for _ in range(new_cdps_count)], ignore_index=True)
     else:
-        new_cdps_lock = v_1 / 2
+        new_cdps_lock = v_1 / params['new_cdp_proportion']
         v_1 = v_1 - new_cdps_lock
         new_cdps_draw = (new_cdps_lock * eth_price) / (target_price * liquidation_ratio * liquidation_buffer)
         u_1 = u_1 - new_cdps_draw
@@ -246,7 +246,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         assert_log(v_1 >= 0, f'New CDP creation: v_1 ~ {v_1} !>= 0', params['raise_on_assert'])
         assert_log(u_1 >= 0, f'New CDP creation: u_1 ~ {u_1} !>= 0', params['raise_on_assert'])
 
-        new_cdps_count = int(new_cdps_lock / params['median_cdp_collateral'])
+        new_cdps_count = int(new_cdps_lock / params['new_cdp_collateral'])
         cumulative_time = state['cumulative_time']
 
         cdps = cdps.append([{
