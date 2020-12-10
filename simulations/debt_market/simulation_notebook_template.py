@@ -294,6 +294,8 @@ market_price
 initial_state = {
     'events': [],
     'cdps': cdps,
+    # Start time
+    'timestamp': dt.datetime.strptime(start_date, '%Y-%m-%d'), # datetime
     # Loaded from exogenous parameter
     'eth_price': eth_price_, # dollars
     # v
@@ -468,7 +470,7 @@ parameters = {
     # Controller
     'controller_enabled': [True],
     'kp': [-1.5e-6], #5e-7 #proportional term for the stability controller: units 1/USD
-    'ki': [lambda control_period=3600: 0 / control_period], #-1e-7 #integral term for the stability controller: units 1/(USD*seconds)
+    'ki': [lambda control_period=3600: -1e-7 / control_period], #-1e-7 #integral term for the stability controller: units 1/(USD*seconds)
     'partial_results': [partial_results_file],
 }
 
