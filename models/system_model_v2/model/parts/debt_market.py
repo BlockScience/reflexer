@@ -221,7 +221,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         assert_log(v_1 >= 0, f'New CDP creation: v_1 ~ {v_1} !>= 0', params['raise_on_assert'])
         assert_log(u_1 >= 0, f'New CDP creation: u_1 ~ {u_1} !>= 0', params['raise_on_assert'])
 
-        new_cdps_count = int(new_cdps_lock / params['mean_cdp_collateral'])
+        new_cdps_count = int(new_cdps_lock / params['median_cdp_collateral'])
         cumulative_time = state['cumulative_time']
 
         cdps = cdps.append([{
@@ -246,7 +246,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         assert_log(v_1 >= 0, f'New CDP creation: v_1 ~ {v_1} !>= 0', params['raise_on_assert'])
         assert_log(u_1 >= 0, f'New CDP creation: u_1 ~ {u_1} !>= 0', params['raise_on_assert'])
 
-        new_cdps_count = int(new_cdps_lock / params['mean_cdp_collateral'])
+        new_cdps_count = int(new_cdps_lock / params['median_cdp_collateral'])
         cumulative_time = state['cumulative_time']
 
         cdps = cdps.append([{

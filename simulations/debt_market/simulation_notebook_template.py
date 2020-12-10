@@ -427,6 +427,7 @@ parameters = {
     #'eth_market_std': [1],
     #'random_state': [np.random.RandomState(seed=0)],
     'mean_cdp_collateral': [mean_cdp_collateral],
+    'median_cdp_collateral': [median_cdp_collateral],
     'liquidation_ratio': [liquidation_ratio], # %
     'liquidation_buffer': [liquidation_buffer], # multiplier applied to CDP collateral by users
     'stability_fee': [lambda timestep, df=debt_market_df: stability_fee], # df.iloc[timestep].beta / (365 * 24 * 3600), # per second interest rate (1.5% per month)
