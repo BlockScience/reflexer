@@ -54,22 +54,64 @@ def run_papermill(config):
 
 if __name__ == '__main__':
     now = datetime.now()
+    simulation_timesteps = 10
 
-    for kp in [7e-7, 1e-6, 2e-6]:
-        config = {
-            'simulation_directory': 'simulations/debt_market' ,
-            'simulation_id': f'kp_{kp}_{now}',
-            'simulation_timesteps': 100,
-            # Overrides model parameters
-            'execution_parameters': {
-                'controller_enabled': [True],
-                'kp': [kp], # -1.5e-6
-                # Functions not serializable
-                #'ki': [lambda control_period=3600: 0 / control_period],
-            }
+    config = {
+        'simulation_directory': 'simulations/debt_market' ,
+        'simulation_id': f'controller_disabled_{now}',
+        'simulation_timesteps': simulation_timesteps,
+        'parameter_ki': 0,
+        # Overrides model parameters
+        'execution_parameters': {
+            'controller_enabled': [False],
         }
-        p = multiprocessing.Process(
-            target=run_papermill,
-            args=(config,)
-        )
-        p.start()
+    }
+    p = multiprocessing.Process(
+        target=run_papermill,
+        args=(config,)
+    )
+    p.start()
+
+    kp = 5e-07
+    ki = -1e-7
+
+    config = {
+        'simulation_directory': 'simulations/debt_market' ,
+        'simulation_id': f'controller_enabled_kp_{kp}_ki_{ki}_{now}',
+        'simulation_timesteps': simulation_timesteps,
+        'parameter_ki': ki,
+        # Overrides model parameters
+        'execution_parameters': {
+            'controller_enabled': [True],
+            'kp': [kp], # -1.5e-6
+            # Functions not serializable
+            #'ki': [lambda control_period=3600: 0 / control_period],
+        }
+    }
+    p = multiprocessing.Process(
+        target=run_papermill,
+        args=(config,)
+    )
+    p.start() 
+
+    kp = 5e-07
+    ki = 0
+
+    config = {
+        'simulation_directory': 'simulations/debt_market' ,
+        'simulation_id': f'controller_enabled_kp_{kp}_ki_{ki}_{now}',
+        'simulation_timesteps': simulation_timesteps,
+        'parameter_ki': ki,
+        # Overrides model parameters
+        'execution_parameters': {
+            'controller_enabled': [True],
+            'kp': [kp], # -1.5e-6
+            # Functions not serializable
+            #'ki': [lambda control_period=3600: 0 / control_period],
+        }
+    }
+    p = multiprocessing.Process(
+        target=run_papermill,
+        args=(config,)
+    )
+    p.start() 

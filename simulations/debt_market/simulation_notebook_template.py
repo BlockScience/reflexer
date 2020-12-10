@@ -52,7 +52,8 @@ features_ml = ['beta', 'Q', 'v_1', 'v_2 + v_3', 'u_1', 'u_2', 'u_3', 'w_1', 'w_2
 optvars = ['u_1', 'u_2', 'v_1', 'v_2 + v_3']
 
 # start_date = '2018-11-05' # Dropping ETH price
-start_date = '2018-05-06' # Rising ETH price
+# start_date = '2018-05-06' # Dropping ETH price
+start_date = '2018-04-01' # Rising ETH price
 
 historical_initial_state = {k: debt_market_df.loc[start_date][k] for k in features}
 historical_initial_state
@@ -241,14 +242,14 @@ print(f'Collateralization ratio: {eth_collateral * eth_price_ / principal_debt *
 
 # %%
 # At historical start date:
-median_cdp_size = 2500 # dollars
-average_cdp_size = 50 # dollars
-genesis_cdp_count = int(eth_collateral / median_cdp_size)
+median_cdp_collateral = 2500 # dollars
+mean_cdp_collateral = 50 # dollars
+genesis_cdp_count = int(eth_collateral / mean_cdp_collateral)
 genesis_cdp_count
 
 
 # %%
-# Create a "genesis" CDP
+# Create a set of "genesis" CDPs
 
 cdp_list = []
 for i in range(genesis_cdp_count):
@@ -425,6 +426,7 @@ parameters = {
     'free_memory_states': [['cdps', 'events']], #'cdps',
     #'eth_market_std': [1],
     #'random_state': [np.random.RandomState(seed=0)],
+    'mean_cdp_collateral': [mean_cdp_collateral],
     'liquidation_ratio': [liquidation_ratio], # %
     'liquidation_buffer': [liquidation_buffer], # multiplier applied to CDP collateral by users
     'stability_fee': [lambda timestep, df=debt_market_df: stability_fee], # df.iloc[timestep].beta / (365 * 24 * 3600), # per second interest rate (1.5% per month)
@@ -470,10 +472,11 @@ parameters = {
     # Controller
     'controller_enabled': [True],
     'kp': [-1.5e-6], #5e-7 #proportional term for the stability controller: units 1/USD
-    'ki': [lambda control_period=3600: -1e-7 / control_period], #-1e-7 #integral term for the stability controller: units 1/(USD*seconds)
+    'ki': [lambda control_period=3600: parameter_ki / control_period], #-1e-7 #integral term for the stability controller: units 1/(USD*seconds)
     'partial_results': [partial_results_file],
 }
 
+# Override system parameters with `execute.py` execution parameters
 parameters.update(execution_parameters)
 
 # parameters = parameters.update({
@@ -485,6 +488,7 @@ parameters.update(execution_parameters)
 # # Simulation Execution
 
 # %%
+# Load from execution parameter
 SIMULATION_TIMESTEPS = simulation_timesteps #len(debt_market_df) - 1 # approx. 600
 MONTE_CARLO_RUNS = 1
 
