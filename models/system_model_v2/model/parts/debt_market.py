@@ -221,7 +221,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         assert_log(v_1 >= 0, f'New CDP creation: v_1 ~ {v_1} !>= 0', params['raise_on_assert'])
         assert_log(u_1 >= 0, f'New CDP creation: u_1 ~ {u_1} !>= 0', params['raise_on_assert'])
 
-        new_cdps_count = 10
+        new_cdps_count = int(new_cdps_lock / params['mean_cdp_collateral'])
         cumulative_time = state['cumulative_time']
 
         cdps = cdps.append([{
@@ -236,7 +236,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             'v_bitten': 0.0,
             'u_bitten': 0.0,
             'w_bitten': 0.0
-        } for _ in range(10)], ignore_index=True)
+        } for _ in range(new_cdps_count)], ignore_index=True)
     else:
         new_cdps_lock = v_1 / 2
         v_1 = v_1 - new_cdps_lock
@@ -246,7 +246,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
         assert_log(v_1 >= 0, f'New CDP creation: v_1 ~ {v_1} !>= 0', params['raise_on_assert'])
         assert_log(u_1 >= 0, f'New CDP creation: u_1 ~ {u_1} !>= 0', params['raise_on_assert'])
 
-        new_cdps_count = 10
+        new_cdps_count = int(new_cdps_lock / params['mean_cdp_collateral'])
         cumulative_time = state['cumulative_time']
 
         cdps = cdps.append([{
@@ -261,7 +261,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
             'v_bitten': 0.0,
             'u_bitten': 0.0,
             'w_bitten': 0.0
-        } for _ in range(10)], ignore_index=True)
+        } for _ in range(new_cdps_count)], ignore_index=True)
 
     cdps_newest = cdps.sort_values(by=['time'], ascending=True) # Youngest to oldest
     cdps_oldest = cdps.sort_values(by=['time'], ascending=False) # Oldest to youngest
