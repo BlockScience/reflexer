@@ -490,9 +490,8 @@ parameters.update(execution_parameters)
 
 # %%
 # Load from execution parameter
-SIMULATION_TIMESTEPS = simulation_timesteps #len(debt_market_df) - 1 # approx. 600
+SIMULATION_TIMESTEPS = len(debt_market_df) - 1 # approx. 600
 MONTE_CARLO_RUNS = 1
-
 
 # %%
 from models.config_wrapper import ConfigWrapper
