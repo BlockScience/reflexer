@@ -32,6 +32,7 @@ Each model is located under `models/_`, with a unique name for each experiment.
 ```
 apt-get remove swig
 apt-get install swig3.0
+rm -rf /usr/bin/swig3.0 /usr/bin/swig
 ln -s /usr/bin/swig3.0 /usr/bin/swig
 ```
 
@@ -49,7 +50,7 @@ You'll need Python 3+ and NodeJS/NPM (v10.13.0) in your environment.
 python3 -m venv venv
 source venv/bin/activate
 pip3 install wheel
-pip3 install -r requirements.txt
+pip3 install -r requirements-frozen-v1.txt
 jupyter labextension install jupyterlab-plotly@4.9.0 # --minimize=False
 python -m ipykernel install --user --name python-reflexer --display-name "Python (Reflexer)"
 jupyter-lab

@@ -6,16 +6,16 @@ const logging             = require("./utils/logging");
 const BN                  = require('bn.js');
 var Decimal               = require('decimal.js');
 
-const PIRawPerSecondValidator = artifacts.require("PIRawPerSecondValidator");
-const RateSetter              = artifacts.require("RateSetter");
-const MockOracleRelayer       = artifacts.require("MockOracleRelayer");
-const MockTreasury            = artifacts.require("MockTreasury");
-const MockFeed                = artifacts.require("MockFeed");
-const ERC20                   = artifacts.require("ERC20");
-const AGUpdater               = artifacts.require("AGUpdater");
-const SeedProposerUpdater     = artifacts.require("SeedProposerUpdater");
+const PIRawPerSecondCalculator = artifacts.require("PIRawPerSecondCalculator");
+const RateSetter               = artifacts.require("RateSetter");
+const MockOracleRelayer        = artifacts.require("MockOracleRelayer");
+const MockTreasury             = artifacts.require("MockTreasury");
+const MockFeed                 = artifacts.require("MockFeed");
+const ERC20                    = artifacts.require("ERC20");
+const AGUpdater                = artifacts.require("AGUpdater");
+const SeedProposerUpdater      = artifacts.require("SeedProposerUpdater");
 
-contract('PIRawPerSecondValidator', function(accounts) {
+contract('PIRawPerSecondCalculator', function(accounts) {
   // Default params
   var WAD                              = new BN("1000000000000000000");
   var RAY                              = new BN("1000000000000000000000000000");
@@ -29,9 +29,9 @@ contract('PIRawPerSecondValidator', function(accounts) {
   var treasurySetterTotalAllowance     = WAD.mul(WAD.mul(RAY));
   var treasurySetterPerBlockAllowance  = WAD.mul(WAD.mul(RAY));
 
-  // PI Validator
-  var Kp                                    = WAD.div(new BN(4)).div(new BN(96)).div(new BN(3600));
-  var Ki                                    = "0";
+  // PI Calculator
+  var Kp                                    = WAD.div(new BN(4)).div(new BN(144)).div(new BN(3600));
+  var Ki                                    = WAD.div(new BN(4)).div(new BN(156)).div(new BN(3600)).div(new BN(3600));
   var integralPeriodSize                    = 3600;
   var baseUpdateCallerReward                = WAD.clone();
   var maxUpdateCallerReward                 = new BN("10000000000000000000");
@@ -41,8 +41,8 @@ contract('PIRawPerSecondValidator', function(accounts) {
   var feedbackOutputUpperBound              = RAY.mul(WAD);
   var feedbackOutputLowerBound              = RAY.sub(new BN("1")).mul(new BN("-1"));
 
-  var oracleInitialPrice                    = new BN(2).mul(WAD); // WAD
-  var initialRedemptionPrice                = new BN(2).mul(RAY); // RAY
+  var oracleInitialPrice                    = new BN(42).mul(WAD).div(new BN(10)); // WAD
+  var initialRedemptionPrice                = new BN(42).mul(RAY).div(new BN(10)); // RAY
 
   var encodedSeedProposer                   = "0x7365656450726f706f736572"
   var feeReceiver                           = "0xF320d7Bf928a8eFda0FF624A02e73E9592A03f2B"
@@ -50,7 +50,7 @@ contract('PIRawPerSecondValidator', function(accounts) {
   var dataDescription                       = "Market Price (WAD) | Redemption Price (RAY) | Redemption Rate (%) | Per Second Redemption Rate (RAY) | Redemption Rate Timeline (Seconds) | Proportional (No Gain) | Proportional (With Gain) | Integral (No Gain) | Integral (With Gain) | Delay Since Last Update" + "\n"
 
   // Contracts
-  var systemCoin, orcl, treasury, oracleRelayer, validator, rateSetter, agUpdater, seedProposerUpdater;
+  var systemCoin, orcl, treasury, oracleRelayer, calculator, rateSetter, agUpdater, seedProposerUpdater;
 
   // Setup
   beforeEach(async () => {
@@ -58,7 +58,7 @@ contract('PIRawPerSecondValidator', function(accounts) {
     orcl          = await MockFeed.new(oracleInitialPrice, true);
     treasury      = await MockTreasury.new(systemCoin.address);
     oracleRelayer = await MockOracleRelayer.new(initialRedemptionPrice);
-    validator     = await PIRawPerSecondValidator.new(
+    calculator     = await PIRawPerSecondCalculator.new(
       Kp,
       Ki,
       perSecondCumulativeLeak,
@@ -72,7 +72,7 @@ contract('PIRawPerSecondValidator', function(accounts) {
       oracleRelayer.address,
       orcl.address,
       treasury.address,
-      validator.address,
+      calculator.address,
       baseUpdateCallerReward,
       maxUpdateCallerReward,
       perSecondCallerRewardIncrease,
@@ -81,10 +81,10 @@ contract('PIRawPerSecondValidator', function(accounts) {
     agUpdater           = await AGUpdater.new();
     seedProposerUpdater = await SeedProposerUpdater.new();
 
-    await validator.addAuthority(agUpdater.address);
-    await validator.addAuthority(seedProposerUpdater.address);
+    await calculator.addAuthority(agUpdater.address);
+    await calculator.addAuthority(seedProposerUpdater.address);
 
-    await seedProposerUpdater.modifyParameters(validator.address, rateSetter.address);
+    await seedProposerUpdater.modifyParameters(calculator.address, rateSetter.address);
 
     await systemCoin.mint(treasury.address, treasuryAmount, {from: accounts[0]});
     await treasury.setTotalAllowance(rateSetter.address, treasurySetterTotalAllowance, {from: accounts[0]});
@@ -92,8 +92,8 @@ contract('PIRawPerSecondValidator', function(accounts) {
   });
 
   // Feedback loop
-  async function updateOnChainRate(randomRate, feeReceiver) {
-    await rateSetter.updateRate(new BN(randomRate), feeReceiver, {from: accounts[0]});
+  async function updateOnChainRate(feeReceiver) {
+    await rateSetter.updateRate(feeReceiver, {from: accounts[0]});
   }
   async function executePIUpdate(print, randomDelay, randomPrice) {
     await increaseTime.advanceTime(randomDelay);
@@ -105,12 +105,12 @@ contract('PIRawPerSecondValidator', function(accounts) {
     var latestRedemptionPrice = (await oracleRelayer.redemptionPrice.call()).toString();
 
     // Get the next per-second rate
-    var pscl = (await validator.pscl.call()).toString();
-    var tlv = (await validator.tlv.call()).toString();
+    var pscl = (await calculator.pscl.call()).toString();
+    var tlv = (await calculator.tlv.call()).toString();
     var iapcr = (await rateSetter.rpower.call(pscl, tlv, RAY.toString(10))).toString();
-    var nextRateData = (await validator.getNextRedemptionRate.call(randomPrice, latestRedemptionPrice, iapcr))
+    var nextRateData = (await calculator.getNextRedemptionRate.call(randomPrice, latestRedemptionPrice, iapcr))
 
-    var gainAdjustedTerms = await validator.getGainAdjustedTerms(nextRateData[1].toString(10), nextRateData[2].toString(10), {from: accounts[0]});
+    var gainAdjustedTerms = await calculator.getGainAdjustedTerms(nextRateData[1], nextRateData[2], {from: accounts[0]});
 
     if (print) {
       console.log("Contract Computed Per-Second Redemption Rate: " + nextRateData[0].toString(10))
@@ -120,24 +120,14 @@ contract('PIRawPerSecondValidator', function(accounts) {
     }
 
     // Update the rate on-chain
-    await updateOnChainRate("1", feeReceiver)
+    await updateOnChainRate(feeReceiver)
 
     // Get and store the receiver system coin balance
     var currentReceiverBalance = (await systemCoin.balanceOf.call(feeReceiver)).toString()
     var adjustedReceiverBalance = new BN(currentReceiverBalance).divmod(WAD)
     adjustedReceiverBalance = adjustedReceiverBalance.div.toString(10) + "." + adjustedReceiverBalance.mod.abs().toString(10)
 
-    // Get the normalized per-second rate
-    var normalizedPerSecondRate = nextRateData[0].sub(RAY).divmod(new BN("10000000000000000000000000"));
-
-    if (normalizedPerSecondRate.div.toString(10) == "0" && normalizedPerSecondRate.mod.isNeg()) {
-      normalizedPerSecondRate = "-".concat(normalizedPerSecondRate.div.toString(10) + "." + normalizedPerSecondRate.mod.abs().toString(10));
-    } else {
-      normalizedPerSecondRate = normalizedPerSecondRate.div.toString(10) + "." + normalizedPerSecondRate.mod.abs().toString(10);
-    }
-
     if (print) {
-      console.log("Normalized Per Second Redemption Rate: " + normalizedPerSecondRate.toString())
       console.log("Proportional (No Gain): " + nextRateData[1].toString(10))
       console.log("Proportional (With Gain): " + gainAdjustedTerms[0].toString(10))
       console.log("Integral (No Gain): " + nextRateData[2].toString(10))
@@ -167,7 +157,7 @@ contract('PIRawPerSecondValidator', function(accounts) {
 
     assert.equal(orclPrice.toString(10), oracleInitialPrice.toString(10));
   })
-  it('should simulate the PI per-second raw validator using a predefined scenario', async () => {
+  it('should simulate the PI per-second raw calculator using a predefined scenario', async () => {
     // Local simulation predefined scenario
     var orclPrices = [
       "4200000000000000000",
@@ -249,13 +239,13 @@ contract('PIRawPerSecondValidator', function(accounts) {
       dataDescription
     );
   });
-  it('should simulate the per-second PI raw validator using randomly generated prices and delays', async () => {
+  it('should simulate the per-second PI raw calculator using randomly generated prices and delays', async () => {
     // Params
-    var priceLowerBound = 3.7;
+    var priceLowerBound = 3.9;
     var priceUpperBound = 4.5;
     var delayLowerBound = integralPeriodSize;
     var delayUpperBound = integralPeriodSize;
-    var steps           = 100;
+    var steps           = 500;
 
     // Logging & data dump
     var printOverview   = false;
