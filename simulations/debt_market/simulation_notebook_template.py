@@ -295,6 +295,7 @@ market_price
 initial_state = {
     'events': [],
     'cdps': cdps,
+    'cdp_metrics': {},
     # Start time
     'timestamp': dt.datetime.strptime(start_date, '%Y-%m-%d'), # datetime
     # Loaded from exogenous parameter

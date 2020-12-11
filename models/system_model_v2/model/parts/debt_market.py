@@ -804,3 +804,14 @@ def s_update_cdp_interest(params, substep, state_history, state, policy_input):
     cdps = cdps.apply(resolve_cdp_interest, axis=1)
     
     return 'cdps', cdps
+
+def s_update_cdp_metrics(params, substep, state_history, state, policy_input):
+    cdps = state['cdps']
+    cdp_metrics = {
+        'cdp_count': len(cdps),
+        'open_cdp_count': len(cdps.query('open == 1')),
+        'closed_cdp_count': len(cdps.query('open == 0')),
+        'mean_cdp_collateral': pd.eval("cdp_collateral = cdps.locked - cdps.freed - cdps.v_bitten", target=cdps)['cdp_collateral'].mean(),
+        'median_cdp_collateral': pd.eval("cdp_collateral = cdps.locked - cdps.freed - cdps.v_bitten", target=cdps)['cdp_collateral'].median(),
+    }
+    return 'cdp_metrics', cdp_metrics

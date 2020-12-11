@@ -213,6 +213,12 @@ partial_state_update_blocks = [
     },
     #################################################################
     {
+        'policies': {},
+        'variables': {
+            'cdp_metrics': s_update_cdp_metrics,
+        }
+    },
+    {
         'policies': {
             'partial_results': save_partial_results
         },
