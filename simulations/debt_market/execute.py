@@ -92,74 +92,74 @@ if __name__ == '__main__':
     )
     p.start()
 
-    # kp = 5e-07
-    # ki = -1e-7
+    kp = 5e-07
+    ki = -1e-7
 
-    # config = {
-    #     'simulation_directory': 'simulations/debt_market' ,
-    #     'simulation_id': f'{now}_{secrets.token_hex(8)}_controller_enabled_kp_{kp}_ki_{ki}',
-    #     # 'simulation_timesteps': simulation_timesteps,
-    #     'parameter_ki': ki,
-    #     # Overrides model parameters
-    #     'execution_parameters': {
-    #         'controller_enabled': [True],
-    #         'kp': [kp], # -1.5e-6
-    #         'new_cdp_proportion': [new_cdp_proportion],
-    #         'new_cdp_collateral': [new_cdp_collateral],
-    #         # Functions not serializable
-    #         #'ki': [lambda control_period=3600: 0 / control_period],
-    #     }
-    # }
-    # p = multiprocessing.Process(
-    #     target=run_papermill,
-    #     args=(config,)
-    # )
-    # p.start() 
+    config = {
+        'simulation_directory': 'simulations/debt_market' ,
+        'simulation_id': f'{now}_{secrets.token_hex(8)}_controller_enabled_kp_{kp}_ki_{ki}',
+        # 'simulation_timesteps': simulation_timesteps,
+        'parameter_ki': ki,
+        # Overrides model parameters
+        'execution_parameters': {
+            'controller_enabled': [True],
+            'kp': [kp], # -1.5e-6
+            'new_cdp_proportion': [new_cdp_proportion],
+            'new_cdp_collateral': [new_cdp_collateral],
+            # Functions not serializable
+            #'ki': [lambda control_period=3600: 0 / control_period],
+        }
+    }
+    p = multiprocessing.Process(
+        target=run_papermill,
+        args=(config,)
+    )
+    p.start() 
 
-    # kp = 5e-07
-    # ki = 0
+    kp = 5e-07
+    ki = 0
 
-    # config = {
-    #     'simulation_directory': 'simulations/debt_market' ,
-    #     'simulation_id': f'{now}_{secrets.token_hex(8)}_controller_enabled_kp_{kp}_ki_{ki}',
-    #     # 'simulation_timesteps': simulation_timesteps,
-    #     'parameter_ki': ki,
-    #     # Overrides model parameters
-    #     'execution_parameters': {
-    #         'controller_enabled': [True],
-    #         'kp': [kp], # -1.5e-6
-    #         'new_cdp_proportion': [new_cdp_proportion],
-    #         'new_cdp_collateral': [new_cdp_collateral],
-    #         # Functions not serializable
-    #         #'ki': [lambda control_period=3600: 0 / control_period],
-    #     }
-    # }
-    # p = multiprocessing.Process(
-    #     target=run_papermill,
-    #     args=(config,)
-    # )
-    # p.start()
+    config = {
+        'simulation_directory': 'simulations/debt_market' ,
+        'simulation_id': f'{now}_{secrets.token_hex(8)}_controller_enabled_kp_{kp}_ki_{ki}',
+        # 'simulation_timesteps': simulation_timesteps,
+        'parameter_ki': ki,
+        # Overrides model parameters
+        'execution_parameters': {
+            'controller_enabled': [True],
+            'kp': [kp], # -1.5e-6
+            'new_cdp_proportion': [new_cdp_proportion],
+            'new_cdp_collateral': [new_cdp_collateral],
+            # Functions not serializable
+            #'ki': [lambda control_period=3600: 0 / control_period],
+        }
+    }
+    p = multiprocessing.Process(
+        target=run_papermill,
+        args=(config,)
+    )
+    p.start()
 
-    # kp = 5e-07
-    # ki = -1e-7
+    kp = 5e-07
+    ki = -1e-7
 
-    # config = {
-    #     'simulation_directory': 'simulations/debt_market' ,
-    #     'simulation_id': f'{now}_{secrets.token_hex(8)}_controller_enabled_kp_{kp}_ki_{ki}',
-    #     # 'simulation_timesteps': simulation_timesteps,
-    #     'parameter_ki': ki,
-    #     # Overrides model parameters
-    #     'execution_parameters': {
-    #         'controller_enabled': [True],
-    #         'kp': [kp], # -1.5e-6
-    #         'new_cdp_proportion': [0.75],
-    #         'new_cdp_collateral': [new_cdp_collateral],
-    #         # Functions not serializable
-    #         #'ki': [lambda control_period=3600: 0 / control_period],
-    #     }
-    # }
-    # p = multiprocessing.Process(
-    #     target=run_papermill,
-    #     args=(config,)
-    # )
-    # p.start() 
+    config = {
+        'simulation_directory': 'simulations/debt_market' ,
+        'simulation_id': f'{now}_{secrets.token_hex(8)}_controller_enabled_kp_{kp}_ki_{ki}',
+        # 'simulation_timesteps': simulation_timesteps,
+        'parameter_ki': ki,
+        # Overrides model parameters
+        'execution_parameters': {
+            'controller_enabled': [True],
+            'kp': [kp], # -1.5e-6
+            'new_cdp_proportion': [0.75],
+            'new_cdp_collateral': [new_cdp_collateral],
+            # Functions not serializable
+            #'ki': [lambda control_period=3600: 0 / control_period],
+        }
+    }
+    p = multiprocessing.Process(
+        target=run_papermill,
+        args=(config,)
+    )
+    p.start() 
