@@ -22,5 +22,5 @@ for kp_param, ki_param in zip(kp_sweep, ki_sweep):
     print(f'Running shock tests for parameters: Kp: {kp_param}; Ki: {ki_param}')
     shock_tests_cmd = f'''cat ./templates/shock_tests_nb.py |
     jupytext --from py:percent --to ipynb --set-kernel - |
-    papermill - ./shock_tests.ipynb --log-output -p kp_param {kp_param} -p ki_param {ki_param} --cwd .'''
+    papermill - ./notebooks/system_model_v1/shock_tests.ipynb --log-output -p kp_param {kp_param} -p ki_param {ki_param} --cwd .'''
     os.system(shock_tests_cmd)

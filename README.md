@@ -113,12 +113,15 @@ jupyter-lab
 
 # Jupyter Notebook
 
+To start Jupyter Notebook, with all dependencies available:
 ```bash
 source venv/bin/activate
 jupyter-lab
 ```
 
-## Modelling & Simulation
+# Modelling & Simulation
+
+## cadCAD Model Simulation
 
 To run simulation:
 ```python
@@ -126,22 +129,23 @@ python3 models/run.py
 ```
 or
 ```python
-from config_wrapper import ConfigWrapper
-import models/market_model as models/market_model
+from models.run import run
+from models.config_wrapper import ConfigWrapper
+import models.system_model_v1 as system_model_v1
 
-market_simulation = ConfigWrapper(models/market_model)
-market_simulation.append()
+simulation = ConfigWrapper(system_model_v1)
+simulation.append()
 
 result = run(drop_midsteps=True)
 ```
 
-## Solidity / cadCAD Simulation
+## Solidity / cadCAD Cross-Model Simulation
 
 ```bash
 cd ./cross-model/truffle
 npm install
 npm setup-network
-# Open and run notebook_solidity_validation.ipynb
+# Open and run notebooks/solidity_cadcad/notebook_solidity_validation.ipynb
 ```
 
 # Tests
@@ -152,15 +156,15 @@ npm setup-network
 
 ## System Shock Tests
 
-See `test/run_shock_tests.py` for the set of Ki and Kp parameter sweeps.
+See `tests/run_shock_tests.py` for the set of Ki and Kp parameter sweeps.
 
 ```bash
-python test/run_shock_tests.py
+python tests/run_shock_tests.py
 ```
 
 Outputs:
 * `exports/_.png` - metric grid for each set of parameters
-* `shock_tests.ipynb` - template notebook for running test and generating grid
+* `notebooks/system_model_v1/shock_tests.ipynb` - template notebook for running test and generating grid
 
 ## Simulation Profiling
 
