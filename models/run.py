@@ -11,8 +11,6 @@ from cadCAD import configs
 def run(drop_midsteps: bool=True) -> pd.DataFrame:
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-    # logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    # logger.addHandler(logging.StreamHandler())
     file_handler = logging.FileHandler(filename=f'logs/simulation-{datetime.now()}.log')
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
@@ -47,7 +45,7 @@ if __name__ == '__main__':
     import options as options
     from utils.load_data import load_debt_price_data
 
-    import system_model as system_model
+    import system_model_v1 as system_model_v1
     
     debt_price_source = options.DebtPriceSource.DEBT_MARKET_MODEL.value
     debt_price_data = load_debt_price_data(debt_price_source)
@@ -68,7 +66,7 @@ if __name__ == '__main__':
         ]
     }
 
-    config = ConfigWrapper(system_model, M=update_params, T=SIMULATION_TIMESTEPS)
+    config = ConfigWrapper(system_model_v1, M=update_params, T=SIMULATION_TIMESTEPS)
     config.append()
 
     results = run(drop_midsteps=True)

@@ -1,4 +1,15 @@
 # %% [markdown]
+# # Setup
+
+# %%
+from pathlib import Path
+import os
+
+path = Path().resolve()
+root_path = str(path).split('notebooks')[0]
+os.chdir(root_path)
+
+# %% [markdown]
 # # Imports
 
 # %%
@@ -113,7 +124,7 @@ The ConfigWrapper allows you to pass a model as an argument, and update the simu
 Maps (params, states) would be merge updated, and all other options are overrides.
 """
 system_simulation = ConfigWrapper(
-    system_model, M=update_params, initial_state=update_initial_state, N=MONTE_CARLO_RUNS, T=range(SIMULATION_TIMESTEPS)
+    system_model_v1, M=update_params, initial_state=update_initial_state, N=MONTE_CARLO_RUNS, T=range(SIMULATION_TIMESTEPS)
 )
 
 # %% [markdown]

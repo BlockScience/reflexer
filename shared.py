@@ -1,7 +1,6 @@
 # Import shared deps
 
 import matplotlib.pyplot as plt
-# from FixedPoint import FXnum
 from decimal import Decimal
 import itertools
 import plotly.express as px
@@ -27,4 +26,5 @@ from models.utils.load_data import step_dataframe, load_debt_price_data
 
 # Import models
 
-import models.system_model as system_model
+import models.system_model_v1 as system_model_v1
+import models.system_model_v2 as system_model_v2
