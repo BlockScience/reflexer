@@ -105,15 +105,11 @@ You'll need Python 3+ and NodeJS/NPM (v10.13.0) in your environment.
 python3 -m venv venv
 source venv/bin/activate
 pip3 install wheel
-pip3 install -r requirements-frozen-v2.txt
+pip3 install -r requirements.txt
 jupyter labextension install jupyterlab-plotly@4.9.0 # --minimize=False
 python -m ipykernel install --user --name python-reflexer --display-name "Python (Reflexer)"
 jupyter-lab
 ```
-
-Replace `requirements-frozen-v2.txt` with one of the following when appropriate:
-* `requirements-frozen-v1.txt` - for `models/system_model_v1`
-* `requirements-frozen-v2.txt` - for `models/system_model_v2`
 
 # Jupyter Notebook
 
