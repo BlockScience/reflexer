@@ -342,7 +342,7 @@ initial_state.update(historical_initial_state)
 # Set dataframe to start from start date
 debt_market_df = debt_market_df.loc[start_date:]
 
-from .tests.apt_tests import apt_tests
+from tests.apt_tests import apt_tests
 enable_apt_tests = False
 
 parameters = {
