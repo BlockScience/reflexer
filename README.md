@@ -18,10 +18,9 @@ Directories:
 * `lib/` - third party libraries modified for use within models and simulations, such as Scipy which had to be patched
 * `logs/` - output directory for cadCAD model logs (local only, in `.gitignore`)
 * `models/` - system and subsystem models, as well as ML/regression model development
-* `notebooks/` - lab notebooks for model simulation and visualization using cadCAD
+* `notebooks/` - lab notebooks for model simulation and visualization using cadCAD (some notebooks have synced `.py` templates, see "Jupyter Notebook" below)
 * `plots/` - static plots used in notebooks
 * `simulations/` - execution of simulation notebooks using Papermill
-* `templates/` - templates for generating certain notebooks
 * `tests/` - `pytest` tests and misc. testing resources
 * `utils/` - utility code used within notebooks, for example generating plots
 
@@ -56,7 +55,7 @@ Full system model with CDP, APT, and secondary market subsystems.
 
 ### Notebooks
 
-1. [Full system model](notebooks/system_model_v2/notebook_debt_market.ipynb) and [template](templates/notebook_debt_market.py)
+1. [Full system model](notebooks/system_model_v2/notebook_debt_market.ipynb)
 
 ## Solidity / cadCAD "Cross Model"
 
@@ -118,6 +117,15 @@ To start Jupyter Notebook, with all dependencies available:
 ```bash
 source venv/bin/activate
 jupyter-lab
+```
+
+## Jupytext Paired Notebooks
+
+Jupytext allows us to create a notebook paired with a Python script, to more easily keep track of updates, and execute simulation notebooks. In the `notebooks/` directory, check if their is both an `.ipynb` and `.py` file for a notebook, then use the following command to sync the two files when necessary:
+
+```
+# Initialize paired ipynb/py notebook: `jupytext --set-formats ipynb,py:percent notebooks/notebook.ipynb`
+jupytext --sync --update notebooks/notebook.ipynb
 ```
 
 # Modelling & Simulation

@@ -7,6 +7,8 @@ from cadCAD.engine import ExecutionMode, ExecutionContext, Executor
 from cadCAD.configuration import Experiment
 from cadCAD import configs
 
+from models.utils.process_results import drop_dataframe_midsteps
+
 
 def run(drop_midsteps: bool=True) -> pd.DataFrame:
     logger = logging.getLogger()
@@ -28,14 +30,9 @@ def run(drop_midsteps: bool=True) -> pd.DataFrame:
     logging.info('Finished simulation')
 
     df = pd.DataFrame(system_events)
+    df = drop_dataframe_midsteps(df) if drop_midsteps else df.reset_index()
 
-    if drop_midsteps:
-        max_substep = max(df.substep)
-        is_droppable = (df.substep != max_substep)
-        is_droppable &= (df.substep != 0)
-        df = df.loc[~is_droppable]
-
-    return (df.reset_index(), tensor_field, sessions)
+    return (df, tensor_field, sessions)
 
 if __name__ == '__main__':
     import sys
