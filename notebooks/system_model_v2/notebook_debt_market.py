@@ -383,18 +383,11 @@ parameters = {
     'seconds_passed': [lambda timestep, df=debt_market_df: df.iloc[timestep].seconds_passed],
     # 'market_price': [lambda timestep, df=debt_market_df: target_price],
     # APT model
-    # **{
-    #     'use_APT_ML_model': [False],
-    #     'root_function': [G_OLS], # glf, G, G_OLS
-    #     'features': [features], # features_ml, features
-    # },
-    **{
-        'use_APT_ML_model': [True],
-        'root_function': [glf], # glf, G, G_OLS
-        'callback': [glf_continue_callback], # glf callback
-        'model': [model],
-        'features': [features_ml], # features_ml, features
-    },
+    'use_APT_ML_model': [True],
+    'root_function': [glf], # glf, G, G_OLS
+    'callback': [glf_continue_callback], # glf callback
+    'model': [model],
+    'features': [features_ml], # features_ml, features
     'freeze_feature_vector': [False], # Use the same initial state as the feature vector for each timestep
     'optvars': [optvars],
     'bounds': [[(xmin,debt_market_df[optvars].max()[i]) 
@@ -659,7 +652,7 @@ fig.show()
 
 # %%
 std_mkt = df['market_price'].rolling(7).std()
-plt.plot(std_mkt)
+std_mkt.plot()
 
 
 # %%
