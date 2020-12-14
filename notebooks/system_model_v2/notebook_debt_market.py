@@ -94,22 +94,6 @@ optvars = ['u_1', 'u_2', 'v_1', 'v_2 + v_3']
 
 model = pickle.load(open('models/pickles/apt_debt_model_2020-11-28.pickle', 'rb'))
 
-# ML debt model root function
-def G(x, to_opt, data, constant):
-    for i,y in enumerate(x):
-        data[:,to_opt[i]] = y
-    err = model.predict(data)[0] - constant
-    return err
-
-dpres = pickle.load(open('models/pickles/debt_market_OLS_model.pickle', 'rb'))
-
-def G_OLS(x, to_opt, data, constant):
-    for i,y in enumerate(x):
-        data[:,to_opt[i]] = y
-    err = dpres.predict(data)[0] - constant
-    #print(f'G_OLS err: {err}')
-    return err
-
 ml_data_list = []
 global tol
 tol = 1e-2
@@ -384,7 +368,7 @@ parameters = {
     # 'market_price': [lambda timestep, df=debt_market_df: target_price],
     # APT model
     'use_APT_ML_model': [True],
-    'root_function': [glf], # glf, G, G_OLS
+    'root_function': [glf],
     'callback': [glf_continue_callback], # glf callback
     'model': [model],
     'features': [features_ml], # features_ml, features
