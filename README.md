@@ -78,7 +78,6 @@ Full system model with CDP, APT, and secondary market subsystems.
 The following pickle files in `models/pickles/` should be obtained and copied or linked into the repo. They are ignored in the `.gitignore` file to avoid hitting file size and bandwidth limits:
 
 * `apt_debt_model_2020-11-28.pickle`
-* `debt_market_OLS_model.pickle`
 
 ## System Dependencies
 
