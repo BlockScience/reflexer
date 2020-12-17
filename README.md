@@ -110,6 +110,12 @@ python -m ipykernel install --user --name python-reflexer --display-name "Python
 jupyter-lab
 ```
 
+The Scipy minimize function needs to be patched. Apply the following patch, updating the path to `scipy` in your environment:
+
+```bash
+patch venv/lib/python3.8/site-packages/scipy/optimize/optimize.py lib/scipy.patch
+```
+
 # Jupyter Notebook
 
 To start Jupyter Notebook, with all dependencies available:
