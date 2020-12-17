@@ -139,17 +139,17 @@ def glf(x, to_opt, data, constant, timestep):
 
 # %%
 eth_price = pd.DataFrame(debt_market_df['rho_star'])
-eth_p_mean = np.mean(eth_price.to_numpy().flatten())
+eth_price_mean = np.mean(eth_price.to_numpy().flatten())
 
 mar_price = pd.DataFrame(debt_market_df['p'])
-mar_p_mean = np.mean(mar_price.to_numpy().flatten())
+market_price_mean = np.mean(mar_price.to_numpy().flatten())
 
 eth_returns = ((eth_price - eth_price.shift(1))/eth_price.shift(1)).to_numpy().flatten()
 eth_gross_returns = (eth_price / eth_price.shift(1)).to_numpy().flatten()
 
 eth_returns_mean = np.mean(eth_returns[1:])
 
-eth_p_mean, eth_returns_mean, mar_p_mean
+eth_price_mean, eth_returns_mean, market_price_mean
 
 
 # %%
@@ -433,7 +433,6 @@ parameters = {
     'liquidation_buffer': [liquidation_buffer], # multiplier applied to CDP collateral by users
     'stability_fee': [lambda timestep, df=debt_market_df: stability_fee], # df.iloc[timestep].beta / (365 * 24 * 3600), # per second interest rate (1.5% per month)
     'liquidation_penalty': [0], # 0.13 == 13%
-    'cdp_top_up_buffer': [2],
     # Average CDP duration == 3 months: https://www.placeholder.vc/blog/2019/3/1/maker-network-report
     # The tuning of this parameter is probably off the average, because we don't have the CDP size distribution matched yet,
     # so although the individual CDPs could have an average debt age of 3 months, the larger CDPs likely had a longer debt age.
@@ -462,9 +461,9 @@ parameters = {
         for i,xmin in enumerate(debt_market_df[optvars].min())
     ]],
     'interest_rate': [1.0],
-    'eth_p_mean': [eth_p_mean],
+    'eth_price_mean': [eth_price_mean],
     'eth_returns_mean': [eth_returns_mean],
-    'mar_p_mean': [mar_p_mean],
+    'market_price_mean': [market_price_mean],
     # APT OLS model
     'alpha_0': [0],
     'alpha_1': [1],
