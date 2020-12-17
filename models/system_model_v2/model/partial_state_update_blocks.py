@@ -41,12 +41,13 @@ partial_state_update_blocks = [
             APT model
         """,
         'policies': {
-            # 'apt': p_apt_model
-            'apt': p_apt_model_unified
+            'apt': p_apt_model
         },
         'variables': {
             'cdps': s_store_cdps,
+            'feature_vector': s_store_feature_vector,
             'optimal_values': s_store_optimal_values,
+            'minimize_results': s_store_minimize_results,
         }
     },
     {

@@ -25,8 +25,7 @@ cdps = cdps.append({
 }, ignore_index=True)
 
 # NB: These initial states may be overriden in the relevant notebook
-state_variables = {
-    'events': [],
+state_variables = {    
     'error_star': (0.0), #price units
     'error_star_integral': (0.0), #price units x seconds
     #'target_rate': (0.0), #price units per second
@@ -76,5 +75,10 @@ state_variables = {
     # APT model
     'eth_return': 0,
     'eth_gross_return': 0,
-    'optimal_values': {}
+    # Metadata/metrics
+    'events': [],
+    'cdp_metrics': {},
+    'feature_vector': {},
+    'optimal_values': {},
+    'minimize_results': {},
 }

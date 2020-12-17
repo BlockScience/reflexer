@@ -18,7 +18,7 @@ import logging
 import pandas as pd
 
 from .utils import get_feature
-from .debt_market import resolve_cdp_positions_unified
+from .debt_market import resolve_cdp_positions
 
 def p_resolve_p_debt_expected(params, substep, state_history, state):
     model = params['model']
@@ -35,8 +35,8 @@ def s_store_p_debt_expected(params, substep, state_history, state, policy_input)
 
 def p_resolve_p_expected(params, substep, state_history, state):
     eth_return = state['eth_return']
-    eth_p_mean = params['eth_p_mean']
-    mar_p_mean = params['mar_p_mean']
+    eth_price_mean = params['eth_price_mean']
+    market_price_mean = params['market_price_mean']
     eth_returns_mean = params['eth_returns_mean']
     p = state['market_price']
     interest_rate = params['interest_rate']
@@ -48,10 +48,10 @@ def p_resolve_p_expected(params, substep, state_history, state):
         eth_price = state['eth_price']
                     
     # try:
-    #     mar_p_mean = np.mean([x[-1]['market_price'] for x in state_history]) #[1:]
+    #     market_price_mean = np.mean([x[-1]['market_price'] for x in state_history]) #[1:]
     # except IndexError as e:
     #     print(e)
-    #     mar_p_mean = p
+    #     market_price_mean = p
 
     alpha_0 = params['alpha_0']
     alpha_1 = params['alpha_1']
@@ -60,39 +60,24 @@ def p_resolve_p_expected(params, substep, state_history, state):
     beta_2 = params['beta_2']
         
     # find root of non-arbitrage condition
-    p_expected = (1 / alpha_1) * p * (interest_rate + beta_2 * (eth_p_mean - eth_price * interest_rate)
-                                 + beta_1 * (mar_p_mean - p * interest_rate)
+    p_expected = (1 / alpha_1) * p * (interest_rate + beta_2 * (eth_price_mean - eth_price * interest_rate)
+                                 + beta_1 * (market_price_mean - p * interest_rate)
                  ) - (alpha_0/alpha_1)
     
-    logging.debug(f'p_expected terms: {alpha_1, p, interest_rate, beta_2, eth_p_mean, eth_price, beta_1, mar_p_mean, alpha_0, p_expected}')
+    logging.debug(f'p_expected terms: {alpha_1, p, interest_rate, beta_2, eth_price_mean, eth_price, beta_1, market_price_mean, alpha_0, p_expected}')
 
     return {'p_expected': p_expected}
 
 def s_store_p_expected(params, substep, state_history, state, policy_input):
     return 'p_expected', policy_input['p_expected']
 
-def p_apt_model_unified(params, substep, state_history, state):
+def p_apt_model(params, substep, state_history, state):
     start_time = time.time()
 
     logging.debug(f'''
     ##### APT model run #####
     Timestep: {state["timestep"]}
     ''')
-
-    if params['test']['enable']:
-        logging.info('APT test enabled')
-        optimal_values = params['test']['params']['optimal_values']
-        optimal_values = {k: optimal_values[k](timestep=state['timestep']) for k in optimal_values}
-
-        v_1 = optimal_values.get('v_1', 0)
-        v_2_v_3 = optimal_values.get('v_2 + v_3', 0)
-        u_1 = optimal_values.get('u_1', 0)
-        u_2 = optimal_values.get('u_2', 0)
-        
-        cdp_position_state = resolve_cdp_positions_unified(params, state, {'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
-        
-        return {**cdp_position_state, 'optimal_values': optimal_values}
-
 
     use_APT_ML_model = params['use_APT_ML_model']
     func = params['root_function']
@@ -112,6 +97,20 @@ def p_apt_model_unified(params, substep, state_history, state):
         #feature_0 = get_feature(state_history, features, index=0)
         feature_0 = get_feature(state_history, features, index=(0 if params['freeze_feature_vector'] else -1))
         feature_0 = np.insert(feature_0, 0, 1, axis=1)
+
+    if params['test']['enable']:
+        logging.info('APT test enabled')
+        optimal_values = params['test']['params']['optimal_values']
+        optimal_values = {k: optimal_values[k](timestep=state['timestep']) for k in optimal_values}
+
+        v_1 = optimal_values.get('v_1', 0)
+        v_2_v_3 = optimal_values.get('v_2 + v_3', 0)
+        u_1 = optimal_values.get('u_1', 0)
+        u_2 = optimal_values.get('u_2', 0)
+        
+        cdp_position_state = resolve_cdp_positions(params, state, {'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
+        
+        return {**cdp_position_state, 'feature_vector': feature_0, 'optimal_values': optimal_values}
         
     x0 = feature_0[:,optindex][0]
 
@@ -122,9 +121,10 @@ def p_apt_model_unified(params, substep, state_history, state):
     p_expected: {p_expected}
     ''')
 
+    minimize_results = {}
     try:
         if use_APT_ML_model:
-            results = minimize(func, x0, method='Powell', 
+            minimize_results = minimize(func, x0, method='Powell', 
                 args=(optindex, feature_0, p_expected, state['timestep']),
                 bounds = bounds,
                 options={
@@ -135,12 +135,12 @@ def p_apt_model_unified(params, substep, state_history, state):
             )
 
             logging.debug(f'''
-            Success: {results['success']}
-            Message: {results['message']}
-            Function value: {results['fun']}
+            Success: {minimize_results['success']}
+            Message: {minimize_results['message']}
+            Function value: {minimize_results['fun']}
             ''')
             
-            x_star = results['x']
+            x_star = minimize_results['x']
         else:
             x_star = newton(func, x0, args=(optindex, feature_0, p_expected))
         # Feasibility check, non-negativity
@@ -179,11 +179,18 @@ def p_apt_model_unified(params, substep, state_history, state):
     u_1 = optimal_values.get('u_1', 0)
     u_2 = optimal_values.get('u_2', 0)
 
-    cdp_position_state = resolve_cdp_positions_unified(params, state, {'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
+    cdp_position_state = resolve_cdp_positions(params, state, {'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
     
     logging.debug("--- %s seconds ---" % (time.time() - start_time))
     
-    return {**cdp_position_state, 'optimal_values': optimal_values}
+    return {**cdp_position_state, 'feature_vector': feature_0, 'optimal_values': optimal_values, 'minimize_results': minimize_results}
+
+def s_store_feature_vector(params, substep, state_history, state, policy_input):
+    print(policy_input)
+    return 'feature_vector', policy_input['feature_vector']
 
 def s_store_optimal_values(params, substep, state_history, state, policy_input):
     return 'optimal_values', policy_input['optimal_values']
+
+def s_store_minimize_results(params, substep, state_history, state, policy_input):
+    return 'minimize_results', policy_input['minimize_results']

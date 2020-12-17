@@ -8,10 +8,6 @@ import logging
 ############################################################################################################################################
 
 def p_resolve_eth_price(params, substep, state_history, state):
-    #base_var = params['eth_market_std']
-    #variance = float(base_var * state['timedelta'] / 3600.0)
-    #random_state = params['random_state']
-    #delta_eth_price = sts.norm.rvs(loc=0, scale=variance, random_state=random_state)
     eth_price = params['eth_price'](state['timestep'])
     delta_eth_price = eth_price - state_history[-1][-1]['eth_price']
         
@@ -186,7 +182,7 @@ def p_rebalance_cdps(params, substep, state_history, state):
 
     return {'cdps': cdps}
 
-def resolve_cdp_positions_unified(params, state, policy_input):
+def resolve_cdp_positions(params, state, policy_input):
     eth_price = state['eth_price']
     target_price = state['target_price']
     liquidation_ratio = params['liquidation_ratio']
@@ -194,12 +190,6 @@ def resolve_cdp_positions_unified(params, state, policy_input):
     
     cdps = state['cdps']
     cdps_copy = cdps.copy()
-
-    #cdps_above_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} > (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
-    #cdps_below_liquidation_ratio = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio}')
-    #cdps_below_liquidation_buffer = cdps.query(f'(locked - freed - v_bitten) * {eth_price} < (drawn - wiped - u_bitten) * {target_price} * {liquidation_ratio} * {liquidation_buffer}')
-        
-    # assert cdps.at[0, 'locked'] == cdps_oldest.at[0, 'locked']
 
     v_1 = policy_input['v_1'] # Lock
     v_2 = policy_input['v_2 + v_3'] # Free, no v_3 liquidations
@@ -466,7 +456,7 @@ def resolve_cdp_positions_unified(params, state, policy_input):
 
     open_cdps = len(cdps.query('open == 1'))
     closed_cdps = len(cdps.query('open == 0'))
-    logging.debug(f'resolve_cdp_positions_unified() ~ Number of open CDPs: {open_cdps}; Number of closed CDPs: {closed_cdps}')
+    logging.debug(f'resolve_cdp_positions() ~ Number of open CDPs: {open_cdps}; Number of closed CDPs: {closed_cdps}')
     
     assert_log(u_1 >= 0, u_1, params['raise_on_assert'])
     assert_log(u_2 >= 0, u_2, params['raise_on_assert'])

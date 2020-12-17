@@ -40,7 +40,7 @@ def get_feature(state_history, features, index=-1):
         'Q': state['eth_collateral'], # Q
         'v_1': state['v_1'], # v_1
         # Liquidations are calculated and performed outside of the APT model, and could result in v_3, but within the APT model we only generate v_2
-        'v_2 + v_3': state['v_2'] + state['v_3'], # state['optimal_values'].get('v2 + v3', state['v_2'] + state['v_3']), # v_2 + v_3
+        'v_2 + v_3': state['optimal_values'].get('v2 + v3', state['v_2'] + state['v_3']), # v_2 + v_3
         'D_1': state['principal_debt'], # D_1
         'u_1': state['u_1'], # u_1
         'u_2': state['u_2'], # u_2
