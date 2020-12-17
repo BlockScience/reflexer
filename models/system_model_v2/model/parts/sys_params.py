@@ -7,7 +7,65 @@ from constants import SPY, RAY
 halflife = SPY / 52 #weeklong halflife
 alpha = int(np.power(.5, float(1 / halflife)) * RAY)
 
+# Enabled or disable APT tests - these tests bypass the APT ML model, for quick model validation
+enable_apt_tests = False
+
+apt_tests = [
+        {
+            # Enable or disable a specific test
+            'enable': True,
+            # Configure the test parameters
+            'params': {
+                # Optimal values to override the APT model suggestions
+                'optimal_values': {
+                    'v_1': lambda timestep=0: 1000,
+                    'v_2 + v_3': lambda timestep=0: 500,
+                    'u_1': lambda timestep=0: 100,
+                    'u_2': lambda timestep=0: 50
+                }
+            }
+        },
+        # {
+        #     'enable': False,
+        #     'params': {
+        #         'optimal_values': {
+        #             'v_1': lambda timestep=0, df=simulation_results_df: \
+        #                 simulation_results_df.iloc[timestep]['optimal_values'].get('v_1', historical_initial_state['v_1']),
+        #             'v_2 + v_3': lambda timestep=0, df=simulation_results_df: \
+        #                 simulation_results_df.iloc[timestep]['optimal_values'].get('v_2 + v_3', historical_initial_state['v_2 + v_3']),
+        #             'u_1': lambda timestep=0, df=simulation_results_df: \
+        #                 simulation_results_df.iloc[timestep]['optimal_values'].get('u_1', historical_initial_state['u_1']),
+        #             'u_2': lambda timestep=0, df=simulation_results_df: \
+        #                 simulation_results_df.iloc[timestep]['optimal_values'].get('u_2', historical_initial_state['u_2'])
+        #         }
+        #     }
+        # },
+        # {
+        #     'enable': False,
+        #     'params': {
+        #         'optimal_values': {
+        #             'v_1': lambda timestep=0: historical_initial_state['v_1'],
+        #             'v_2 + v_3': lambda timestep=0: historical_initial_state['v_2 + v_3'],
+        #             'u_1': lambda timestep=0: historical_initial_state['u_1'],
+        #             'u_2': lambda timestep=0: historical_initial_state['u_2']
+        #         }
+        #     }
+        # },
+        # {
+        #     'enable': False,
+        #     'params': {
+        #         'optimal_values': {
+        #             'v_1': lambda timestep=0: 500,
+        #             'v_2 + v_3': lambda timestep=0: 1000,
+        #             'u_1': lambda timestep=0: 50,
+        #             'u_2': lambda timestep=0: 100
+        #         }
+        #     }
+        # }
+]
+
 params = {
+    'test': apt_tests if enable_apt_tests else [{'enable': False}],
     'debug': [True], # Print debug messages (see APT model)
     'raise_on_assert': [False], # See assert_log() in utils.py
     'free_memory_states': [['cdps', 'events']],
@@ -37,11 +95,19 @@ params = {
     # APT model
     'use_APT_ML_model': [True],
     'freeze_feature_vector': [False], # Use the same initial state as the feature vector for each timestep
-    'interest_rate': [1.0],
+    'interest_rate': [1.0], # Real-world expected interest rate, for determining profitable arbitrage opportunities
     # APT OLS model
     'alpha_0': [0],
     'alpha_1': [1],
     'beta_0': [1.0003953223600617],
     'beta_1': [0.6756295152422528],
-    'beta_2': [3.86810578185312e-06], 
+    'beta_2': [3.86810578185312e-06],
+    # CDP parameters
+    'new_cdp_proportion': [0.5], # Proportion of v_1 or u_1 (collateral locked or debt drawn) used to create new CDPs 
+    'new_cdp_collateral': [1000], # The average CDP collateral for opening a CDP
+    'liquidation_buffer': [2.0], # multiplier applied to CDP collateral by users
+    # Average CDP duration == 3 months: https://www.placeholder.vc/blog/2019/3/1/maker-network-report
+    # The tuning of this parameter is probably off the average, because we don't have the CDP size distribution matched yet,
+    # so although the individual CDPs could have an average debt age of 3 months, the larger CDPs likely had a longer debt age.
+    'average_debt_age': [3 * (30 * 24 * 3600)], # delta t (seconds)
 }
