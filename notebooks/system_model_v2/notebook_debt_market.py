@@ -290,7 +290,7 @@ initial_state = {
     # u - principal debt states
     'principal_debt': principal_debt, # "D_1"; the total debt in the CDP system i.e. drawn - wiped - bitten
     'rai_drawn': rai_drawn, # total RAI debt minted from CDPs; the cumulative sum of "u_1" activity
-    'rai_wiped': rai_wiped, # total RAI debt wiped/burned from CDPs; the cumulative sum of "u_2" activity
+    'rai_wiped': rai_wiped, # total RAI debt wiped/burned from CDPs in repayment; the cumulative sum of "u_2" activity
     'rai_bitten': rai_bitten, # total RAI liquidated from CDPs; the cumulative sum of "u_3" activity
     'u_1': historical_initial_state['u_1'], # discrete "draw" event, in RAI
     'u_2': historical_initial_state['u_2'], # discrete "wipe" event, in RAI
@@ -303,7 +303,7 @@ initial_state = {
     'w_3': historical_initial_state['w_3'], # discrete "bite" event, in RAI
     
     # System states
-    'stability_fee': stability_fee, # interest rate used to calculate the accrued interest
+    'stability_fee': stability_fee, # interest rate used to calculate the accrued interest; per second interest rate (1.5% per month)
     'market_price': market_price, # unit: dollars; the secondary market clearing price
     'target_price': target_price, # unit: dollars; equivalent to redemption price
     'target_rate': 0 / (30 * 24 * 3600), # per second interest rate (X% per month), updated by controller

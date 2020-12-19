@@ -76,6 +76,7 @@ partial_state_update_blocks = [
             'cdps': s_store_cdps,
         }
     },
+    # Disabled, CDPs closed as part of APT CDP process
     # {
     #     'details': '''
     #         Exogenous u,v activity: close CDPs
