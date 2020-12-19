@@ -24,6 +24,9 @@ cdps = cdps.append({
     'w_bitten': 0.0
 }, ignore_index=True)
 
+# Select the start date, chosen for a gradually rising ETH price, and reasonable pool of CDP collateral and debt
+start_date = '2018-04-01' # Rising ETH price
+
 # NB: These initial states may be overriden in the relevant notebook
 state_variables = {
     # Metadata / metrics
