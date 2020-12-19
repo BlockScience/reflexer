@@ -2,7 +2,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from autosklearn.regression import AutoSklearnRegressor
 from autosklearn.metrics import mean_squared_error as auto_mean_squared_error
-from pprint import pprint
 import matplotlib.pyplot as plt
 import math, statistics
 from functools import partial
@@ -46,12 +45,6 @@ def p_resolve_p_expected(params, substep, state_history, state):
     except IndexError as e:
         logging.warning(e)
         eth_price = state['eth_price']
-                    
-    # try:
-    #     market_price_mean = np.mean([x[-1]['market_price'] for x in state_history]) #[1:]
-    # except IndexError as e:
-    #     print(e)
-    #     market_price_mean = p
 
     alpha_0 = params['alpha_0']
     alpha_1 = params['alpha_1']
@@ -94,7 +87,6 @@ def p_apt_model(params, substep, state_history, state):
         # add regression constant; this shifts index for optimal values
         optindex = [features.index(i) + 1 for i in optvars]
         # Set the index to zero to use the same feature vector for every step
-        #feature_0 = get_feature(state_history, features, index=0)
         feature_0 = get_feature(state_history, features, index=(0 if params['freeze_feature_vector'] else -1))
         feature_0 = np.insert(feature_0, 0, 1, axis=1)
 
@@ -162,23 +154,12 @@ def p_apt_model(params, substep, state_history, state):
     optimal_values: {optimal_values}
     ''')
     
-    # EXTERNAL HANDLER: pass optimal values to CDP handler (here, as dict)
-    # EXTERNAL HANDLER: receive new initial condition from CDP handler (as numpy array)
-    # This is done automatically via state
-    # _send_values_to_CDP(optimal_values)
-    # feature_0 = _receive_values_from_CDP()
-        
-    # EXTERNAL HANDLER: pass updated CDP features & expected price to market
-    # EXTERNAL HANDLER: receive price from market (possibly with demand shock)
-    # _send_feature_to_market(feature_0)
-    # _send_expected_price_to_market(p_expected)
-    # p = _receive_price_from_market()
-    
     v_1 = optimal_values.get('v_1', 0)
     v_2_v_3 = optimal_values.get('v_2 + v_3', 0)
     u_1 = optimal_values.get('u_1', 0)
     u_2 = optimal_values.get('u_2', 0)
 
+    # Pass optimal values to CDP handler, and receive new initial condition from CDP handler
     cdp_position_state = resolve_cdp_positions(params, state, {'v_1': v_1, 'v_2 + v_3': v_2_v_3, 'u_1': u_1, 'u_2': u_2})
     
     logging.debug("--- %s seconds ---" % (time.time() - start_time))
@@ -186,7 +167,6 @@ def p_apt_model(params, substep, state_history, state):
     return {**cdp_position_state, 'feature_vector': feature_0, 'optimal_values': optimal_values, 'minimize_results': minimize_results}
 
 def s_store_feature_vector(params, substep, state_history, state, policy_input):
-    print(policy_input)
     return 'feature_vector', policy_input['feature_vector']
 
 def s_store_optimal_values(params, substep, state_history, state, policy_input):

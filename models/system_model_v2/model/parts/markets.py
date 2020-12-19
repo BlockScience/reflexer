@@ -5,22 +5,30 @@ import options
 from .utils import get_feature
 
 def update_market_price(params, substep, state_history, state, policy_input):
+    '''
+    State update function used to update the market price,
+    based on the expected debt price, and the zero-intelligence market-clearing price.
+    '''
     p_debt_expected = state['p_debt_expected']
     previous_price = state['market_price']
     
     features = params['features']
     feature = get_feature(state_history, features)
     
+    # Pass updated CDP features & expected price to market
+    # Receive price from market (possibly with demand shock)
     clearing_price = get_market_price(p_debt_expected, previous_price, features, feature)
     
     return 'market_price', clearing_price
 
-# Secondary market function
-# Zero-intelligence market-clearing price: 
-# cf. Gode & Sunder (JPE v 101 n 1, 1993)
 order_book = np.array([0,0])
 
 def get_market_price(expected_price, previous_price, features, feature):
+    '''
+    Secondary market function
+    Zero-intelligence market-clearing price: 
+    cf. Gode & Sunder (JPE v 101 n 1, 1993)
+    '''
     global order_book
     
     bidvars = ['u_2']

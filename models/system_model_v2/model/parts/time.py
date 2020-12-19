@@ -5,20 +5,6 @@ import numpy as np
 import options
 
 
-# def resolve_time_passed(params, substep, state_history, state):
-#     """
-#     Time passes 
-#     """
-    
-#     if params[options.DebtPriceSource.__name__] == options.DebtPriceSource.DEBT_MARKET_MODEL.value:
-#         seconds = max(params['minumum_control_period'](state['timestep']), params['seconds_passed'](state['timestep']))
-#     else:
-#         offset = params['minumum_control_period'](state['timestep'])
-#         expected_lag = params['expected_control_delay'](state['timestep'])
-#         seconds = int(sts.expon.rvs(loc=offset, scale=expected_lag, random_state=np.random.RandomState(seed=int(f'{state["run"]}' + f'{state["timestep"]}'))))
-
-#     return {'seconds_passed': seconds}
-
 def resolve_time_passed(params, substep, state_history, state):
     seconds = params['seconds_passed'](state['timestep'])
     
