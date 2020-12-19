@@ -28,6 +28,10 @@ Files:
 
 * `shared.py` - file containing shared notebook imports and setup
 
+# Glossary
+
+See [GLOSSARY.md](./GLOSSARY.md) markdown file.
+
 # Models
 
 ## System Model v1.0: Debt Price Regression and Fitted Market Model
