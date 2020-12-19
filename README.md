@@ -3,6 +3,14 @@
 ![RAI laws of motion](diagrams/laws_of_motion.png)
 ![Shock metrics](exports/shock_metrics-tuned.png)
 
+# Where to start?
+
+The current model, **System Model v2.0**, integrates a CDP subsystem, a secondary market subsystem, and applies [Arbitrage Pricing Theory (APT)](https://www.investopedia.com/terms/a/apt.asp) to the **System Model v1.0** model. The **System Model v1.0** model consisted of an estimated "debt price" regressor model, and a fitted market model, with a PI controller in the loop.
+
+The latest notebook would be the **System Model v2.0** [full system model notebook](notebooks/system_model_v2/notebook_debt_market.ipynb). Please see the README notes about the Scipy patch that needs to be applied, and the Pickle files you'll need to download for the ML model. The model code used within the notebook can be found in `models/system_model_v2/`.
+
+The table of contents and glossary below should serve as a guide.
+
 ## Table of Contents
 
 Each model is located under `models/_`, with a unique name for each experiment.
@@ -28,7 +36,7 @@ Files:
 
 * `shared.py` - file containing shared notebook imports and setup
 
-# Glossary
+## Glossary
 
 See [GLOSSARY.md](./GLOSSARY.md) markdown file.
 
@@ -51,6 +59,8 @@ Full system model with parameters for selecting & stress testing subsystems, suc
     * The purpose of this experiment, is to validate the system model, using a debt market regression model trained using historical data.
 
 ## System Model v2.0: CDP, APT, Secondary Market Subsystems
+
+![Debt dynamics](diagrams/debt_dynamics.png)
 
 Full system model with CDP, APT, and secondary market subsystems.
 
