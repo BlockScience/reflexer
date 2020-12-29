@@ -113,14 +113,54 @@ def p_apt_model(params, substep, state_history, state):
     p_expected: {p_expected}
     ''')
 
+
+    '''
+    Work session notes:
+    
+    glf(x, to_opt, data, constant, timestep)
+    
+    def glf(x, to_opt, data, constant, timestep):
+        global curr_error
+        for i, y in enumerate(x):
+            data[:,to_opt[i]] = y
+        err = model.predict(data)[0] - constant
+        curr_error = abs(err)
+
+        return curr_error
+
+    x -> x0 (unobservable)
+    to_opt -> optindex
+    data -> feature_0
+    constant -> p_expected
+    '''
     minimize_results = {}
     try:
         if use_APT_ML_model:
-            minimize_results = minimize(func, x0, method='Powell', 
-                args=(optindex, feature_0, p_expected, state['timestep']),
-                bounds = bounds,
-                options={
+            # See https://hackmd.io/EOy3XVDMS6qNUDRv3TEUjw
+            liquidation_ratio = params['liquidation_ratio']
+            liquidation_buffer = params['liquidation_buffer']
+            eth_price = state['eth_price']
+
+            scaling_coefficient = liquidation_ratio * liquidation_buffer * (p_expected / eth_price)
+            x0_scaled = np.multiply(x0, [scaling_coefficient, scaling_coefficient, 1, 1])
+
+            bounds_scaled = np.multiply(bounds, [
+                (scaling_coefficient, scaling_coefficient),
+                (scaling_coefficient, scaling_coefficient),
+                (1, 1),
+                (1, 1)
+            ])
+
+            logging.debug(f'x0_scaled: {x0_scaled}')
+            logging.debug(f'bounds_scaled: {bounds_scaled}')
+
+            minimize_results = minimize(func, x0_scaled, method='Powell', 
+                args = (optindex, feature_0, p_expected, state['timestep']),
+                bounds = bounds_scaled,
+                options = {
                     'disp': True,
+                    'xtol': 500, # Default: 0.0001
+                    'ftol': 1e-3, # Default: 0.0001
                     'maxiter': 10,
                     'maxfev': 10
                 }
@@ -133,6 +173,7 @@ def p_apt_model(params, substep, state_history, state):
             ''')
             
             x_star = minimize_results['x']
+            x_star = np.multiply(x_star, [1/scaling_coefficient, 1/scaling_coefficient, 1, 1])
         else:
             x_star = newton(func, x0, args=(optindex, feature_0, p_expected))
         # Feasibility check, non-negativity
