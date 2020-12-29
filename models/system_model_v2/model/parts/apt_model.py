@@ -19,7 +19,7 @@ import pandas as pd
 from .utils import get_feature
 from .debt_market import resolve_cdp_positions
 
-def p_resolve_p_debt_expected(params, substep, state_history, state):
+def p_resolve_expected_debt_price(params, substep, state_history, state):
     model = params['model']
     features = params['features']
     feature_0 = get_feature(state_history, features, index=(0 if params['freeze_feature_vector'] else -1))
@@ -29,10 +29,10 @@ def p_resolve_p_debt_expected(params, substep, state_history, state):
 
     return {'expected_debt_price': expected_debt_price}
 
-def s_store_p_debt_expected(params, substep, state_history, state, policy_input):
+def s_store_expected_debt_price(params, substep, state_history, state, policy_input):
     return 'expected_debt_price', policy_input['expected_debt_price']
 
-def p_resolve_p_expected(params, substep, state_history, state):
+def p_resolve_expected_market_price(params, substep, state_history, state):
     eth_return = state['eth_return']
     eth_price_mean = params['eth_price_mean']
     market_price_mean = params['market_price_mean']
@@ -61,7 +61,7 @@ def p_resolve_p_expected(params, substep, state_history, state):
 
     return {'expected_market_price': expected_market_price}
 
-def s_store_p_expected(params, substep, state_history, state, policy_input):
+def s_store_expected_market_price(params, substep, state_history, state, policy_input):
     return 'expected_market_price', policy_input['expected_market_price']
 
 def p_apt_model(params, substep, state_history, state):
