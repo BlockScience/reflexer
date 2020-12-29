@@ -33,7 +33,7 @@ partial_state_update_blocks = [
             'apt': p_resolve_p_expected
         },
         'variables': {
-            'p_expected': s_store_p_expected
+            'expected_market_price': s_store_p_expected
         }
     },
     {
@@ -163,7 +163,7 @@ partial_state_update_blocks = [
             'apt': p_resolve_p_debt_expected
         },
         'variables': {
-            'p_debt_expected': s_store_p_debt_expected
+            'expected_debt_price': s_store_p_debt_expected
         }
     },
     {
