@@ -52,19 +52,28 @@ def load_debt_price_data(debt_price_source: options.DebtPriceSource):
             debt_price_dataframe = pd.read_csv('./tests/data/default_debt_price_source.csv')
             test_dfs = [debt_price_dataframe]
     elif debt_price_source == options.DebtPriceSource.DEBT_MARKET_MODEL.value:
+        # Load the historical debt market dataset
         debt_market_df = pd.read_csv('models/market_model/data/debt_market_df.csv', index_col='date', parse_dates=True)
+        # Load the scikit-learn regression model
         loaded_model = pickle.load(open('models/market_model/debt_price_estimator.pickle', 'rb'))
+        
+        # The set of market data features
         features = ['beta', 'Q', 'v_1', 'v_2 + v_3', 
                     'rho_star', 'C_star',
                     'D_1', 'u_1', 'u_2', 'u_3', 'u_2 + u_3', 
                     'D_2', 'w_1', 'w_2', 'w_3', 'w_2 + w_3',
                     'D']
+
+        # Select the subset of the debt market dataset used in the regression model debt price prediction
         data_to_predict = debt_market_df[features]
         loaded_model_predictions = loaded_model.predict(data_to_predict)
+
+        # Create a Pandas dataframe of the model predictions
         df = pd.DataFrame(loaded_model_predictions)
-        df['debt_price'] = df[0]
-        df['price_move'] = df['debt_price'].diff()
-        df['price_move'][0] = df['debt_price'][0] - 1
-        df.insert(0, 'seconds_passed', 24*3600)
+        df['debt_price'] = df[0] # Set the debt_price column to the debt price prediction dataframe column zero
+        df['price_move'] = df['debt_price'].diff() # Calculate and store the price_move as the diff of the debt_price 
+        df['price_move'][0] = df['debt_price'][0] - 1 # Remove NaN, by setting first price_move to first debt_price minus initial state of 1 Dai
+        df.insert(0, 'seconds_passed', 24 * 3600) # Create a column called seconds_passed, and set it to 1 day in seconds (the period of the historical dataset)
         test_dfs = [df]
+    
     return test_dfs
