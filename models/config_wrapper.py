@@ -7,6 +7,11 @@ class ConfigWrapper:
     The ConfigWrapper allows you to pass a cadCAD model (with a standard file structure) as an argument, and update the model and simulation configuration.
     Dictionaries, such as parameters and initial states would be merge updated, and all other options are overridden.
     It abstracts much of the cadCAD configuration away, and allows easily updating sets of parameters and initial states from the simulation notebooks.
+
+    import models.system_model_v2 as system_model_v2
+    e.g. system_model_v2_config = ConfigWrapper(system_model_v2)
+    system_model_v2_config.append() # Append the simulation config to the global cadCAD configs list
+    run() # Run the list of simulation configs stored in global cadCAD configs list
     '''
     def __init__(
             self,
