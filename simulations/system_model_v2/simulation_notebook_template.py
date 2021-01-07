@@ -325,8 +325,8 @@ initial_state = {
     'market_price': market_price,
     'target_price': target_price, # dollars == redemption price
     'target_rate': 0 / (30 * 24 * 3600), # per second interest rate (X% per month)
-    'p_expected': target_price,
-    'p_debt_expected': target_price,
+    'expected_market_price': target_price,
+    'expected_debt_price': target_price,
 }
 
 # initial_state = {
@@ -359,8 +359,8 @@ initial_state = {
 #     'market_price': debt_market_df.iloc[0]['p'],
 #     'target_price': target_price, # dollars == redemption price
 #     'target_rate': 0 / (30 * 24 * 3600), # per second interest rate (X% per month)
-#     'p_expected': target_price,
-#     'p_debt_expected': target_price,
+#     'expected_market_price': target_price,
+#     'expected_debt_price': target_price,
 # }
 
 initial_state.update(historical_initial_state)

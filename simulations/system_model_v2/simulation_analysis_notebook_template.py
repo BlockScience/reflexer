@@ -68,7 +68,7 @@ df.plot(x='timestamp', y=['target_price', 'market_price'], title='Target Price v
 
 
 # %%
-df.plot(x='timestamp', y=['p_expected', 'p_debt_expected'], title='Expected Market Price and Debt Price')
+df.plot(x='timestamp', y=['expected_market_price', 'expected_debt_price'], title='Expected Market Price and Debt Price')
 
 
 # %%

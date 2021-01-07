@@ -309,8 +309,8 @@ initial_state = {
     'target_rate': 0 / (30 * 24 * 3600), # per second interest rate (X% per month), updated by controller
     
     # APT model states
-    'p_expected': target_price, # root of non-arbitrage condition
-    'p_debt_expected': target_price, # predicted "debt" price, the intrinsic value of RAI according to the debt market activity and state
+    'expected_market_price': target_price, # root of non-arbitrage condition
+    'expected_debt_price': target_price, # predicted "debt" price, the intrinsic value of RAI according to the debt market activity and state
 }
 
 # Override initial state with historical initial state, for ML model starting condition
@@ -427,7 +427,7 @@ df.plot(x='timestamp', y=['target_price', 'market_price'], title='Target Price v
 
 
 # %%
-df.plot(x='timestamp', y=['p_expected', 'p_debt_expected'], title='Expected Market Price and Debt Price')
+df.plot(x='timestamp', y=['expected_market_price', 'expected_debt_price'], title='Expected Market Price and Debt Price')
 
 
 # %%
