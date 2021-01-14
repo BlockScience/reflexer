@@ -1,4 +1,20 @@
+<!-- #region -->
 # Glossary
+
+**General terms**
+* APT - [Arbitrage Pricing Theory (APT)](https://www.investopedia.com/terms/a/apt.asp) is a factor pricing model that uses an arbitrage argument to define the impact of factors on the generating process of an asset's return.
+* CDP
+* Redemption Price
+* Market Price
+* Redemption Rate
+* Proportional-Integral-Derivative (PID) controller - is the most commonly implemented real-world stability controller type in the world, and both its modelingstructure and its parameter tuning are well-researched problems.
+
+## PID Controller
+* Set point -   The set point $$p_s(t)$$ of the controller is the redemption price $$p_r(t)$, in units of $\frac{USD}{RAI}$:
+$$
+p_s(t) \equiv p_r(t) \: \forall t
+$$
+
 
 # System Model v2.0
 
@@ -29,3 +45,4 @@
 ## APT system
 
 TODO: update APT glossary
+<!-- #endregion -->

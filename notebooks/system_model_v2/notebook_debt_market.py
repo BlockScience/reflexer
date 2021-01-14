@@ -37,6 +37,9 @@
 # 11. Aggregate states
 # 12. Update debt market state
 # 13. Exogenous ETH price process
+#
+#
+# Please visit the [Glossary](./GLOSSARY.md) for specific term and component definitions.
 # %%
 # %pip show scikit-optimize
 
@@ -375,7 +378,6 @@ np.corrcoef(df['market_price'],df['target_rate'])
 
 
 # %%
-
 df['market_price_rolling'] = df['market_price'].rolling(7).std()
 fig = px.histogram(df, x="market_price_rolling", nbins=25)
 
@@ -389,12 +391,5 @@ fig.show()
 
 # %% [markdown]
 # ## Conclusion
+# This current working notebook is an integration test. In contrast to the v1 model, the stabilizing effect of a positive Kp and negative Ki term combined. Towards the end of the notebook we wanted to test whether the controller was reducing volatility, but the plots we chose didn't give any strong conclusions yet.
 #
-# 	- Describe what the debt market model means. Provide an overview with math equations and write-up. See example here: https://nbviewer.jupyter.org/github/BlockScience/Aragon_Conviction_Voting/blob/a5bf8accbc832c34e3cc7f206106edd89ea0aa7d/models/v3/Aragon_Conviction_Voting_Model.ipynb
-# 	- Show how to download pickle file. Show in readme and here. Pull out glf_continue_callback and add to utilites file but describe here what it is doing and why. 
-# 	- Instead of comments in code, moving the text to markdown is usually cleaner and easy to understand.
-# 	- Abstract out a lot of processing stuff into another file. Same for the initial states and parameters. You can show some here and talk through how and why, but it is cleaner to be in a file.
-# 	- Supress the pink model run output
-# 	- Describe what are we analzying from the simulation? And what do we see?
-# 	- Supress 61 output
-# 	- Add a conclusion. What did we learn?

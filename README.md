@@ -3,7 +3,9 @@
 <p align="center"><img src="diagrams/laws_of_motion.png" alt="RAI laws of motion" width="80%"/></p>
 
 # Project Overview
-[Rai is a decentralized protocol that reacts to market forces to modify the value of a collateralized asset.](https://medium.com/reflexer-labs/stability-without-pegs-8c6a1cbc7fbd)  Rai allows anyone to leveralge crypto assets to issue a "reflex bond" that follows the price of its underlying collateral in a less volatile way.
+[Rai is a decentralized protocol that reacts to market forces to modify the value of a collateralized asset.](https://medium.com/reflexer-labs/stability-without-pegs-8c6a1cbc7fbd)  Rai allows anyone to leveralge crypto assets to issue a "reflex bond" that follows the price of its underlying collateral in a less volatile way. The stated goal is to stabilize the secondary market price for RAI debt, using the redemption price as a stabilizer. The benefits of such stabilization is a reduction in the volatility of the market price, thereby increasing predictability, while at the same time creating a flexible response instrument that can counteract or dampen unanticipated market shocks (such as liquidity cascades arising outside of the system).
+
+To achieve this goal, RL implemented a Proportional-Integral-Derivative (PID) controller, based upon a reference document approach for the [Maker DAI market that was never implemented](https://steemit.com/makerdao/@kennyrowe/digital-money-a-simulation-of-the-deflation-rate-adjustment-mechanism-of-the-dai-stablecoin). This controller (described in more detail in what follows) is the most commonly implemented real-world stability controller type in the world, and both its modeling structure and its parameter tuning are well-researched problems.
 
 
 # Goals
