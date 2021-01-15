@@ -10,10 +10,26 @@
 * Proportional-Integral-Derivative (PID) controller - is the most commonly implemented real-world stability controller type in the world, and both its modelingstructure and its parameter tuning are well-researched problems.
 
 ## PID Controller
-* Set point -   The set point $$p_s(t)$$ of the controller is the redemption price $$p_r(t)$, in units of $\frac{USD}{RAI}$:
+* Set point -   The set point $$p_s(t)$$ of the controller is the redemption price $$p_r(t)$$, in units of $$\frac{USD}{RAI}$$:
 $$
 p_s(t) \equiv p_r(t) \: \forall t
 $$
+* Process variable -   The process variable of the controller is the secondary market price $$p(t)$$, in units of $$\frac{USD}{RAI}$$.
+* Error -   The error is the difference between the set point and the process variable, in units of $$\frac{USD}{RAI}$$:
+  $$
+    e(t) := p_s(t) - p(t) = p_r(t) - p(t).
+  $$
+  
+* Control - The control is the rate of change of the redemption price $$p_r(t)$$, in units of $$\frac{USD}{RAI}$$:
+  $$
+    r(t) := K_p \cdot e(t) + K_i \cdot \int_{\tau = 0}^t e(\tau) d \tau + K_d \cdot \frac{ d e(t)}{d t},
+  $$
+Where $$K_p$$, $$K_i$$, $$K_d$$ are the control parameters corresponding, respectively, to the proportional, integral and derivative terms.
+* Output - The output of the controlled process, or system plant, is the redemption price $$p_r(t)$$:
+  $$
+    p_r(t+\Delta t) = (1 + r(t))^{\Delta t} \cdot p_r(t)
+  $$
+for time interval $$\Delta t$$.
 
 
 # System Model v2.0

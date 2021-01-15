@@ -7,7 +7,7 @@
 
 To achieve this goal, RL implemented a Proportional-Integral-Derivative (PID) controller, based upon a reference document approach for the [Maker DAI market that was never implemented](https://steemit.com/makerdao/@kennyrowe/digital-money-a-simulation-of-the-deflation-rate-adjustment-mechanism-of-the-dai-stablecoin). This controller (described in more detail in what follows) is the most commonly implemented real-world stability controller type in the world, and both its modeling structure and its parameter tuning are well-researched problems.
 
-
+<!-- #region -->
 # Goals
 The goals of this repository are to create a cadCAD model to simulate the Reflexer, Rai system with the Arbitrage Pricing Theory (APT) to act as “bridge” between CDP and secondary market. The simulations used here will help design the incorporation of PID controller into a closed-loop system, and select the parameters that optimize how the system responds to price changes in order to achieve overall objectives. 
 
@@ -57,7 +57,11 @@ Simplest model: zero-intelligence trading (Gode and Sunder, Journal of Political
 improving prices, given current price and expected value from APT bridge
 4. Secondary Market returns new market price to APT bridge
 5. Excess demand or supply is carried over in order book to next period
-
+    
+    
+## RAI Arbitrageur Model
+[Click here to see model specifications](https://hackmd.io/@jshorish/Hkdj9NhRw)
+<!-- #endregion -->
 
 # Where to start?
 
