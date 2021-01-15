@@ -61,6 +61,9 @@ improving prices, given current price and expected value from APT bridge
     
 ## RAI Arbitrageur Model
 [Click here to see model specifications](https://hackmd.io/@jshorish/Hkdj9NhRw)
+
+## AMM Arb Model
+[Click here to see model specifications](https://hackmd.io/7Z2e-Is7Toi-5SaRl4K3tA?view)
 <!-- #endregion -->
 
 # Where to start?
