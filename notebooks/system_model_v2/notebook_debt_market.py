@@ -353,28 +353,8 @@ std_mkt.plot()
 
 
 # %%
-np.std(df['market_price'])
-
-
-# %%
 err_m_t = df['market_price'] - df['target_price']
 err_m_t.plot()
-
-
-# %%
-np.sqrt(abs(df['market_price'] - df['target_price']).mean())
-
-
-# %%
-np.corrcoef(df['market_price'],df['eth_price'])
-
-
-# %%
-np.corrcoef(df['market_price'],df['target_price'])
-
-
-# %%
-np.corrcoef(df['market_price'],df['target_rate'])
 
 
 # %%

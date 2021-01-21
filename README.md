@@ -119,7 +119,6 @@ Full system model with CDP, APT, and secondary market subsystems. See [slides 17
 ### Notebooks
 
 1. [Full system model](notebooks/system_model_v2/notebook_debt_market.ipynb)
-2. [Secondary market maker](notebooks/system_model_v2/notebook_secondary_market_maker.ipynb)
 
 
 ## System Model v1.0: Debt Price Regression and Fitted Market Model
@@ -258,3 +257,7 @@ python tests/run_shock_tests.py
 Outputs:
 * `exports/_.png` - metric grid for each set of parameters
 * `notebooks/system_model_v1/shock_tests.ipynb` - template notebook for running test and generating grid
+
+
+## Resources
+* [Tutorial](https://github.com/cadCAD-org/demos/blob/master/tutorials/numerical_computation/numerical_integration_1.ipynb) on how to use cadCAD for numerical integration.
