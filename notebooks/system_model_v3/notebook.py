@@ -78,8 +78,8 @@ from models.system_model_v3.model.params.init import params
 
 # Update the default parameter values
 params_update = {
-    'controller_enabled': [True],
-    'kp': [5e-7], # proportional term for the stability controller: units 1/USD
+    'controller_enabled': [False],
+    'kp': [1e-7], # 5e-7 # proportional term for the stability controller: units 1/USD
     'ki': [lambda control_period=3600: -1e-7 / control_period], # integral term for the stability controller: units 1/(USD*seconds)
 }
 
@@ -144,6 +144,9 @@ df = df.query('simulation == 0 and subset == 0')
 
 
 # %%
+df.plot(x='timestamp', y=['market_price', 'market_price_twap'])
+
+# %%
 df.plot(x='timestamp', y=['eth_price'], title='Historical ETH price')
 
 
@@ -152,7 +155,7 @@ df.plot(x='timestamp', y=['eth_return'], title='Historical ETH return')
 
 
 # %%
-df.plot(x='timestamp', y=['target_price', 'market_price'], title='Target Price vs. Market Price')
+df.plot(x='timestamp', y=['target_price', 'market_price', 'market_price_twap'], title='Target Price vs. Market Price')
 
 
 # %%
@@ -250,7 +253,7 @@ fig.add_trace(
 )
 
 fig.add_trace(
-    go.Scatter(x=df['timestamp'], y=df['market_price'], name="Market price"),
+    go.Scatter(x=df['timestamp'], y=df['market_price_twap'], name="Market price TWAP"),
     secondary_y=False,
 )
 
@@ -297,7 +300,7 @@ fig.add_trace(
     secondary_y=False,
 )
 fig.add_trace(
-    go.Scatter(x=df['timestamp'], y=df['market_price'], name="Market Price"),
+    go.Scatter(x=df['timestamp'], y=df['market_price_twap'], name="Market Price TWAP"),
     secondary_y=False,
 )
 fig.add_trace(
