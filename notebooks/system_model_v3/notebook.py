@@ -183,13 +183,6 @@ df.plot(x='timestamp', y=['eth_locked', 'eth_freed', 'eth_bitten'], title='Debt 
 df.plot(x='timestamp', y=['v_1', 'v_2', 'v_3'], title='Debt Market ETH Lock, Free, Bite Activity')
 
 # %%
-df['apt_v_1'] = df['optimal_values'].map(lambda v: v.get('v_1', 0))
-df['apt_v_2'] = df['optimal_values'].map(lambda v: v.get('v_2 + v_3', 0))
-
-df.plot(x='timestamp', y=['apt_v_1', 'apt_v_2'], title='Debt Market ETH APT Lock, Free Activity')
-
-
-# %%
 df['drawn - wiped - bitten'] = df['rai_drawn'] - df['rai_wiped'] - df['rai_bitten']
 df.plot(x='timestamp', y=['principal_debt', 'drawn - wiped - bitten'], title='Debt Market RAI State')
 
@@ -201,18 +194,6 @@ df.plot(x='timestamp', y=['rai_drawn', 'rai_wiped', 'rai_bitten'], title='Debt M
 # %%
 df.plot(x='timestamp', y=['u_1', 'u_2', 'u_3'], title='Debt Market RAI Draw, Wipe, Bite Activity')
 
-
-# %%
-df['sum_apt_u_1'] = df['optimal_values'].map(lambda v: v.get('u_1', 0))
-df['sum_apt_u_2'] = df['optimal_values'].map(lambda v: v.get('u_2', 0))
-
-df.plot(x='timestamp', y=['sum_apt_u_1', 'sum_apt_u_2'], title='Debt Market RAI APT Lock, Free Activity')
-
-# %%
-df['diff_u_1_u_2'] = df['sum_apt_u_1'] - df['sum_apt_u_2']
-df['diff_u_1_u_2'] = df['diff_u_1_u_2'].cumsum()
-
-df.plot(x='timestamp', y=['diff_u_1_u_2'])
 
 # %% [markdown]
 # ## Accrued interest and system revenue
@@ -277,7 +258,6 @@ fig.update_yaxes(title_text="ETH price ($)", secondary_y=True)
 fig.update_layout(
     autosize=False,
     width=1000,
-    height=800,
     margin=dict(
         l=50,
         r=50,
@@ -320,7 +300,6 @@ fig.update_yaxes(title_text="Redemption Rate (1n = 1e-9)", secondary_y=True)
 fig.update_layout(
     autosize=False,
     width=1000,
-    height=800,
     margin=dict(
         l=50,
         r=50,
