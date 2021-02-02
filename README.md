@@ -7,9 +7,12 @@
 
 To achieve this goal, RL implemented a Proportional-Integral-Derivative (PID) controller, based upon a reference document approach for the [Maker DAI market that was never implemented](https://steemit.com/makerdao/@kennyrowe/digital-money-a-simulation-of-the-deflation-rate-adjustment-mechanism-of-the-dai-stablecoin). This controller (described in more detail in what follows) is the most commonly implemented real-world stability controller type in the world, and both its modeling structure and its parameter tuning are well-researched problems.
 
-<!-- #region -->
+
 # Goals
-The goals of this repository are to create a cadCAD model to simulate the Reflexer, Rai system with the Arbitrage Pricing Theory (APT) to act as “bridge” between CDP and secondary market. The simulations used here will help design the incorporation of PID controller into a closed-loop system, and select the parameters that optimize how the system responds to price changes in order to achieve overall objectives. 
+The goals of this repository are to create a cadCAD model to simulate the Reflexer, Rai system with the Arbitrage Pricing Theory (APT) to act as “bridge” between CDP and secondary market. The simulations used here will help design the incorporation of PID controller into a closed-loop system, and select the parameters that optimize how the system responds to price changes in order to achieve overall objectives. In short, 
+* Smoothing of secondary market price movements without assuming a redemption price peg
+* Stability of the controller for a range of exogenous shocks
+* Graceful startup and shutdown of controller in response to system events
 
 ## System Mechanisms
 ### Controller Specification
@@ -18,6 +21,8 @@ Mathematical representation:
 ![Controller](diagrams/controller.png)
 
 See [Documenting Model Selection Presentation](https://drive.google.com/drive/u/1/folders/1uW7U2dtrlhb91bkvKzs-Vbh2MBoc7ifZ) for more information.
+
+See [Parameter overview](https://drive.google.com/file/d/1Ud1D3Jq05GcoU7h9IYKf5zGAmxIuzX_X/view) here for more details about the parameters and KPIs.
 
 ### APT Bridge
 Takes as input exogenous ETH price process (historical single collateral DAI)
@@ -71,6 +76,9 @@ improving prices, given current price and expected value from APT bridge
 The current model, **System Model v2.0**, integrates a CDP subsystem, a secondary market subsystem, and applies [Arbitrage Pricing Theory (APT)](https://www.investopedia.com/terms/a/apt.asp) to the **System Model v1.0** model. The **System Model v1.0** model consisted of an estimated "debt price" regressor model, and a fitted market model, with a PI controller in the loop.
 
 The latest notebook would be the **System Model v2.0** [full system model notebook](notebooks/system_model_v2/notebook_debt_market.ipynb). Please see the below in this README about the Scipy patch that needs to be applied, and the Pickle files you'll need to download for the ML model. The model code used within the notebook can be found in `models/system_model_v2/`.
+
+
+Click [here](parameter_methodology.md) for information about cadCAD parameter sweeping methodology. 
 
 The table of contents and glossary below should serve as a guide.
 
