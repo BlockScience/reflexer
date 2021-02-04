@@ -1,4 +1,20 @@
 
+# Experiment on 2021-02-03T15:12:11.591826
+* Passed: False
+* Time: 0.0 minutes
+* Results ID: 2021_2_3T1612357931_591826
+* Git Hash: 3281a22
+
+Experiment metrics:
+
+* Number of timesteps: 10 / 0.4166666666666667 days
+* Timestep duration: 0.025 seconds
+* Control parameters: ['control_period', 'kp', 'ki']
+* Approx. number of values per parameter: 2
+* Number of parameter combinations: 8
+* Expected experiment duration: 0.03333333333333333 minutes / 0.0005555555555555556 hours
+    
+
 # Experiment on 2021-02-03T14:51:18.828047
 * Passed: False
 * Time: 0.0 minutes
