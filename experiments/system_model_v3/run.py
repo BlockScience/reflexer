@@ -38,7 +38,6 @@ params.update(params_update)
 # Create a wrapper for the model simulation, and update the existing parameters and initial state
 system_simulation = ConfigWrapper(system_model_v3, T=range(SIMULATION_TIMESTEPS), M=params, initial_state=state_variables)
 
-
 passed = False
 experiment_time = 0.0
 try:

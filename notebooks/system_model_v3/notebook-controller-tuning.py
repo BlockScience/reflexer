@@ -57,8 +57,8 @@ from plotly.subplots import make_subplots
 
 # %%
 # Import the historical MakerDAO market data CSV file
-from models.system_model_v3.model.params.init import env_process_df
-env_process_df
+from models.system_model_v3.model.params.init import eth_price_df
+eth_price_df
 
 # %%
 from models.system_model_v3.model.state_variables.init import state_variables
@@ -66,7 +66,7 @@ from models.system_model_v3.model.state_variables.init import state_variables
 state_variables.update({})
 
 # %%
-env_process_df.plot(y='Open')
+eth_price_df['0'].plot()
 
 # %%
 import itertools
@@ -79,11 +79,14 @@ import itertools
 # scales = list(range(1, 9, 1))
 # ki_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
 
-kp_sweep = [1e-7]
-ki_sweep = [-1e-7]
+kp_sweep = [1e-7, 1e-6, 1e-5, -1e-7, -1e-6, -1e-5]
+ki_sweep = [-1e-7, -1e-7, -1e-7, 1e-7, 1e-7, 1e-7]
 
 controller_sweep = list(itertools.product(kp_sweep, ki_sweep))
 controller_sweep
+
+# %%
+# # %pip install /Users/bscholtz/workspace/radCAD/dist/radcad-0.5.0.tar.gz
 
 # %%
 from models.system_model_v3.model.params.init import params
@@ -94,33 +97,30 @@ params_update = {
     'kp': [x[0] for x in controller_sweep], # proportional term for the stability controller: units 1/USD
     'ki': [x[1] for x in controller_sweep], # integral term for the stability controller: units 1/(USD*seconds)
     'liquidation_ratio': [1.5],
-    'interest_rate': [1.03]
+    'interest_rate': [1.03],
 }
 
 params.update(params_update)
-
-# %%
-# # %pip install https://github.com/danlessa/cadCAD/archive/danlessa_devel.zip --force-reinstall
-# # %pip install cadCAD --force-reinstall
-# # %pip install /Users/bscholtz/workspace/radCAD/dist/radcad-0.4.1.tar.gz
 
 # %% [markdown]
 # # Simulation Execution
 
 # %%
+MONTE_CARLO_RUNS = 1
+
 # Set the number of simulation timesteps, with a maximum of `len(debt_market_df) - 1`
-# SIMULATION_TIMESTEPS = len(env_process_df) - 1
-SIMULATION_TIMESTEPS = 24 * 30
+SIMULATION_TIMESTEPS = len(eth_price_df) - 1
+SIMULATION_TIMESTEPS = 24 * 30 * 6
+SIMULATION_TIMESTEPS
 
 # %%
 # Create a wrapper for the model simulation, and update the existing parameters and initial state
-system_simulation = ConfigWrapper(system_model_v3, T=range(SIMULATION_TIMESTEPS), M=params, initial_state=state_variables)
+system_simulation = ConfigWrapper(system_model_v3, T=range(SIMULATION_TIMESTEPS), N=MONTE_CARLO_RUNS, M=params, initial_state=state_variables)
 
 
 # %%
 del configs[:] # Clear any prior configs
-system_simulation.append() # Append the simulation config to the cadCAD `configs` list
-(simulation_result, _tensor_field, _sessions) = run(drop_midsteps=False) # Run the simulation
+(simulation_result, exceptions, _) = run(system_simulation, drop_midsteps=False, use_radcad=True) # Run the simulation
 
 # %%
 simulation_result
@@ -192,6 +192,18 @@ df = drop_dataframe_midsteps(simulation_result)
 df
 
 # %%
+df.query('subset == 0').head()
+
+# %%
+df.query('subset == 1').head()
+
+# %%
+# df.query('subset == 1')['uniswap_oracle'].iloc[0].__dict__
+
+# %%
+# df.query('subset == 0').iloc[0].equals(df.query('subset == 1').iloc[0])
+
+# %%
 df['target_price'] = df['target_price'] * 1.5
 
 # %% [markdown]
@@ -207,62 +219,21 @@ df['target_price'] = df['target_price'] * 1.5
 import plotly.express as px
 
 # %%
-fig = px.line(df, x="timestamp", y=["market_price", "market_price_twap", "target_price"], facet_col="subset", facet_col_wrap=2, height=1000)
+fig = px.line(df, x="timestamp", y=["market_price", "market_price_twap", "target_price"], facet_row="subset",
+              facet_row_spacing=0.0004,
+              facet_col_spacing=0.0004)
 fig.show()
 
 # %%
-## Create figure with secondary y-axis
-fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-# Add traces
-fig.add_trace(
-    go.Scatter(x=df['timestamp'], y=df['RAI_balance'], name="Uniswap RAI balance"),
-    secondary_y=False,
-)
-
-fig.add_trace(
-    go.Scatter(x=df['timestamp'], y=df['principal_debt'], name="CDP system principal debt"),
-    secondary_y=False,
-)
-
-fig.add_trace(
-    go.Scatter(x=df['timestamp'], y=df['ETH_balance'], name="Uniswap ETH balance"),
-    secondary_y=True,
-)
-
-fig.add_trace(
-    go.Scatter(x=df['timestamp'], y=df['eth_collateral'], name="CDP system ETH collateral"),
-    secondary_y=True,
-)
-
-# Add figure title
-fig.update_layout(
-    title_text="Liquidity in CDPs and secondary market"
-)
-
-# Set x-axis title
-fig.update_xaxes(title_text="Timestamp")
-
-# Set y-axes titles
-fig.update_yaxes(title_text="RAI ($)", secondary_y=False)
-fig.update_yaxes(title_text="ETH (Ether)", secondary_y=True)
-
-fig.update_layout(
-    autosize=False,
-    width=1000,
-    margin=dict(
-        l=50,
-        r=50,
-        b=100,
-        t=100,
-        pad=4
-    ),
-)
-
+fig = px.line(simulation_result, x="timestamp", y=["RAI_balance", "principal_debt"], facet_col="run", facet_col_wrap=2, height=500)
 fig.show()
 
 # %%
-df.plot(x='timestamp', y=['collateralization_ratio'], title='Collateralization Ratio')
+fig = px.line(simulation_result, x="timestamp", y=["ETH_balance", "eth_collateral"], facet_col="run", facet_col_wrap=2, height=500)
+fig.show()
+
+# %%
+df.plot(x='timestamp', y=['collateralization_ratio'], title='Collateralization Ratio', facet_col="subset", facet_col_wrap=2, height=1000)
 
 # %%
 # df = df.query("subset == 0")
@@ -354,5 +325,7 @@ fig.show()
 
 # %%
 df.plot(x='timestamp', y=['market_price', 'expected_market_price'], title='Expected Market Price')
+
+# %%
 
 # %%
