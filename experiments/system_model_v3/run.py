@@ -4,7 +4,7 @@ from shared import run, configs, ConfigWrapper, system_model_v3
 
 from models.system_model_v3.model.params.init import params
 from models.system_model_v3.model.state_variables.init import state_variables
-from models.system_model_v3.model.params.init import env_process_df
+from models.system_model_v3.model.params.init import eth_price_df
 
 import logging
 import datetime
@@ -29,7 +29,7 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 # Set the number of simulation timesteps, with a maximum of `len(debt_market_df) - 1`
-SIMULATION_TIMESTEPS = 10  # len(env_process_df) - 1
+SIMULATION_TIMESTEPS = 10  # len(eth_price_df) - 1
 
 # Update parameters
 params_update, experiment_metrics = configure(timesteps=SIMULATION_TIMESTEPS, subset=True)
@@ -38,9 +38,9 @@ params.update(params_update)
 # Create a wrapper for the model simulation, and update the existing parameters and initial state
 system_simulation = ConfigWrapper(system_model_v3, T=range(SIMULATION_TIMESTEPS), M=params, initial_state=state_variables)
 
-
 passed = False
 experiment_time = 0.0
+exceptions = []
 try:
     start = time.time()
     
@@ -52,7 +52,8 @@ try:
     # Run cadCAD simulation
     del configs[:] # Clear any prior configs
     system_simulation.append() # Append the simulation config to the cadCAD `configs` list
-    (simulation_result, _tensor_field, _sessions) = run(drop_midsteps=False) # Run the simulation
+    (simulation_result, exceptions, _) = run(system_simulation, drop_midsteps=False) # Run the simulation
+    logging.debug(exceptions)
     df = pd.DataFrame(simulation_result)
     logging.debug(df.info())
     results = save_experiment_results(results_id, df, params_update, experiment_folder)
@@ -74,6 +75,9 @@ experiment_run_log = f'''
 * Time: {experiment_time / 60} minutes
 * Results ID: {results_id}
 * Git Hash: {hash}
+
+Exceptions:
+{exceptions}
 
 Experiment metrics:
 {experiment_metrics}

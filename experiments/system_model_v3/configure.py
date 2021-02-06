@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 
 
-timestep_duration = 0.014 # seconds
+timestep_duration = 0.004 # seconds
 
 def generate_params(sweeps):
     cartesian_product = list(itertools.product(*sweeps.values()))
@@ -33,7 +33,7 @@ def configure(subset=False, timesteps=24*365):
             'control_period': control_period,
             'kp': kp,
             'ki': ki,
-            'alpha': alpha
+            # 'alpha': alpha
         }
 
     params = generate_params(sweeps)
