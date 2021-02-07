@@ -9,33 +9,7 @@ def generate_params(sweeps):
     params = {key: [x[i] for x in cartesian_product] for i, key in enumerate(sweeps.keys())}
     return params
 
-def configure(subset=False, timesteps=24*365):
-    if subset:
-        control_period = np.linspace(1 * 3600, 6 * 3600, 2) # Default: 3 hours
-        kp = np.linspace(1e-10, 1e-4, 2) # Default: 1e-8
-        ki = np.linspace(-1e-10, -1e-4, 2) # Default: -1e-10
-        sweeps = {
-            'control_period': control_period,
-            'kp': kp,
-            'ki': ki,
-        }
-    else:
-        control_period = np.linspace(1 * 3600, 6 * 3600, 3) # Default: 3 hours
-        kp = np.linspace(1e-10, 1e-4, 3) # Default: 1e-8
-        ki = np.linspace(-1e-10, -1e-4, 3) # Default: -1e-10
-        alpha = np.linspace(
-            999998857063901981428416512,
-            1000000000000000000000000000, # Disabled
-            3
-        )
-
-        sweeps = {
-            'control_period': control_period,
-            'kp': kp,
-            'ki': ki,
-            # 'alpha': alpha
-        }
-
+def configure_experiment(sweeps: dict, timesteps=24*30*6):
     params = generate_params(sweeps)
     param_sweeps = len(params[next(iter(params))])
     param_values = len(sweeps[next(iter(sweeps))])
@@ -51,6 +25,3 @@ def configure(subset=False, timesteps=24*365):
     print (experiment_metrics)
 
     return params, experiment_metrics
-
-if __name__ == "__main__":
-    configure()
