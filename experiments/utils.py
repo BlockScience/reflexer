@@ -3,29 +3,33 @@ import dill
 import datetime
 
 
-def save_experiment_results(results_id, df, params, experiment_folder):
+def save_to_HDF5(experiment, store_file_name, store_key):
+    now = datetime.datetime.now()
+    store = pd.HDFStore(store_file_name)
+    store.put(store_key, pd.DataFrame(experiment.results))
+    store.put(f'{store_key}_exceptions', pd.DataFrame(experiment.exceptions))
+    store.get_storer(store_key).attrs.metadata = {
+        'date': now.isoformat()
+    }
+    store.close()
+    print(f"Saved experiment results to HDF5 store file {store_file_name} with key {store_key}")
+
+def update_experiment_run_log(experiment_folder, passed, results_id, hash, exceptions, experiment_metrics, experiment_time):
     now = datetime.datetime.now()
 
-    # store in hdf5 file format 
-    store_file = f'{experiment_folder}/results/results.hdf5'
-    store_data = pd.HDFStore(store_file)
+    experiment_run_log = f'''
+# Experiment on {now.isoformat()}
+* Passed: {passed}
+* Time: {experiment_time / 60} minutes
+* Results ID: {results_id}
+* Git Hash: {hash}
 
-    # data
-    store_data.put(results_id, df)
+Exceptions:
+{exceptions}
 
-    # including metadata
-    metadata = {'experiment_folder': experiment_folder, 'date': now.isoformat(), 'params': dill.dumps(params)}
-    
-    # getting attributes
-    store_data.get_storer(results_id).attrs.metadata = metadata
-    
-    # closing the store_data 
-    store_data.close() 
-    
-    # getting data 
-    with pd.HDFStore(store_file) as store_data:
-        keys = store_data.keys()
-        data = store_data[results_id]
-        metadata = store_data.get_storer(results_id).attrs.metadata
+Experiment metrics:
+{experiment_metrics}
+    '''
 
-    return keys
+    with open(f'{experiment_folder}/experiment_run_log.md', 'r') as original: experiment_run_log_orig = original.read()
+    with open(f'{experiment_folder}/experiment_run_log.md', 'w') as modified: modified.write(experiment_run_log + experiment_run_log_orig)

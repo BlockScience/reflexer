@@ -1,9 +1,14 @@
 from .configure import configure
-from experiments.utils import save_experiment_results
-from shared import run, configs, ConfigWrapper, system_model_v3
+from experiments.utils import save_to_HDF5, update_experiment_run_log
+from experiments.system_model_v3.post_process import post_process_results
 
+from radcad import Model, Simulation, Experiment
+from radcad.engine import Engine, Backend
+
+from models.system_model_v3.model.partial_state_update_blocks import partial_state_update_blocks
 from models.system_model_v3.model.params.init import params
 from models.system_model_v3.model.state_variables.init import state_variables
+
 from models.system_model_v3.model.params.init import eth_price_df
 
 import logging
@@ -18,7 +23,6 @@ import pandas as pd
 experiment_folder = os.path.dirname(__file__) # "experiments/system_model_v3"
 hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
 now = datetime.datetime.now()
-results_id = f'{now.year}_{now.month}_{now.day}T{str(now.timestamp()).replace(".", "_")}'
 
 # Configure logging
 logger = logging.getLogger()
@@ -30,13 +34,12 @@ logger.addHandler(file_handler)
 
 # Set the number of simulation timesteps, with a maximum of `len(debt_market_df) - 1`
 SIMULATION_TIMESTEPS = 10  # len(eth_price_df) - 1
+MONTE_CARLO_RUNS = 1
 
 # Update parameters
 params_update, experiment_metrics = configure(timesteps=SIMULATION_TIMESTEPS, subset=True)
 params.update(params_update)
 
-# Create a wrapper for the model simulation, and update the existing parameters and initial state
-system_simulation = ConfigWrapper(system_model_v3, T=range(SIMULATION_TIMESTEPS), M=params, initial_state=state_variables)
 
 passed = False
 experiment_time = 0.0
@@ -48,40 +51,35 @@ try:
     logging.info("Starting experiment")
     logging.debug(experiment_metrics)
     logging.debug(params)
-    
+
     # Run cadCAD simulation
-    del configs[:] # Clear any prior configs
-    system_simulation.append() # Append the simulation config to the cadCAD `configs` list
-    (simulation_result, exceptions, _) = run(system_simulation, drop_midsteps=False) # Run the simulation
+    model = Model(
+        initial_state=state_variables,
+        state_update_blocks=partial_state_update_blocks,
+        params=params
+    )
+    simulation = Simulation(model=model, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS)
+    experiment = Experiment([simulation])
+    experiment.engine = Engine(
+        raise_exceptions=False,
+        deepcopy=False,
+    )
+    experiment.after_experiment = lambda experiment: save_to_HDF5(experiment, experiment_folder + '/experiment_results.hdf5', 'experiment_check_controller_constant_bounds')
+    experiment.run()
+    
+    exceptions = pd.DataFrame(experiment.exceptions)
+    
     logging.debug(exceptions)
-    df = pd.DataFrame(simulation_result)
     logging.debug(df.info())
-    results = save_experiment_results(results_id, df, params_update, experiment_folder)
-    assert results_id in results
 
     passed = True
-
     logging.info("Experiment complete")
-    
     end = time.time()
     experiment_time = end - start
+
+    update_experiment_run_log(experiment_folder, passed, results_id, hash, exceptions, experiment_metrics, experiment_time)
 except AssertionError as e:
     logging.info("Experiment failed")
     logging.error(e)
 
-experiment_run_log = f'''
-# Experiment on {now.isoformat()}
-* Passed: {passed}
-* Time: {experiment_time / 60} minutes
-* Results ID: {results_id}
-* Git Hash: {hash}
-
-Exceptions:
-{exceptions}
-
-Experiment metrics:
-{experiment_metrics}
-'''
-
-with open(f'{experiment_folder}/experiment_run_log.md', 'r') as original: experiment_run_log_orig = original.read()
-with open(f'{experiment_folder}/experiment_run_log.md', 'w') as modified: modified.write(experiment_run_log + experiment_run_log_orig)
+    update_experiment_run_log(experiment_folder, passed, results_id, hash, exceptions, experiment_metrics, experiment_time)
