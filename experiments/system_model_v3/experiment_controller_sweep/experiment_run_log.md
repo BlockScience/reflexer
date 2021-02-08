@@ -1,121 +1,46 @@
 
-# Experiment on 2021-02-08T14:15:45.875220
+# Experiment on 2021-02-08T15:29:00.423549
 * Passed: True
-* Time: 0.012123548984527588 minutes
+* Time: 11.080405410130819 minutes
 * Results folder: /home/bscholtz/workspace/reflexer/experiments/system_model_v3/experiment_controller_sweep
-* Results ID: 2021-02-08T14:15:45.875359
-* Git Hash: 67fa4e9
+* Results ID: 2021-02-08T15:29:00.423801
+* Git Hash: af83ebd
 
 Exceptions:
-  exception  simulation  run  subset  timesteps                                         parameters                                      initial_state
-0      None           0    0       0         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-1      None           0    0       1         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-2      None           0    0       2         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-3      None           0    0       3         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+                                            exception  ...                                      initial_state
+0                                                None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+1   ('InvalidSecondaryMarketDeltaException', ('Inv...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+2   ('InvalidSecondaryMarketDeltaException', ('Inv...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+3   ('InvalidSecondaryMarketDeltaException', ('Inv...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+4              overflow encountered in double_scalars  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+..                                                ...  ...                                                ...
+95  ('NegativeBalanceException', ('NegativeBalance...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+96  ('NegativeBalanceException', ('NegativeBalance...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+97  ('NegativeBalanceException', ('NegativeBalance...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+98  ('NegativeBalanceException', ('NegativeBalance...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+99  ('NegativeBalanceException', ('NegativeBalance...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+
+[100 rows x 7 columns]
 
 Experiment metrics:
 
-* Number of timesteps: 24 / 1.0 days
+* Number of timesteps: 4320 / 180.0 days
 * Timestep duration: 0.004 seconds
 * Control parameters: ['kp', 'ki']
-* Approx. number of values per parameter: 2
-* Number of parameter combinations: 4
-* Expected experiment duration: 0.0064 minutes / 0.00010666666666666667 hours
-    
-    
-# Experiment on 2021-02-08T14:14:14.999001
-* Passed: True
-* Time: 0.012208175659179688 minutes
-* Results folder: /home/bscholtz/workspace/reflexer/experiments/system_model_v3/experiment_controller_sweep
-* Results ID: 2021-02-08T14:14:14.999234
-* Git Hash: 67fa4e9
+* Approx. number of values per parameter: 10
+* Number of parameter combinations: 100
+* Expected experiment duration: 28.8 minutes / 0.48000000000000004 hours
 
-Exceptions:
-  exception  simulation  run  subset  timesteps                                         parameters                                      initial_state
-0      None           0    0       0         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-1      None           0    0       1         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-2      None           0    0       2         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-3      None           0    0       3         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+## Notes
 
-Experiment metrics:
+* Outputs: 1_controller_parameter_sweep.png
+* Stable Kp, Ki combinations:
 
-* Number of timesteps: 24 / 1.0 days
-* Timestep duration: 0.004 seconds
-* Control parameters: ['kp', 'ki']
-* Approx. number of values per parameter: 2
-* Number of parameter combinations: 4
-* Expected experiment duration: 0.0064 minutes / 0.00010666666666666667 hours
-    
-    
-# Experiment on 2021-02-08T14:08:07.522313
-* Passed: True
-* Time: 0.012344900767008464 minutes
-* Results folder: /home/bscholtz/workspace/reflexer/experiments/system_model_v3/experiment_controller_sweep
-* Results ID: 2021-02-08T14:08:06.781244
-* Git Hash: fe1a4e9
+```
+kp = [-1e-10, -1e-10, -1e-10, -1e-08, -1e-08, -1e-08, 1e-10, 1e-10, 1e-10, 1e-08, 1e-08, 1e-08, 1e-06, 1e-06, 1e-06, 1e-06]
+ki = [-1e-10, 1e-10, 1e-08, -1e-10, 1e-10, 1e-08, -1e-10, 1e-10, 1e-08, -1e-10, 1e-10, 1e-08, -1e-10, -1e-08, 1e-10, 1e-08]
+```
 
-Exceptions:
-  exception  simulation  run  subset  timesteps                                         parameters                                      initial_state
-0      None           0    0       0         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-1      None           0    0       1         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-2      None           0    0       2         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-3      None           0    0       3         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-
-Experiment metrics:
-
-* Number of timesteps: 24 / 1.0 days
-* Timestep duration: 0.004 seconds
-* Control parameters: ['kp', 'ki']
-* Approx. number of values per parameter: 2
-* Number of parameter combinations: 4
-* Expected experiment duration: 0.0064 minutes / 0.00010666666666666667 hours
-    
-    
-# Experiment on 2021-02-08T14:06:23.718143
-* Passed: True
-* Time: 0.011316553751627604 minutes
-* Results folder: /home/bscholtz/workspace/reflexer/experiments/system_model_v3/experiment_controller_sweep
-* Results ID: 2021-02-08T14:06:23.038614
-* Git Hash: fe1a4e9
-
-Exceptions:
-  exception  simulation  run  subset  timesteps                                         parameters                                      initial_state
-0      None           0    0       0         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-1      None           0    0       1         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-2      None           0    0       2         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-3      None           0    0       3         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-
-Experiment metrics:
-
-* Number of timesteps: 24 / 1.0 days
-* Timestep duration: 0.004 seconds
-* Control parameters: ['kp', 'ki']
-* Approx. number of values per parameter: 2
-* Number of parameter combinations: 4
-* Expected experiment duration: 0.0064 minutes / 0.00010666666666666667 hours
-    
-    
-# Experiment on 2021-02-08T14:05:29.809842
-* Passed: True
-* Time: 0.011867125829060873 minutes
-* Results folder: /home/bscholtz/workspace/reflexer/experiments/system_model_v3/experiment_controller_sweep
-* Results ID: 2021-02-08T14:05:29.097274
-* Git Hash: fe1a4e9
-
-Exceptions:
-  exception  simulation  run  subset  timesteps                                         parameters                                      initial_state
-0      None           0    0       0         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-1      None           0    0       1         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-2      None           0    0       2         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-3      None           0    0       3         24  {'debug': False, 'raise_on_assert': True, 'fre...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
-
-Experiment metrics:
-
-* Number of timesteps: 24 / 1.0 days
-* Timestep duration: 0.004 seconds
-* Control parameters: ['kp', 'ki']
-* Approx. number of values per parameter: 2
-* Number of parameter combinations: 4
-* Expected experiment duration: 0.0064 minutes / 0.00010666666666666667 hours
-    
-    
+* New center of region of stability for search: kp=1e-06 ki=-1e-08
+* Prices run to near zero for majority of parameter combinations, see output
+* Updating target price to 3.14 and liquidation ratio to 1.45 for next experiment

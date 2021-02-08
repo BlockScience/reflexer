@@ -31,16 +31,16 @@ SIMULATION_TIMESTEPS = 24 * 30 * 6  # len(eth_price_df) - 1
 MONTE_CARLO_RUNS = 1
 
 
-def configure_logging(output_directory):
+def configure_logging(output_directory, date):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler(filename=f'{output_directory}/{now.isoformat()}.log')
+    file_handler = logging.FileHandler(filename=f'{output_directory}/{date}.log')
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
 def run_experiment(results_id, output_directory, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables, state_update_blocks=partial_state_update_blocks):
-    configure_logging(output_directory + '/logs')
+    configure_logging(output_directory + '/logs', now)
     
     passed = False
     experiment_time = 0.0
