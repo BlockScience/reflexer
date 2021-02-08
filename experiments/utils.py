@@ -1,14 +1,21 @@
-import pandas as pd
 import dill
+import pandas as pd
 import datetime
+from types import LambdaType
+import os
 
 
 def save_to_HDF5(experiment, store_file_name, store_key):
     now = datetime.datetime.now()
     store = pd.HDFStore(store_file_name)
-    store.put(f'{store_key}_results', pd.DataFrame(experiment.results))
-    store.put(f'{store_key}_exceptions', pd.DataFrame(experiment.exceptions))
-    store.get_storer(store_key).attrs.metadata = {
+    store.put(f'results_{store_key}', pd.DataFrame(experiment.results))
+    exceptions = pd.DataFrame(experiment.exceptions)
+    exceptions['parameters'] = exceptions['parameters'].to_json()
+    store.put(f'exceptions_{store_key}', exceptions)
+    store.get_storer(f'results_{store_key}').attrs.metadata = {
+        'date': now.isoformat()
+    }
+    store.get_storer(f'exceptions_{store_key}').attrs.metadata = {
         'date': now.isoformat()
     }
     store.close()
@@ -32,5 +39,9 @@ Experiment metrics:
 {experiment_metrics}
     '''
 
-    with open(f'{experiment_folder}/experiment_run_log.md', 'r+') as original: experiment_run_log_orig = original.read()
-    with open(f'{experiment_folder}/experiment_run_log.md', 'w') as modified: modified.write(experiment_run_log + experiment_run_log_orig)
+    log_file = f'{experiment_folder}/experiment_run_log.md'
+    if not os.path.exists(log_file):
+        os.mknod(log_file)
+
+    with open(log_file, 'r') as original: experiment_run_log_orig = original.read()
+    with open(log_file, 'w') as modified: modified.write(experiment_run_log + experiment_run_log_orig)

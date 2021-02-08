@@ -14,8 +14,12 @@ import datetime
 import subprocess
 import time
 import os
+import dill
 import pandas as pd
 
+
+# Set according to environment
+os.environ['NUMEXPR_MAX_THREADS'] = '16'
 
 # Get experiment details
 hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
@@ -71,7 +75,7 @@ Experiment metadata:
             state_update_blocks=partial_state_update_blocks,
             params=params
         )
-        simulation = Simulation(model=model, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS)
+        simulation = Simulation(model=model, timesteps=timesteps, runs=runs)
         experiment = Experiment([simulation])
         experiment.engine = Engine(
             raise_exceptions=False,
@@ -83,10 +87,9 @@ Experiment metadata:
         exceptions = pd.DataFrame(experiment.exceptions)
         
         logging.debug(exceptions)
-        logging.debug(df.info())
 
         passed = True
-        logging.info("Experiment completed in {experiment_time} seconds")
+        logging.info(f"Experiment completed in {experiment_time} seconds")
         end = time.time()
         experiment_time = end - start
 

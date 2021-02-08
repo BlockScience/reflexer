@@ -17,17 +17,20 @@ from experiments.utils import save_to_HDF5
 # ki_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
 
 # proportional term for the stability controller: units 1/USD
-kp_sweep = [1e-20, 1e-15, 1e-10, 1e-5, 1e-1, 0, -1e-1, -1e-5, -1e-10, -1e-15, -1e-20]
+kp_sweep = [1e-20, 1e-15] # , 1e-15, 1e-10, 1e-5, 1e-1, 0, -1e-1, -1e-5, -1e-10, -1e-15, -1e-20
 # integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = [1e-20, 1e-15, 1e-10, 1e-5, 1e-1, 0, -1e-1, -1e-5, -1e-10, -1e-15, -1e-20]
+ki_sweep = [1e-20, 1e-15] # , 1e-15, 1e-10, 1e-5, 1e-1, 0, -1e-1, -1e-5, -1e-10, -1e-15, -1e-20
 
 sweeps = {
     'kp': kp_sweep,
     'ki': ki_sweep,
 }
 
+SIMULATION_TIMESTEPS = 24 # 24 * 30 * 6
+MONTE_CARLO_RUNS = 1
+
 # Configure sweep and update parameters
-params_update, experiment_metrics = configure_experiment(sweeps, timesteps=24*30*6)
+params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS)
 params.update(params_update)
 
 # Override parameters
@@ -43,11 +46,9 @@ params.update(params_override)
 
 # Experiment details
 now = datetime.datetime.now()
-experiment_folder = os.path.dirname(__file__).split('.py')[0]
+dir_path = os.path.dirname(os.path.realpath(__file__))
+experiment_folder = __file__.split('.py')[0]
 results_id = now.isoformat()
-
-SIMULATION_TIMESTEPS = 24 * 7
-MONTE_CARLO_RUNS = 1
 
 if __name__ == "__main__":
     run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params)

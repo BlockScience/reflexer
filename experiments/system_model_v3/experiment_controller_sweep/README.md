@@ -13,3 +13,9 @@ params['liquidity_demand_shock_percentage']=[0.5]
 params['alpha']=[999998857063901981428416512]
 state_variables['cdps'].to_dict()={'open': {0: 1}, 'time': {0: 0}, 'locked': {0: 51008.41058261749}, 'drawn': {0: 10000000.0}, 'wiped': {0: 0.0}, 'freed': {0: 0.0}, 'w_wiped': {0: 0.0}, 'dripped': {0: 0.0}, 'v_bitten': {0: 0.0}, 'u_bitten': {0: 0.0}, 'w_bitten': {0: 0.0}, 'arbitrage': {0: 1}}
 ```
+
+# Notes
+
+1. Sweep controller parameters for default conditions
+2. Find regions of stability, filtering for substeps where: simulation completes
+3. When simulation doesn't complete, analyse reason and add check
