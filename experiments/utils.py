@@ -30,7 +30,10 @@ def update_experiment_run_log(experiment_folder, passed, results_id, hash, excep
 * Git Hash: {hash}
 
 Exceptions:
+
+```
 {exceptions}
+```
 
 Experiment metrics:
 {experiment_metrics}
