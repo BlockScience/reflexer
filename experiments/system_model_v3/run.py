@@ -16,6 +16,7 @@ import time
 import os
 import dill
 import pandas as pd
+import pprint
 
 
 # Set according to environment
@@ -50,24 +51,7 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
         # Run experiment
         logging.info("Starting experiment")
         logging.debug(experiment_metrics)
-
-        metadata = f"""
-Experiment metadata:
-
-{params['controller_enabled']=}
-{params['kp']=}
-{params['ki']=}
-{params['liquidation_ratio']=}
-{params['rescale_target_price']=}
-{params['arbitrageur_considers_liquidation_ratio']=}
-{params['liquidity_demand_enabled']=}
-{params['liquidity_demand_shock']=}
-{params['liquidity_demand_max_percentage']=}
-{params['liquidity_demand_shock_percentage']=}
-{params['alpha']=}
-{initial_state['cdps'].to_dict()=}
-"""
-        logging.info(metadata)
+        logging.info(pprint.pformat(params))
 
         # Run cadCAD simulation
         model = Model(
@@ -81,7 +65,7 @@ Experiment metadata:
             raise_exceptions=False,
             deepcopy=False,
         )
-        experiment.after_experiment = lambda experiment: save_to_HDF5(experiment, output_directory + '/experiment_results.hdf5', results_id)
+        experiment.after_experiment = lambda experiment: save_to_HDF5(experiment, output_directory + '/experiment_results.hdf5', results_id, now)
         experiment.run()
         
         exceptions = pd.DataFrame(experiment.exceptions)
@@ -93,9 +77,9 @@ Experiment metadata:
         end = time.time()
         experiment_time = end - start
 
-        update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time)
+        update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now)
     except AssertionError as e:
         logging.info("Experiment failed")
         logging.error(e)
 
-        update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time)
+        update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now)

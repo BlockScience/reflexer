@@ -5,8 +5,7 @@ from types import LambdaType
 import os
 
 
-def save_to_HDF5(experiment, store_file_name, store_key):
-    now = datetime.datetime.now()
+def save_to_HDF5(experiment, store_file_name, store_key, now):
     store = pd.HDFStore(store_file_name)
     store.put(f'results_{store_key}', pd.DataFrame(experiment.results))
     exceptions = pd.DataFrame(experiment.exceptions)
@@ -21,9 +20,7 @@ def save_to_HDF5(experiment, store_file_name, store_key):
     store.close()
     print(f"Saved experiment results to HDF5 store file {store_file_name} with key {store_key}")
 
-def update_experiment_run_log(experiment_folder, passed, results_id, hash, exceptions, experiment_metrics, experiment_time):
-    now = datetime.datetime.now()
-
+def update_experiment_run_log(experiment_folder, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now):
     experiment_run_log = f'''
 # Experiment on {now.isoformat()}
 * Passed: {passed}
