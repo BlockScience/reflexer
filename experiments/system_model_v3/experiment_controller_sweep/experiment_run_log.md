@@ -7,6 +7,8 @@
 * Git Hash: af83ebd
 
 Exceptions:
+
+```
                                             exception  ...                                      initial_state
 0                                                None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
 1   ('InvalidSecondaryMarketDeltaException', ('Inv...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
@@ -21,6 +23,7 @@ Exceptions:
 99  ('NegativeBalanceException', ('NegativeBalance...  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
 
 [100 rows x 7 columns]
+```
 
 Experiment metrics:
 
