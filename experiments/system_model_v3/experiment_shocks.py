@@ -10,18 +10,10 @@ from experiments.system_model_v3.run import run_experiment
 from experiments.utils import save_to_HDF5
 
 
-# exponents = np.linspace(-10, -1, 5)
-# scales = list(range(-9, -1, 1))
-# kp_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
-
-# exponents = np.linspace(-10, -1, 5)
-# scales = list(range(1, 9, 1))
-# ki_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
-
 # proportional term for the stability controller: units 1/USD
-kp_sweep = [-1e-10, -1e-8, -1e-6, -1e-4, -1e-2, 1e-10, 1e-8, 1e-6, 1e-4, 1e-2]
+kp_sweep = np.linspace(1e-8, 1e-4, 6) # Search kp=1e-06
 # integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = [-1e-10, -1e-8, -1e-6, -1e-4, -1e-2, 1e-10, 1e-8, 1e-6, 1e-4, 1e-2]
+ki_sweep = np.linspace(-1e-08, -1e-2, 6) # Search ki=-1e-08
 
 sweeps = {
     'kp': kp_sweep,
@@ -29,7 +21,7 @@ sweeps = {
 }
 
 SIMULATION_TIMESTEPS = 24 * 30 * 2 # Updated to two month horizon for shock tests
-MONTE_CARLO_RUNS = 3 # Each MC run will map to different shock
+MONTE_CARLO_RUNS = 5 # Each MC run will map to different shock
 
 # Configure sweep and update parameters
 params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS)
@@ -43,7 +35,14 @@ params_override = {
     'liquidity_demand_enabled': [True],
     'arbitrageur_considers_liquidation_ratio': [True],
     'liquidity_demand_shock': [True], # Updated in this experiment to true, to allow setting of shocks
-    'eth_price': [lambda run, timestep, df=None: 300],
+    'eth_price': [lambda run, timestep, df=None: [
+        # Shocks at 14 days; controller turns on at 7 days
+        300,
+        300 if timestep < 24 * 14 else 300 * 1.1, # 30% step, remains for rest of simulation
+        300 * 1.1 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # 30% impulse for 6 hours
+        300 if timestep < 24 * 14 else 300 * 0.9, # negative 30% step, remains for rest of simulation
+        300 * 0.9 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # negative 30% impulse for 6 hours
+    ][run - 1]],
     'liquidity_demand_events': [lambda run, timestep, df=None: 0],
     'token_swap_events': [lambda run, timestep, df=None: 0],
 }
