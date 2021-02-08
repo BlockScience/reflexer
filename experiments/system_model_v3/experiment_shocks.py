@@ -11,9 +11,9 @@ from experiments.utils import save_to_HDF5
 
 
 # proportional term for the stability controller: units 1/USD
-kp_sweep = np.linspace(1e-8, 1e-4, 6) # Search kp=1e-06
+kp_sweep = [1e-06] # np.linspace(1e-8, 1e-4, 6) # Search kp=1e-06
 # integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = np.linspace(-1e-08, -1e-2, 6) # Search ki=-1e-08
+ki_sweep = [-1e-08] # np.linspace(-1e-08, -1e-2, 6) # Search ki=-1e-08
 
 sweeps = {
     'kp': kp_sweep,
@@ -38,10 +38,10 @@ params_override = {
     'eth_price': [lambda run, timestep, df=None: [
         # Shocks at 14 days; controller turns on at 7 days
         300,
-        300 if timestep < 24 * 14 else 300 * 1.1, # 30% step, remains for rest of simulation
-        300 * 1.1 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # 30% impulse for 6 hours
-        300 if timestep < 24 * 14 else 300 * 0.9, # negative 30% step, remains for rest of simulation
-        300 * 0.9 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # negative 30% impulse for 6 hours
+        300 if timestep < 24 * 14 else 300 * 1.3, # 30% step, remains for rest of simulation
+        300 * 1.3 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # 30% impulse for 6 hours
+        300 if timestep < 24 * 14 else 300 * 0.7, # negative 30% step, remains for rest of simulation
+        300 * 0.7 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # negative 30% impulse for 6 hours
     ][run - 1]],
     'liquidity_demand_events': [lambda run, timestep, df=None: 0],
     'token_swap_events': [lambda run, timestep, df=None: 0],
