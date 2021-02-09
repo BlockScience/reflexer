@@ -12,14 +12,26 @@ from experiments.utils import save_to_HDF5
 # Optimal paramters: kp=1e-6, and ki=-1e-9 having marginally better response than ki=-1e-8
 
 # proportional term for the stability controller: units 1/USD
-kp_sweep = [1e-7, 1e-6, 1e-5] # np.linspace(1e-8, 1e-4, 6) # Search kp=1e-06
+kp_sweep = [1e-6] # np.linspace(1e-8, 1e-4, 6) # Search kp=1e-06
 # integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = [-1e-9, -1e-8, -1e-7] # np.linspace(-1e-08, -1e-2, 6) # Search ki=-1e-08
+ki_sweep = [-1e-9] # np.linspace(-1e-08, -1e-2, 6) # Search ki=-1e-08
 
 sweeps = {
     'kp': kp_sweep,
     'ki': ki_sweep,
+    'controller_enabled': [True, False],
+    'rescale_target_price': [True, False],
 }
+
+# # proportional term for the stability controller: units 1/USD
+# kp_sweep = np.unique(np.append(np.linspace(1e-6/5, 1e-6, 5), np.linspace(1e-6, 5e-6, 5)))
+# # integral term for the stability controller: units 1/(USD*seconds)
+# ki_sweep = np.unique(np.append(np.linspace(-1e-9/5, -1e-9, 5), np.linspace(-1e-9, -5e-9, 5)))
+# rescale_target_price
+# sweeps = {
+#     'kp': kp_sweep,
+#     'ki': ki_sweep,
+# }
 
 SIMULATION_TIMESTEPS = 24 * 30 * 2 # Updated to two month horizon for shock tests
 MONTE_CARLO_RUNS = 5 # Each MC run will map to different shock
@@ -32,14 +44,13 @@ experiment_metrics = f'''
 {experiment_metrics}
 
 ```
-{kp=}
-{ki=}
+{kp_sweep=}
+{ki_sweep=}
 ```
 '''
 
 # Override parameters
 params_override = {
-    'controller_enabled': [True],
     'liquidation_ratio': [1.45],
     'interest_rate': [1.03],
     'liquidity_demand_enabled': [True],

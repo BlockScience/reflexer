@@ -38,8 +38,8 @@ experiment_metrics = f'''
 {experiment_metrics}
 
 ```
-{kp=}
-{ki=}
+{kp_sweep=}
+{ki_sweep=}
 ```
 '''
 

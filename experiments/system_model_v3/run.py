@@ -62,7 +62,7 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
         simulation = Simulation(model=model, timesteps=timesteps, runs=runs)
         experiment = Experiment([simulation])
         experiment.engine = Engine(
-            raise_exceptions=True,
+            raise_exceptions=False,
             deepcopy=False,
         )
         experiment.after_experiment = lambda experiment: save_to_HDF5(experiment, output_directory + '/experiment_results.hdf5', results_id, now)
