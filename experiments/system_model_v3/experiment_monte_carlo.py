@@ -11,17 +11,17 @@ from experiments.utils import save_to_HDF5
 
 
 # proportional term for the stability controller: units 1/USD
-kp_sweep = np.unique(np.append(np.linspace(1e-6/5, 1e-6, 5), np.linspace(1e-6, 5e-6, 5)))
+kp_sweep = [1e-6] # TODO: update with edge cases
 # integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = np.unique(np.append(np.linspace(-1e-9/5, -1e-9, 5), np.linspace(-1e-9, -5e-9, 5)))
+ki_sweep = [-1e-9] # TODO: update with edge cases
 
 sweeps = {
     'kp': kp_sweep,
     'ki': ki_sweep,
 }
 
-SIMULATION_TIMESTEPS = 24 * 30 * 2 # Updated to two month horizon for shock tests
-MONTE_CARLO_RUNS = 5 # Each MC run will map to different shock
+SIMULATION_TIMESTEPS = 24 * 30 * 6 # 6 months
+MONTE_CARLO_RUNS = 10 # Stochastic processes for ETH price and liquidity demand
 
 # Configure sweep and update parameters
 params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS)
@@ -42,17 +42,7 @@ params_override = {
     'interest_rate': [1.03],
     'liquidity_demand_enabled': [True],
     'arbitrageur_considers_liquidation_ratio': [True],
-    'liquidity_demand_shock': [True], # Updated in this experiment to true, to allow setting of shocks
-    'eth_price': [lambda run, timestep, df=None: [
-        # Shocks at 14 days; controller turns on at 7 days
-        300,
-        300 if timestep < 24 * 14 else 300 * 1.3, # 30% step, remains for rest of simulation
-        300 * 1.3 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # 30% impulse for 6 hours
-        300 if timestep < 24 * 14 else 300 * 0.7, # negative 30% step, remains for rest of simulation
-        300 * 0.7 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # negative 30% impulse for 6 hours
-    ][run - 1]],
-    'liquidity_demand_events': [lambda run, timestep, df=None: 0],
-    'token_swap_events': [lambda run, timestep, df=None: 0],
+    'liquidity_demand_shock': [False, True],
 }
 params.update(params_override)
 
