@@ -39,7 +39,7 @@ def configure_logging(output_directory, date):
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-def run_experiment(results_id, output_directory, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables, state_update_blocks=partial_state_update_blocks):
+def run_experiment(results_id, output_directory, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables, state_update_blocks=partial_state_update_blocks, ray=False):
     configure_logging(output_directory + '/logs', now)
     
     passed = False
@@ -61,10 +61,22 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
         )
         simulation = Simulation(model=model, timesteps=timesteps, runs=runs)
         experiment = Experiment([simulation])
-        experiment.engine = Engine(
-            raise_exceptions=False,
-            deepcopy=False,
-        )
+        if ray:
+            import ray
+            import ray.util
+            ray.util.connect("localhost:10001")
+
+            experiment.engine = Engine(
+                raise_exceptions=False,
+                deepcopy=False,
+                backend=Backend.RAY_REMOTE,
+            )
+        else:
+            experiment.engine = Engine(
+                raise_exceptions=False,
+                deepcopy=False,
+                processes=8,
+            )
         experiment.after_experiment = lambda experiment: save_to_HDF5(experiment, output_directory + '/experiment_results.hdf5', results_id, now)
         experiment.run()
         

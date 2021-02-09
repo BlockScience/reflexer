@@ -1,4 +1,100 @@
 
+# Experiment on 2021-02-09T18:46:33.071979
+* Passed: True
+* Time: 9.49233728647232 minutes
+* Results folder: /home/bscholtz/workspace/reflexer/experiments/system_model_v3/experiment_shocks
+* Results ID: 2021-02-09T18:46:33.073363
+* Git Hash: 5215469
+
+Exceptions:
+
+```
+    exception  ...                                      initial_state
+0        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+1        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+2        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+3        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+4        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+..        ...  ...                                                ...
+120      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+121      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+122      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+123      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+124      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+
+[125 rows x 8 columns]
+```
+
+Experiment metrics:
+
+
+* Number of timesteps: 1440 / 60.0 days
+* Number of MC runs: 5
+* Timestep duration: 0.004 seconds
+* Control parameters: ['kp', 'ki']
+* Number of parameter combinations: 25
+* Expected experiment duration: 12.0 minutes / 0.2 hours
+    
+
+```
+kp_sweep=array([2.e-07, 6.e-07, 1.e-06, 3.e-06, 5.e-06])
+ki_sweep=array([-5.e-09, -3.e-09, -1.e-09, -6.e-10, -2.e-10])
+```
+
+## Notes
+
+* Mostly stable results, except for larger Ki values where the market price runs away (perhaps application for leaky integral)
+* Seems like good responses for Ki = -3e-09 or -1e-09, and Kp = 1e-06
+* See outputs
+* Next experiment, testing rescaling of target price and arbitraguer choices
+
+# Experiment on 2021-02-09T15:57:01.324451
+* Passed: True
+* Time: 10.011497461795807 minutes
+* Results folder: /home/bscholtz/workspace/reflexer/experiments/system_model_v3/experiment_shocks
+* Results ID: 2021-02-09T15:57:01.325820
+* Git Hash: 5215469
+
+Exceptions:
+
+```
+    exception  ...                                      initial_state
+0        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+1        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+2        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+3        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+4        None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+..        ...  ...                                                ...
+120      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+121      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+122      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+123      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+124      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+
+[125 rows x 8 columns]
+```
+
+Experiment metrics:
+
+
+* Number of timesteps: 1440 / 60.0 days
+* Number of MC runs: 5
+* Timestep duration: 0.004 seconds
+* Control parameters: ['kp', 'ki']
+* Number of parameter combinations: 25
+* Expected experiment duration: 12.0 minutes / 0.2 hours
+    
+
+```
+kp_sweep=array([2.e-07, 6.e-07, 1.e-06, 3.e-06, 5.e-06])
+ki_sweep=array([-5.e-09, -3.e-09, -1.e-09, -6.e-10, -2.e-10])
+```
+
+## Notes
+
+* Controller disabled! See outputs.
+* Next experiment, controller enabled...
+    
 # Experiment on 2021-02-09T11:59:26.345546
 * Passed: True
 * Time: 1.7778213977813722 minutes

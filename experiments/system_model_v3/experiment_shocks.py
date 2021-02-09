@@ -11,9 +11,9 @@ from experiments.utils import save_to_HDF5
 
 
 # proportional term for the stability controller: units 1/USD
-kp_sweep = np.unique(np.append(np.linspace(1e-6/5, 1e-6, 5), np.linspace(1e-6, 5e-6, 5)))
+kp_sweep = np.unique(np.append(np.linspace(1e-6/5, 1e-6, 3), np.linspace(1e-6, 5e-6, 3)))
 # integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = np.unique(np.append(np.linspace(-1e-9/5, -1e-9, 5), np.linspace(-1e-9, -5e-9, 5)))
+ki_sweep = np.unique(np.append(np.linspace(-1e-9/5, -1e-9, 3), np.linspace(-1e-9, -5e-9, 3)))
 
 sweeps = {
     'kp': kp_sweep,
@@ -38,6 +38,7 @@ experiment_metrics = f'''
 
 # Override parameters
 params_override = {
+    'controller_enabled': [True],
     'liquidation_ratio': [1.45],
     'interest_rate': [1.03],
     'liquidity_demand_enabled': [True],
@@ -63,4 +64,4 @@ experiment_folder = __file__.split('.py')[0]
 results_id = now.isoformat()
 
 if __name__ == "__main__":
-    run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables)
+    run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables, ray=False)
