@@ -34,6 +34,15 @@ MONTE_CARLO_RUNS = 1
 params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS)
 params.update(params_update)
 
+experiment_metrics = f'''
+{experiment_metrics}
+
+```
+{kp=}
+{ki=}
+```
+'''
+
 # Override parameters
 params_override = {
     'controller_enabled': [True],

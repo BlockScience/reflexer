@@ -9,11 +9,12 @@ from experiments.system_model_v3.configure import configure_experiment
 from experiments.system_model_v3.run import run_experiment
 from experiments.utils import save_to_HDF5
 
+# Optimal paramters: kp=1e-6, and ki=-1e-9 having marginally better response than ki=-1e-8
 
 # proportional term for the stability controller: units 1/USD
-kp_sweep = [1e-06] # np.linspace(1e-8, 1e-4, 6) # Search kp=1e-06
+kp_sweep = [1e-7, 1e-6, 1e-5] # np.linspace(1e-8, 1e-4, 6) # Search kp=1e-06
 # integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = [-1e-08] # np.linspace(-1e-08, -1e-2, 6) # Search ki=-1e-08
+ki_sweep = [-1e-9, -1e-8, -1e-7] # np.linspace(-1e-08, -1e-2, 6) # Search ki=-1e-08
 
 sweeps = {
     'kp': kp_sweep,
@@ -26,6 +27,15 @@ MONTE_CARLO_RUNS = 5 # Each MC run will map to different shock
 # Configure sweep and update parameters
 params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS)
 params.update(params_update)
+
+experiment_metrics = f'''
+{experiment_metrics}
+
+```
+{kp=}
+{ki=}
+```
+'''
 
 # Override parameters
 params_override = {

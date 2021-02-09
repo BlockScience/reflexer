@@ -62,7 +62,7 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
         simulation = Simulation(model=model, timesteps=timesteps, runs=runs)
         experiment = Experiment([simulation])
         experiment.engine = Engine(
-            raise_exceptions=False,
+            raise_exceptions=True,
             deepcopy=False,
         )
         experiment.after_experiment = lambda experiment: save_to_HDF5(experiment, output_directory + '/experiment_results.hdf5', results_id, now)
@@ -73,9 +73,9 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
         logging.debug(exceptions)
 
         passed = True
-        logging.info(f"Experiment completed in {experiment_time} seconds")
         end = time.time()
         experiment_time = end - start
+        logging.info(f"Experiment completed in {experiment_time} seconds")
 
         update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now)
     except AssertionError as e:
