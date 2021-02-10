@@ -24,7 +24,7 @@ sweeps = {
 }
 
 SIMULATION_TIMESTEPS = 24 * 30 * 2 # Updated to two month horizon for shock tests
-MONTE_CARLO_RUNS = 4 # Each MC run will map to different shock
+MONTE_CARLO_RUNS = 5 # Each MC run will map to different shock
 
 # Configure sweep and update parameters
 params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS)

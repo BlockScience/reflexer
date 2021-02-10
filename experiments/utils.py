@@ -3,7 +3,20 @@ import pandas as pd
 import datetime
 from types import LambdaType
 import os
+import collections
 
+
+def merge_parameter_sweep(param_sweep):
+    result = collections.defaultdict(list)
+    for d in param_sweep:
+        for k, v in d.items():
+            result[k].append(v)
+    return result
+
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
 
 def save_to_HDF5(experiment, store_file_name, store_key, now):
     store = pd.HDFStore(store_file_name)
