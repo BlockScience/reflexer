@@ -4,6 +4,7 @@ import numpy as np
 
 from models.system_model_v3.model.params.init import params
 from models.system_model_v3.model.state_variables.init import state_variables
+from models.constants import RAY
 
 from experiments.system_model_v3.configure import configure_experiment
 from experiments.system_model_v3.run import run_experiment
@@ -18,8 +19,8 @@ ki_sweep = np.unique(np.append(np.linspace(-1e-9/5, -1e-9, 2), np.linspace(-1e-9
 sweeps = {
     'kp': kp_sweep,
     'ki': ki_sweep,
-    'rescale_target_price': [True, False],
-    'arbitrageur_considers_liquidation_ratio': [True, False],
+    'control_period': [3600 * 1, 3600 * 3, 3600 * 6], # seconds; must be multiple of cumulative time
+    'alpha': [1*RAY, 0.95*RAY, 0.9*RAY], # in 1/RAY
 }
 
 SIMULATION_TIMESTEPS = 24 * 30 * 2 # Updated to two month horizon for shock tests
@@ -47,6 +48,7 @@ params_override = {
     'liquidity_demand_shock': [False],
     'eth_price': [lambda run, timestep, df=None: [
         # Shocks at 14 days; controller turns on at 7 days
+        300,
         300 if timestep < 24 * 14 else 300 * 1.3, # 30% step, remains for rest of simulation
         300 * 1.3 if timestep in list(range(24*14, 24*14 + 6, 1)) else 300, # 30% impulse for 6 hours
         300 if timestep < 24 * 14 else 300 * 0.7, # negative 30% step, remains for rest of simulation
@@ -54,6 +56,8 @@ params_override = {
     ][run - 1]],
     'liquidity_demand_events': [lambda run, timestep, df=None: 0],
     'token_swap_events': [lambda run, timestep, df=None: 0],
+    'rescale_target_price': [True],
+    'arbitrageur_considers_liquidation_ratio': [True],
 }
 params.update(params_override)
 

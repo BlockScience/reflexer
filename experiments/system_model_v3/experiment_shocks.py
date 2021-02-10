@@ -41,9 +41,9 @@ params_override = {
     'controller_enabled': [True],
     'liquidation_ratio': [1.45],
     'interest_rate': [1.03],
-    'liquidity_demand_enabled': [True],
+    'liquidity_demand_enabled': [False],
     'arbitrageur_considers_liquidation_ratio': [True],
-    'liquidity_demand_shock': [True], # Updated in this experiment to true, to allow setting of shocks
+    'liquidity_demand_shock': [False],
     'eth_price': [lambda run, timestep, df=None: [
         # Shocks at 14 days; controller turns on at 7 days
         300,
