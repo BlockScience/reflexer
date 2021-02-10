@@ -20,7 +20,7 @@ import pprint
 
 
 # Set according to environment
-os.environ['NUMEXPR_MAX_THREADS'] = '16'
+os.environ['NUMEXPR_MAX_THREADS'] = '4'
 
 # Get experiment details
 hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode("utf-8")
@@ -73,9 +73,10 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
             )
         else:
             experiment.engine = Engine(
+                backend=Backend.PATHOS,
                 raise_exceptions=False,
                 deepcopy=False,
-                processes=8,
+                processes=4,
             )
         experiment.after_experiment = lambda experiment: save_to_HDF5(experiment, output_directory + '/experiment_results.hdf5', results_id, now)
         experiment.run()
