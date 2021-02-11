@@ -1,6 +1,8 @@
 import datetime
 import os
 import numpy as np
+import click
+import math
 
 from models.system_model_v3.model.params.init import params
 from models.system_model_v3.model.state_variables.init import state_variables
@@ -60,11 +62,19 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 experiment_folder = __file__.split('.py')[0]
 results_id = now.isoformat()
 
-
-if __name__ == "__main__":
+@click.command()
+@click.option("--remote_count", default=1, help="Number of remote machines")
+@click.option("--remote_index", default=1, help="Index of remote machine")
+@click.option("--batch_size", default=15, help="Execution batch size")
+def cli(remote_count, remote_index, batch_size):
     parameter_sweep = generate_parameter_sweep(params)
-    batch_size = 15
-    for sweep_index, sweep_subset in enumerate(batch(parameter_sweep, batch_size)):
-        print(f"Running sweep subset {sweep_index} of {int(len(parameter_sweep) / batch_size)}")
+    parameter_sweep_len = len(parameter_sweep)
+    remote_subset = list(batch(parameter_sweep, math.ceil(parameter_sweep_len / remote_count)))[remote_index - 1]
+
+    for sweep_index, sweep_subset in enumerate(batch(remote_subset, batch_size)):
+        print(f"Running sweep subset {sweep_index} of {int(len(parameter_sweep) / remote_count / batch_size)} on remote machine {remote_index} of {remote_count}")
         _params = merge_parameter_sweep(sweep_subset)
-        run_experiment(f'{results_id}_{sweep_index}', experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=_params, initial_state=state_variables, ray=False)
+        # run_experiment(f'{results_id}_{sweep_index}', experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=_params, initial_state=state_variables, ray=False)
+
+if __name__ == '__main__':
+    cli()
