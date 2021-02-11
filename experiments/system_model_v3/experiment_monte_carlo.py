@@ -66,8 +66,10 @@ results_id = now.isoformat()
 @click.option("--remote_count", default=1, help="Number of remote machines")
 @click.option("--remote_index", default=1, help="Index of remote machine")
 @click.option("--batch_size", default=15, help="Execution batch size")
-def cli(remote_count, remote_index, batch_size):
-    parameter_sweep = generate_parameter_sweep(params)
+@click.option("--start_subset", default=None, help="Start subset", type=int)
+@click.option("--end_subset", default=None, help="End subset", type=int)
+def cli(remote_count, remote_index, batch_size, start_subset, end_subset):
+    parameter_sweep = generate_parameter_sweep(params)[start_subset:end_subset]
     parameter_sweep_len = len(parameter_sweep)
     remote_subset = list(batch(parameter_sweep, math.ceil(parameter_sweep_len / remote_count)))[remote_index - 1]
 
