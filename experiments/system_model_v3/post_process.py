@@ -6,9 +6,9 @@ from models.utils.process_results import drop_dataframe_midsteps
 
 def post_process_results(df, params, set_params=['ki', 'kp', 'liquidation_ratio']):
     start = time.time()
-    print("Dropping midsteps")
-    df = drop_dataframe_midsteps(df)
-    print(time.time() - start)
+    # print("Dropping midsteps")
+    # df = drop_dataframe_midsteps(df)
+    # print(time.time() - start)
 
     # Add new columns to dataframe
     print("Adding new columns")
