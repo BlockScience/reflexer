@@ -325,22 +325,6 @@ err_m_t.plot()
 
 
 # %%
-np.sqrt(abs(df['market_price'] - df['target_price']).mean())
-
-
-# %%
-np.corrcoef(df['market_price'],df['eth_price'])
-
-
-# %%
-np.corrcoef(df['market_price'],df['target_price'])
-
-
-# %%
-np.corrcoef(df['market_price'],df['target_rate'])
-
-
-# %%
 
 df['market_price_rolling'] = df['market_price'].rolling(7).std()
 fig = px.histogram(df, x="market_price_rolling", nbins=25)
@@ -352,37 +336,3 @@ fig.update_layout(
 )
 
 fig.show()
-
-# %%
-
-# std_mkt_without = res_without_controller[‘market_price’].rolling(7).std()
-# std_mkt_with = res_with_controller[‘market_price’].rolling(7).std()
-# df =pd.DataFrame(dict(
-#     series=np.concatenate(([“With Controller”]*len(std_mkt_with), [“Without Controller”]*len(std_mkt_without))),
-#     data  =np.concatenate((std_mkt_with,std_mkt_without))
-# ))
-
-# fig = df.hist(x=“data”, color=“series”, nbins=25, barmode=“overlay”,
-#         labels={
-#             ‘count’ : “Count”,
-#             ‘data’ : “Std Dev”,
-#             ‘series’ : “Simulation”
-#         },
-#         title=“Histogram, Standard Deviations of Market Price”)
-# fig.show()
-
-# %%
-
-# %%
-
-# %%
-
-# %%
-
-# %%
-
-# %%
-
-# %%
-
-# %%
