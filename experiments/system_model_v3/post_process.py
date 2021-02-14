@@ -6,6 +6,7 @@ from models.utils.process_results import drop_dataframe_midsteps
 
 def post_process_results(df, params, set_params=['ki', 'kp', 'liquidation_ratio']):
     start = time.time()
+    # Uncomment if drop_substeps radcad option not selected
     # print("Dropping midsteps")
     # df = drop_dataframe_midsteps(df)
     # print(time.time() - start)
