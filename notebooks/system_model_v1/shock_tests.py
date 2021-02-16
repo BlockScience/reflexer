@@ -132,10 +132,7 @@ system_simulation = ConfigWrapper(
 
 # %%
 del configs[:]
-
-system_simulation.append()
-
-(data, tensor_field, sessions) = run(drop_midsteps=True)
+(data, tensor_field, sessions) = run(system_simulation, drop_midsteps=True)
 
 # %% [markdown]
 # # Data Analysis
