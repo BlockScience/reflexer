@@ -15,13 +15,10 @@
 #     name: python-reflexer
 # ---
 
-# %%
-# To add a new cell, type '# %%'
-# To add a new markdown cell, type '# %% [markdown]'
 # %% [markdown]
 # # Debt Market Model
 #
-# The purpose of this notebook is to configure and simulate the full CDP and APT system model, using the historical Ethereum price as a driver, under different PI controller settings - enabled, disabled, `kp` and `ki`.
+# The purpose of this notebook is to configure and simulate the full CDP and APT system model, using a stochastic Ethereum price and liquidity demand process as a driver, under different PI controller settings - enabled, disabled, `kp` and `ki`.
 
 # %% [markdown]
 # # Setup and Dependencies
@@ -53,17 +50,16 @@ from plotly.subplots import make_subplots
 # pio.renderers.default = "png"
 
 # %% [markdown]
-# # Historical MakerDAO Dai debt market activity
+# # Environmental Processes
 
 # %%
-# Import the historical MakerDAO market data CSV file
-from models.system_model_v3.model.params.init import debt_market_df
-debt_market_df
+# Import the ETH price stochastic dataset
+from models.system_model_v3.model.params.init import eth_price_df
 
 
 # %%
-# Plot the full set of historical data over time
-debt_market_df.plot()
+# Plot the ETH price for the first MC run dataset
+eth_price_df['0'].plot()
 
 # %% [markdown]
 # # Model Configuration
@@ -79,8 +75,8 @@ from models.system_model_v3.model.params.init import params
 # Update the default parameter values
 params_update = {
     'controller_enabled': [True],
-    'kp': [1e-8], # proportional term for the stability controller: units 1/USD
-    'ki': [lambda control_period=3600: -1e-7 / control_period], # integral term for the stability controller: units 1/(USD*seconds)
+    'kp': [2e-07], # proportional term for the stability controller: units 1/USD
+    'ki': [-5e-09], # integral term for the stability controller: units 1/(USD*seconds)
 }
 
 params.update(params_update)
@@ -89,8 +85,9 @@ params.update(params_update)
 # # Simulation Execution
 
 # %%
-# Set the number of simulation timesteps, with a maximum of `len(debt_market_df) - 1`
-SIMULATION_TIMESTEPS = len(debt_market_df) - 1
+# Set the number of simulation timesteps, with a maximum of `len(eth_price_df) - 1`
+SIMULATION_TIMESTEPS = len(eth_price_df) - 1
+SIMULATION_TIMESTEPS
 
 # %%
 # Create a wrapper for the model simulation, and update the existing parameters and initial state
@@ -99,8 +96,7 @@ system_simulation = ConfigWrapper(system_model_v3, T=range(SIMULATION_TIMESTEPS)
 
 # %%
 del configs[:] # Clear any prior configs
-system_simulation.append() # Append the simulation config to the cadCAD `configs` list
-(simulation_result, _tensor_field, _sessions) = run(drop_midsteps=False) # Run the simulation
+(simulation_result, _tensor_field, _sessions) = run(system_simulation, drop_midsteps=False) # Run the simulation
 
 # %% [markdown]
 # # Simulation Analysis
@@ -176,34 +172,12 @@ df.plot(x='timestamp', y=['eth_locked', 'eth_freed', 'eth_bitten'], title='Debt 
 
 
 # %%
-df.plot(x='timestamp', y=['v_1', 'v_2', 'v_3'], title='Debt Market ETH Lock, Free, Bite Activity')
-
-# %%
 df['drawn - wiped - bitten'] = df['rai_drawn'] - df['rai_wiped'] - df['rai_bitten']
 df.plot(x='timestamp', y=['principal_debt', 'drawn - wiped - bitten'], title='Debt Market RAI State')
 
 
 # %%
 df.plot(x='timestamp', y=['rai_drawn', 'rai_wiped', 'rai_bitten'], title='Debt Market RAI State')
-
-
-# %%
-df.plot(x='timestamp', y=['u_1', 'u_2', 'u_3'], title='Debt Market RAI Draw, Wipe, Bite Activity')
-
-
-# %% [markdown]
-# ## Accrued interest and system revenue
-
-# %%
-df.plot(x='timestamp', y=['w_1', 'w_2', 'w_3'], title='Accrued Interest Activity')
-
-
-# %%
-df.plot(x='timestamp', y=['accrued_interest'], title='Accrued Interest')
-
-
-# %%
-df.plot(x='timestamp', y=['system_revenue'], title='System Revenue')
 
 
 # %%
