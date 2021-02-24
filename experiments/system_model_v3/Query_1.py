@@ -54,9 +54,7 @@ params.update(params_override)
 # Experiment details
 now = datetime.datetime.now()
 dir_path = os.path.dirname(os.path.realpath(__file__))
-print(dir_path)
 experiment_folder = __file__.split('.py')[0]
-print(experiment_folder)
 results_id = now.isoformat()
 
 if __name__ == '__main__':

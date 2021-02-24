@@ -3,6 +3,17 @@
 ## V3 model
 
 1. Query: does market price decline without controller?
-[Recorded here:](Single_run.ipynb)
+[Raw resuls here:](reflexer/experiments/system_model_v3_Query_1/experiment_run_log.md)
+[Analysis here:](Query_1.ipynb)
 Result: 
 
+
+2. Sanity check plot
+[Raw resuls here:](reflexer/experiments/system_model_v3/sanity_check_plot/experiment_run_log.md)
+[Analysis here:](Single_run.ipynb)
+Result: 
+
+3. Ideal params
+[Raw resuls here:](reflexer/experiments/system_model_v3/ideal_params/experiment_run_log.md)
+[Analysis here:](Ideal_Parameters.ipynb)
+Result: 
