@@ -17,3 +17,8 @@ Result:
 [Raw resuls here:](reflexer/experiments/system_model_v3/ideal_params/experiment_run_log.md)
 [Analysis here:](Ideal_Parameters.ipynb)
 Result: 
+
+4. Unstable params
+[Raw resuls here:](reflexer/experiments/system_model_v3/unstable_controller_params/experiment_run_log.md)
+[Analysis here:](Unstable_Controller_Parameters.ipynb.ipynb)
+Result: 
