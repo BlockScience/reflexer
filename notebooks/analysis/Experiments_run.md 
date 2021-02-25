@@ -5,7 +5,7 @@
 1. Query: does market price decline without controller?
 [Raw resuls here:](reflexer/experiments/system_model_v3_Query_1/experiment_run_log.md)
 [Analysis here:](Query_1.ipynb)
-Result: 
+Result: Implication from Reflexer: _controller_ is creating the market price decline--proceed with Query 2
 
 
 2. Sanity check plot
