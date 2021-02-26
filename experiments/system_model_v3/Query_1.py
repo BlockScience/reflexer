@@ -47,7 +47,6 @@ experiment_metrics = f'''
 params_override = {
     'controller_enabled': [False],
     'liquidity_demand_shock': [False],
-    'arbitrageur_considers_liquidation_ratio': [True,False]
 }
 params.update(params_override)
 

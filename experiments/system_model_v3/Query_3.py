@@ -15,18 +15,38 @@ from experiments.utils import save_to_HDF5, batch, merge_parameter_sweep
 from radcad.core import generate_parameter_sweep
 
 
-SIMULATION_TIMESTEPS = 8758 #len(eth_price_df) - 1
+sweeps = {
+    'arbitrageur_considers_liquidation_ratio': [True,False],
+    'rescale_target_price': [True, False]
+
+}
+
+params.update(sweeps)
+
+
+SIMULATION_TIMESTEPS = 24 * 30 * 6
 MONTE_CARLO_RUNS = 1
 
+# Configure sweep and update parameters
+params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS)
+params.update(params_update)
 
+experiment_metrics = f'''
 
-experiment_metrics = ""
+****
+
+{experiment_metrics}
+
+```
+{sweeps=}
+```
+'''
 
 # Override parameters
-params_override = {
-    'controller_enabled': [False],
-}
-params.update(params_override)
+# params_override = {
+#     'ki': [0],
+# }
+# params.update(params_override)
 
 # Experiment details
 now = datetime.datetime.now()
