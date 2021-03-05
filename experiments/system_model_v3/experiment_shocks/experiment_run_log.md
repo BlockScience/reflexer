@@ -1,4 +1,47 @@
 
+# Experiment on 2021-03-04T09:46:21.526790
+* Passed: True
+* Time: 26.74365938504537 minutes
+* Results folder: /home/aclarkdata/repos/reflexer/experiments/system_model_v3/experiment_shocks
+* Results ID: 2021-03-04T09:46:21.528200
+* Git Hash: bf2c90d
+
+Exceptions:
+
+```
+                                  exception  ...                                      initial_state
+0                                      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+1                                      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+2                                      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+3                                      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+4                                      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+..                                      ...  ...                                                ...
+120                                    None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+121  overflow encountered in double_scalars  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+122  overflow encountered in double_scalars  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+123  overflow encountered in double_scalars  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+124  overflow encountered in double_scalars  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+
+[125 rows x 8 columns]
+```
+
+Experiment metrics:
+
+
+* Number of timesteps: 1440 / 60.0 days
+* Number of MC runs: 5
+* Timestep duration: 0.004 seconds
+* Control parameters: ['kp', 'ki']
+* Number of parameter combinations: 25
+* Expected experiment duration: 12.0 minutes / 0.2 hours
+    
+
+```
+kp_sweep=array([2.e-07, 6.e-07, 1.e-06, 3.e-06, 5.e-06])
+ki_sweep=array([-5.e-09, -3.e-09, -1.e-09, -6.e-10, -2.e-10])
+```
+
+    
 # Experiment on 2021-02-09T18:46:33.071979
 * Passed: True
 * Time: 9.49233728647232 minutes

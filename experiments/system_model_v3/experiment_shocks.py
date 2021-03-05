@@ -64,4 +64,4 @@ experiment_folder = __file__.split('.py')[0]
 results_id = now.isoformat()
 
 if __name__ == "__main__":
-    run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables, ray=False)
+    run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables)
