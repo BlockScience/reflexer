@@ -3,13 +3,13 @@
 ## V3 model
 
 
-* Ideal params
-[Raw resuls here:](reflexer/experiments/system_model_v3/ideal_params/experiment_run_log.md)
-[Analysis here:](Ideal_Parameters.ipynb)
+* Recommended params
+[Raw resuls here:](reflexer/experiments/system_model_v3/recommended_params/experiment_run_log.md)
+[Analysis here:](Single_run.ipynb)
 Override params:
 None
 Result: 
-Market price and redemption price decline
+Systems appears to be running as would be expected
 
 * Query 1: does market price decline without controller?
 [Raw resuls here:](reflexer/experiments/system_model_v3_Query_1/experiment_run_log.md)
@@ -86,7 +86,7 @@ Result:
 
 * Sanity check plot
 [Raw resuls here:](reflexer/experiments/system_model_v3/sanity_check_plot/experiment_run_log.md)
-[Analysis here:](Single_run.ipynb)
+[Analysis here:](Sanity_check.ipynb)
 Override params:
 ```
 params_override = {
