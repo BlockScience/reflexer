@@ -10,15 +10,41 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.6.0
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python (Reflexer)
 #     language: python
-#     name: python3
+#     name: python-reflexer
 # ---
 
 # %% [markdown]
-# # Debt Market Model
+# # Debt Market Model - Overview
 #
 # The purpose of this notebook is to configure and simulate the full CDP and APT system model, using the historical Ethereum price as a driver, under different PI controller settings - enabled, disabled, `kp` and `ki`.
+#
+# ## Simulation
+#
+# The model is run using 100 timesteps, without any monte carlo runs. The model runs in the follow steps:
+#
+# 1. Calculate the amount of time passed between events
+# 2. Resolve expected price and store in state
+# 3. Calculate APT model optimal values and cdp position state
+# 4. Compute and store the error terms
+# 5. Exogenous u,v activity: liquidate CDPs
+# 6. Endogenous w activity of accrued interested and cdps interest
+# 7. Compute the stability control action target rate
+# 8. Update the target price based on stability control action 
+# 9. Rebalance CDPs using wipes and frees 
+# 10. Resolve expected price and store in state
+# 11. Aggregate states
+# 12. Update debt market state
+# 13. Exogenous ETH price process
+#
+#
+# Please visit the [Glossary](./GLOSSARY.md) for specific term and component definitions.
+# %%
+# %pip show scikit-optimize
+
+# %%
+# #!pip install scikit-optimize
 
 # %% [markdown]
 # # Setup and Dependencies
@@ -46,8 +72,6 @@ from shared import *
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-# import plotly.io as pio
-# pio.renderers.default = "png"
 
 # %% [markdown]
 # # Historical MakerDAO Dai debt market activity
@@ -55,8 +79,11 @@ from plotly.subplots import make_subplots
 # %%
 # Import the historical MakerDAO market data CSV file
 from models.system_model_v2.model.state_variables.historical_state import debt_market_df
-debt_market_df
+debt_market_df.head(2)
 
+
+# %%
+debt_market_df.tail(2)
 
 # %%
 # Plot the full set of historical data over time
@@ -95,12 +122,9 @@ system_simulation = ConfigWrapper(system_model_v2, T=range(SIMULATION_TIMESTEPS)
 
 
 # %%
-import warnings
-# Ignore warnings in notebook - see logs/ for further debugging
-warnings.filterwarnings('ignore')
-
 del configs[:] # Clear any prior configs
-(simulation_result, _tensor_field, _sessions) = run(system_simulation, drop_midsteps=False) # Run the simulation
+system_simulation.append() # Append the simulation config to the cadCAD `configs` list
+(simulation_result, _tensor_field, _sessions) = run(drop_midsteps=False) # Run the simulation
 
 # %% [markdown]
 # # Simulation Analysis
@@ -114,7 +138,7 @@ simulation_result['collateralization_ratio'] = (simulation_result.eth_collateral
 pd.set_option('display.max_columns', 100)
 pd.set_option('display.max_rows', 50)
 
-simulation_result
+simulation_result.head(5)
 
 # %% [markdown]
 # ## Save simulation
@@ -132,7 +156,7 @@ simulation_result = pd.read_pickle(f'exports/system_model_v2/results.pickle')
 
 # Drop the simulation midsteps - the substeps that aren't used for generating plots
 df = drop_dataframe_midsteps(simulation_result)
-df
+df.head(5)
 
 # %% [markdown]
 # ## Select simulation
@@ -329,28 +353,8 @@ std_mkt.plot()
 
 
 # %%
-np.std(df['market_price'])
-
-
-# %%
 err_m_t = df['market_price'] - df['target_price']
 err_m_t.plot()
-
-
-# %%
-np.sqrt(abs(df['market_price'] - df['target_price']).mean())
-
-
-# %%
-np.corrcoef(df['market_price'],df['eth_price'])
-
-
-# %%
-np.corrcoef(df['market_price'],df['target_price'])
-
-
-# %%
-np.corrcoef(df['market_price'],df['target_rate'])
 
 
 # %%
@@ -365,14 +369,7 @@ fig.update_layout(
 
 fig.show()
 
-# %%
-
-# %%
-
-# %%
-
-# %%
-
-# %%
-
-# %%
+# %% [markdown]
+# ## Conclusion
+# This current working notebook is an integration test. In contrast to the v1 model, the stabilizing effect of a positive Kp and negative Ki term combined. Towards the end of the notebook we wanted to test whether the controller was reducing volatility, but the plots we chose didn't give any strong conclusions yet.
+#

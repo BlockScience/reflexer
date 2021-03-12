@@ -10,30 +10,25 @@ from experiments.system_model_v3.run import run_experiment
 from experiments.utils import save_to_HDF5
 
 
-# proportional term for the stability controller: units 1/USD
-kp_sweep = np.unique(np.append(np.linspace(1e-6/5, 1e-6, 3), np.linspace(1e-6, 5e-6, 3)))
-# integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = np.unique(np.append(np.linspace(-1e-9/5, -1e-9, 3), np.linspace(-1e-9, -5e-9, 3)))
+# # proportional term for the stability controller: units 1/USD
+# kp_sweep = np.unique(np.append(np.linspace(1e-6/5, 1e-6, 3), np.linspace(1e-6, 5e-6, 3)))
+# # integral term for the stability controller: units 1/(USD*seconds)
+# ki_sweep = np.unique(np.append(np.linspace(-1e-9/5, -1e-9, 3), np.linspace(-1e-9, -5e-9, 3)))
 
-sweeps = {
-    'kp': kp_sweep,
-    'ki': ki_sweep,
-}
+# sweeps = {
+#     'kp': kp_sweep,
+#     'ki': ki_sweep,
+# }
 
 SIMULATION_TIMESTEPS = 24 * 30 * 2 # Updated to two month horizon for shock tests
 MONTE_CARLO_RUNS = 5 # Each MC run will map to different shock
 
-# Configure sweep and update parameters
-params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS)
-params.update(params_update)
+# # Configure sweep and update parameters
+# params_update, experiment_metrics = configure_experiment(sweeps, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS)
+# params.update(params_update)
 
 experiment_metrics = f'''
-{experiment_metrics}
 
-```
-{kp_sweep=}
-{ki_sweep=}
-```
 '''
 
 # Override parameters
@@ -64,4 +59,4 @@ experiment_folder = __file__.split('.py')[0]
 results_id = now.isoformat()
 
 if __name__ == "__main__":
-    run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables, ray=False)
+    run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables)

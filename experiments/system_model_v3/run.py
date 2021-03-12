@@ -81,8 +81,11 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
         logging.info(f"Experiment completed in {experiment_time} seconds")
 
         update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now)
+
+        return experiment
     except AssertionError as e:
         logging.info("Experiment failed")
         logging.error(e)
 
         update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now)
+        raise e
