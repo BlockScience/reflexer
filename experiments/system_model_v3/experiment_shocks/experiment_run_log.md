@@ -1,4 +1,29 @@
 
+# Experiment on 2021-03-11T13:11:13.823258
+* Passed: True
+* Time: 1.7370689431826274 minutes
+* Results folder: /home/aclarkdata/repos/reflexer/experiments/system_model_v3/experiment_shocks
+* Results ID: 2021-03-11T13:11:13.823533
+* Git Hash: 3b105df
+
+Exceptions:
+
+```
+  exception  ...                                      initial_state
+0      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+1      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+2      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+3      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+4      None  ...  {'cdp_metrics': {}, 'optimal_values': {}, 'sim...
+
+[5 rows x 8 columns]
+```
+
+Experiment metrics:
+
+
+
+    
 # Experiment on 2021-03-04T09:46:21.526790
 * Passed: True
 * Time: 26.74365938504537 minutes

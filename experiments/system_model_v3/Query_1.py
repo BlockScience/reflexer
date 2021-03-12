@@ -34,8 +34,6 @@ params.update(params_update)
 
 experiment_metrics = f'''
 
-**Parameter subsets are spread across multiple experiments, with the results ID having the same timestamp and an extension for the subset index.**
-
 {experiment_metrics}
 
 ```
