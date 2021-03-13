@@ -1,4 +1,8 @@
 from models.system_model_v3.model.state_variables.liquidity import cdps, eth_collateral, principal_debt, uniswap_rai_balance, uniswap_eth_balance
+from models.system_model_v3.model.state_variables.liquidity import price_trader_rai_balance, price_trader_usd_balance
+from models.system_model_v3.model.state_variables.liquidity import neg_rate_trader_rai_balance, neg_rate_trader_usd_balance
+from models.system_model_v3.model.state_variables.liquidity import pos_rate_trader_rai_balance, pos_rate_trader_usd_balance
+from models.system_model_v3.model.state_variables.liquidity import rate_trader_rai_balance, rate_trader_usd_balance
 from models.system_model_v3.model.state_variables.system import stability_fee, target_price
 from models.system_model_v3.model.state_variables.historical_state import eth_price
 from models.system_model_v3.model.parts.uniswap_oracle import UniswapOracle
@@ -60,7 +64,19 @@ state_variables = {
     'eth_gross_return': 0,
     'expected_market_price': target_price, # root of non-arbitrage condition
     'expected_debt_price': target_price, # predicted "debt" price, the intrinsic value of RAI according to the debt market activity and state
-
+    
+    # Price trader
+    'price_trader_rai_balance': price_trader_rai_balance,
+    'price_trader_usd_balance': price_trader_usd_balance,
+    
+    # Neg and Pos Rate traders
+    'neg_rate_trader_rai_balance': neg_rate_trader_rai_balance,
+    'neg_rate_trader_usd_balance': neg_rate_trader_usd_balance,
+    'pos_rate_trader_rai_balance': pos_rate_trader_rai_balance,
+    'pos_rate_trader_usd_balance': pos_rate_trader_usd_balance,
+    'rate_trader_rai_balance': rate_trader_rai_balance,
+    'rate_trader_usd_balance': rate_trader_usd_balance,
+    
     # Controller states
     'error_star': 0, # price units
     'error_star_integral': 0, # price units x seconds

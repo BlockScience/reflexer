@@ -46,8 +46,8 @@ from shared import *
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-# import plotly.io as pio
-# pio.renderers.default = "png"
+import plotly.io as pio
+pio.renderers.default = "png"
 
 # %% [markdown]
 # # Environmental Processes
@@ -76,7 +76,7 @@ from models.system_model_v3.model.params.init import params
 params_update = {
     'controller_enabled': [True],
     'kp': [2e-07], # proportional term for the stability controller: units 1/USD
-    'ki': [-5e-09], # integral term for the stability controller: units 1/(USD*seconds)
+    'ki': [-5e-9], # integral term for the stability controller: units 1/(USD*seconds)
 }
 
 params.update(params_update)
@@ -87,7 +87,7 @@ params.update(params_update)
 # %%
 # Set the number of simulation timesteps, with a maximum of `len(eth_price_df) - 1`
 SIMULATION_TIMESTEPS = len(eth_price_df) - 1
-SIMULATION_TIMESTEPS
+SIMULATION_TIMESTEPS# = 3000
 
 # %%
 # Create a wrapper for the model simulation, and update the existing parameters and initial state
@@ -110,7 +110,7 @@ simulation_result['collateralization_ratio'] = (simulation_result.eth_collateral
 pd.set_option('display.max_columns', 100)
 pd.set_option('display.max_rows', 50)
 
-simulation_result
+#simulation_result
 
 # %% [markdown]
 # ## Save simulation
@@ -128,7 +128,7 @@ simulation_result = pd.read_pickle(f'exports/system_model_v3/results.pickle')
 
 # Drop the simulation midsteps - the substeps that aren't used for generating plots
 df = drop_dataframe_midsteps(simulation_result)
-df
+#df
 
 # %% [markdown]
 # ## Select simulation
@@ -139,8 +139,41 @@ df
 df = df.query('simulation == 0 and subset == 0')
 
 
+# %% [markdown]
+# ## Check trader profits
+
 # %%
-df.plot(x='timestamp', y=['market_price', 'market_price_twap'])
+price_trader_start = df.iloc[0]['price_trader_usd_balance'] + \
+                     df.iloc[0]['price_trader_rai_balance'] * df.iloc[0]['market_price']
+price_trader_end = df.iloc[-1]['price_trader_usd_balance'] + \
+                     df.iloc[-1]['price_trader_rai_balance'] * df.iloc[-1]['market_price']
+price_trader_profit = price_trader_end  - price_trader_start
+
+neg_rate_trader_start = df.iloc[0]['neg_rate_trader_usd_balance'] + \
+                     df.iloc[0]['neg_rate_trader_rai_balance'] * df.iloc[0]['market_price']
+neg_rate_trader_end = df.iloc[-1]['neg_rate_trader_usd_balance'] + \
+                     df.iloc[-1]['neg_rate_trader_rai_balance'] * df.iloc[-1]['market_price']
+neg_rate_trader_profit = neg_rate_trader_end  - neg_rate_trader_start
+
+pos_rate_trader_start = df.iloc[0]['pos_rate_trader_usd_balance'] + \
+                     df.iloc[0]['pos_rate_trader_rai_balance'] * df.iloc[0]['market_price']
+pos_rate_trader_end = df.iloc[-1]['pos_rate_trader_usd_balance'] + \
+                     df.iloc[-1]['pos_rate_trader_rai_balance'] * df.iloc[-1]['market_price']
+pos_rate_trader_profit = pos_rate_trader_end  - pos_rate_trader_start
+
+rate_trader_start = df.iloc[0]['rate_trader_usd_balance'] + \
+                     df.iloc[0]['rate_trader_rai_balance'] * df.iloc[0]['market_price']
+rate_trader_end = df.iloc[-1]['rate_trader_usd_balance'] + \
+                     df.iloc[-1]['rate_trader_rai_balance'] * df.iloc[-1]['market_price']
+rate_trader_profit = rate_trader_end  - rate_trader_start
+
+print(f"{price_trader_profit=}")
+print(f"{neg_rate_trader_profit=}")
+print(f"{pos_rate_trader_profit=}")
+print(f"{rate_trader_profit=}")
+
+# %% [markdown]
+# df.plot(x='timestamp', y=['market_price', 'market_price_twap'])
 
 # %%
 df.plot(x='timestamp', y=['eth_price'], title='Historical ETH price')
@@ -155,7 +188,10 @@ df.plot(x='timestamp', y=['market_price', 'expected_market_price'], title='Expec
 
 
 # %%
-df.plot(x='timestamp', y=['target_rate'], title='Controller Target Rate')
+df['apy'] = 1 - (1 + df['target_rate'])**(60*60*24*365) * 100
+
+# %%
+df.plot(x='timestamp', y=['apy'], title='Controller Target Rate')
 
 
 # %%
@@ -310,3 +346,5 @@ fig.update_layout(
 )
 
 fig.show()
+
+# %%

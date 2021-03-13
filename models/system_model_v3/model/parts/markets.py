@@ -63,7 +63,7 @@ def p_liquidity_demand(params, substep, state_history, state):
                 assert RAI_delta <= 0
                 assert UNI_delta <= 0
 
-        logging.debug(f"Secondary market {'swap' if swap else 'liquidity demand'}: {RAI_delta=} {ETH_delta=} {UNI_delta=}")
+        #print(f"Secondary market {state['timestep']}, {'swap' if swap else 'liquidity demand'}: {RAI_balance=},{RAI_delta=} {ETH_delta=} {UNI_delta=}")
         return {'RAI_delta': RAI_delta, 'ETH_delta': ETH_delta, 'UNI_delta': UNI_delta}
     else:
         return {'RAI_delta': 0, 'ETH_delta': 0, 'UNI_delta': 0}

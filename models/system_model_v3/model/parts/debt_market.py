@@ -201,7 +201,6 @@ def open_cdp_draw(draw, eth_price, target_price, liquidation_ratio):
 
 def p_rebalance_cdps(params, substep, state_history, state):
     cdps = state["cdps"]
-
     eth_price = state["eth_price"]
     target_price = state["target_price"]
     liquidation_ratio = params["liquidation_ratio"]

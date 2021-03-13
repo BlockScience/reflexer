@@ -9,18 +9,19 @@ from experiments.system_model_v3.run import run_experiment
 from experiments.utils import save_to_HDF5
 
 
-# exponents = np.linspace(-10, -1, 5)
-# scales = list(range(-9, -1, 1))
-# kp_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
+exponents = np.linspace(-10, -1, 5)
+scales = list(range(-9, 9, 2))
+kp_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
 
-# exponents = np.linspace(-10, -1, 5)
-# scales = list(range(1, 9, 1))
-# ki_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
+exponents = np.linspace(-10, -1, 5)
+scales = list(range(-9, 9, 2))
+ki_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
 
-# proportional term for the stability controller: units 1/USD
-kp_sweep = [-1e-10, -1e-8, -1e-6, -1e-4, -1e-2, 1e-10, 1e-8, 1e-6, 1e-4, 1e-2]
+#kp_sweep = [1e-8, 5e-7, 1e-7, 5e-6, 1e-6]
+#kp_sweep = [5e-7]
 # integral term for the stability controller: units 1/(USD*seconds)
-ki_sweep = [-1e-10, -1e-8, -1e-6, -1e-4, -1e-2, 1e-10, 1e-8, 1e-6, 1e-4, 1e-2]
+#ki_sweep = [-1e-6, -1e-7, -5e-8, -1e-8, 1e-9, 5e-8, 1e-8, 5e-6]
+#ki_sweep = [-1e-4, -1e-5, 1e-4, 1e-5]
 
 sweeps = {
     'kp': kp_sweep,

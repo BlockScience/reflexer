@@ -64,8 +64,8 @@ pd.set_option('display.max_rows', 50)
 # Using the experiment logs, select the experiment of interest from the specific HDF5 store file (these datasets are very large, and won't be committed to repo):
 
 # %%
-# experiment_results = 'experiments/system_model_v3/experiment_controller_sweep/experiment_results.hdf5'
-experiment_results = 'experiments/system_model_v3/experiment_shocks/experiment_results.hdf5'
+experiment_results = 'experiments/system_model_v3/experiment_controller_sweep/experiment_results.hdf5'
+#experiment_results = 'experiments/system_model_v3/experiment_shocks/experiment_results.hdf5'#
 
 # %%
 experiment_results_keys = []
@@ -83,7 +83,7 @@ exceptions_keys
 
 # %%
 # Copy a results_ key from the above keys to select the experiment
-experiment_results_key = 'results_2021-02-09T18:46:33.073363' # Or select last result: experiment_results_keys[-1]
+experiment_results_key = 'results_2021-03-13T05:04:26.436122' # Or select last result: experiment_results_keys[-1]
 experiment_timestamp = experiment_results_key.strip('results_')
 exceptions_key = 'exceptions_' + experiment_timestamp
 experiment_timestamp
@@ -108,7 +108,10 @@ pprint(list(exceptions_df['exception'])[:5])
 
 # %%
 from experiments.system_model_v3.post_process import post_process_results
-from experiments.system_model_v3.experiment_shocks import params, SIMULATION_TIMESTEPS
+
+#from experiments.system_model_v3.experiment_shocks import params, SIMULATION_TIMESTEPS
+from experiments.system_model_v3.experiment_controller_sweep import params, SIMULATION_TIMESTEPS
+
 
 # %% [markdown]
 # Remove substeps, add `set_params` to dataframe, and add post-processing columns:
@@ -152,7 +155,7 @@ fig = px.line(
     df.query('run == 1'),
     title="Price response for all control parameter subsets, first run",
     x="timestamp",
-    y=["market_price", "market_price_twap", "target_price_scaled"], 
+    y=["market_price", "market_price_twap", "target_price"], 
     facet_col="ki", 
     facet_row="kp", 
     height=1000
@@ -189,7 +192,7 @@ df_market_price_infinity[['subset', 'kp', 'ki']].drop_duplicates(subset=['kp', '
 # %%
 df['stable_price'] = False
 df.loc[df.eval("""
-0.1*@initial_target_price < market_price <= 10*@initial_target_price and 0.1*@initial_target_price < target_price_scaled <= 10*@initial_target_price
+0.1*@initial_target_price < market_price <= 10*@initial_target_price and 0.1*@initial_target_price < target_price <= 10*@initial_target_price
 """), 'stable_price'] = True
 df_stable_price = df.groupby("subset").filter(lambda x: all(x.query('timestep > 24*2')['stable_price'])) #  and x['timestep'].max() == SIMULATION_TIMESTEPS
 df_stable_price['subset'].unique()
@@ -213,7 +216,7 @@ fig = px.line(
     df_stable_price.query('run == 2'),
     title="ETH price 30% step response",
     x="timestamp",
-    y=["market_price", "market_price_twap", "target_price_scaled"],
+    y=["market_price", "market_price_twap", "target_price"],
     facet_col="kp",
     facet_row="ki",
     facet_col_wrap=2,
@@ -226,7 +229,7 @@ fig = px.line(
     df_stable_price.query('run == 3'),
     title="ETH price 30% impulse response",
     x="timestamp",
-    y=["market_price", "market_price_twap", "target_price_scaled"],
+    y=["market_price", "market_price_twap", "target_price"],
     facet_col="kp",
     facet_row="ki",
     facet_col_wrap=2,
@@ -239,7 +242,7 @@ fig = px.line(
     df_stable_price.query('run == 4'),
     title="ETH price negative 30% step response",
     x="timestamp",
-    y=["market_price", "market_price_twap", "target_price_scaled"],
+    y=["market_price", "market_price_twap", "target_price"],
     facet_col="kp",
     facet_row="ki",
     facet_col_wrap=2,
@@ -252,7 +255,7 @@ fig = px.line(
     df_stable_price.query('run == 5'),
     title="ETH price negative 30% impulse response",
     x="timestamp",
-    y=["market_price", "market_price_twap", "target_price_scaled"],
+    y=["market_price", "market_price_twap", "target_price"],
     facet_col="kp",
     facet_row="ki",
     facet_col_wrap=2,

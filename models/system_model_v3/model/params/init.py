@@ -37,17 +37,26 @@ params = {
     'control_period': [3600 * 4], # seconds; must be multiple of cumulative time
     
     # Controller parameters
-    'controller_enabled': [False],
-    'enable_controller_time': [7 * 24 * 3600], # delay in enabling controller (7 days)
+    'controller_enabled': [True],
+    'enable_controller_time': [1 * 24 * 3600], # delay in enabling controller (7 days)
     'kp': [2e-7], # proportional term for the stability controller: units 1/USD
     'ki': [-5e-9], # integral term for the stability controller scaled by control period: units 1/(USD*seconds)
     'alpha': [.999 * RAY], # in 1/RAY
     'error_term': [lambda target, measured: target - measured],
-    'rescale_target_price': [True], # scale the target price by the liquidation ratio
+    'rescale_target_price': [False], # scale the target price by the liquidation ratio
     
     # APT model
     'arbitrageur_considers_liquidation_ratio': [True],
     'interest_rate': [1.03], # Real-world expected interest rate, for determining profitable arbitrage opportunities
+    
+    'trader_market_premium': [1.05],
+    # Price trader
+    'price_trader_bound': [0.20],
+    
+    # Rate traders
+    'neg_rate_trader_apy_bound': [20],
+    'pos_rate_trader_apy_bound': [20],
+    'rate_trader_apy_bound': [60],
 
     # APT OLS model
     # OLS values (Feb. 6, 2021) for beta_1 and beta_2

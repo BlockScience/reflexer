@@ -16,6 +16,18 @@ uniswap_cdp_eth_collateral = uniswap_cdp_rai_balance * liquidation_ratio * liqui
 arbitrage_cdp_rai_balance = 10e6
 arbitrage_cdp_eth_collateral = arbitrage_cdp_rai_balance * liquidation_ratio * target_price / eth_price
 
+price_trader_rai_balance = 30e6
+price_trader_usd_balance = price_trader_rai_balance / target_price
+
+neg_rate_trader_rai_balance = 0e6
+neg_rate_trader_usd_balance = neg_rate_trader_rai_balance / target_price
+
+pos_rate_trader_rai_balance = 0e6
+pos_rate_trader_usd_balance = pos_rate_trader_rai_balance / target_price
+
+rate_trader_rai_balance = 30e6
+rate_trader_usd_balance = rate_trader_rai_balance / target_price
+
 # Create a pool of initial CDPs
 cdp_list = []
 for i in range(liquidity_cdp_count):

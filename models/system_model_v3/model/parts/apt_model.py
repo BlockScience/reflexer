@@ -101,7 +101,7 @@ def p_arbitrageur_model(params, substep, state_history, state):
     if not total_deposited >= 0: raise failure.NegativeBalanceException(total_deposited)
     
     expensive_RAI_on_secondary_market = \
-        redemption_price < ((1 - uniswap_fee) / liquidation_ratio) * market_price and expected_market_price < market_price \
+        redemption_price < ((1 - uniswap_fee) / liquidation_ratio) * market_price \
         if params['arbitrageur_considers_liquidation_ratio'] \
         else redemption_price < (1 - uniswap_fee) * market_price and expected_market_price < market_price
     cheap_RAI_on_secondary_market = \
@@ -150,7 +150,7 @@ def p_arbitrageur_model(params, substep, state_history, state):
             # Check positive profit condition
             profit = z - q_deposit - gas_price * (swap_gas_used + cdp_gas_used)
             if profit > 0:
-                logging.debug(f"{state['timestamp']} Performing arb. CDP -> UNI for profit {profit}")
+                print(f"{state['timestamp']} Performing arb. CDP -> UNI for profit {profit}")
 
                 borrowed = cdps.at[aggregate_arbitrageur_cdp_index, "drawn"]
                 deposited = cdps.at[aggregate_arbitrageur_cdp_index, "locked"]
@@ -183,13 +183,14 @@ def p_arbitrageur_model(params, substep, state_history, state):
         q_withdraw = total_deposited - (liquidation_ratio * redemption_price / eth_price) * (total_borrowed - d_repay)
         
         if d_repay > total_borrowed:
-           logging.warning("Arb. CDP closed!")
-           raise failure.LiquidityException("Arb. CDP closed")
+           pass
+           #logging.warning("Arb. CDP closed!")
+           #raise failure.LiquidityException("Arb. CDP closed")
 
         # Check positive profit condition
         profit = q_withdraw - z - gas_price * (swap_gas_used + cdp_gas_used)
         if profit > 0:
-            logging.debug(f"{state['timestamp']} Performing arb. UNI -> CDP for profit {profit}")
+            print(f"{state['timestamp']} Performing arb. UNI -> CDP for profit {profit}")
 
             repayed = cdps.at[aggregate_arbitrageur_cdp_index, "wiped"]
             withdrawn = cdps.at[aggregate_arbitrageur_cdp_index, "freed"]

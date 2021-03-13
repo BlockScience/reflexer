@@ -9,6 +9,8 @@ from .parts.controllers import *
 from .parts.debt_market import *
 from .parts.time import *
 from .parts.apt_model import *
+from .parts.price_trading import *
+from .parts.rate_trading import *
 
 
 partial_state_update_blocks_unprocessed = [
@@ -74,12 +76,77 @@ partial_state_update_blocks_unprocessed = [
         'details': """
             APT model
         """,
+        'enabled': False,
         'policies': {
             'arbitrage': p_arbitrageur_model
         },
         'variables': {
             'cdps': s_store_cdps,
             'optimal_values': s_store_optimal_values,
+            'RAI_balance': uniswap.update_RAI_balance,
+            'ETH_balance': uniswap.update_ETH_balance,
+            'UNI_supply': uniswap.update_UNI_supply,
+        }
+    },
+    {
+        'details': """
+            price trading model
+        """,
+        'enabled': False,
+        'policies': {
+            'arbitrage': p_trade_price
+        },
+        'variables': {
+            'price_trader_usd_balance': s_store_price_trader_usd_balance,
+            'price_trader_rai_balance': s_store_price_trader_rai_balance,
+            'RAI_balance': uniswap.update_RAI_balance,
+            'ETH_balance': uniswap.update_ETH_balance,
+            'UNI_supply': uniswap.update_UNI_supply,
+        }
+    },
+        {
+        'details': """
+            negative rate trading model
+        """,
+        'enabled': False,
+        'policies': {
+            'arbitrage': p_trade_neg_rate
+        },
+        'variables': {
+            'neg_rate_trader_usd_balance': s_store_neg_rate_trader_usd_balance,
+            'neg_rate_trader_rai_balance': s_store_neg_rate_trader_rai_balance,
+            'RAI_balance': uniswap.update_RAI_balance,
+            'ETH_balance': uniswap.update_ETH_balance,
+            'UNI_supply': uniswap.update_UNI_supply,
+        }
+    },
+        {
+        'details': """
+            positive rate trading model
+        """,
+        'enabled': False,
+        'policies': {
+            'arbitrage': p_trade_pos_rate
+        },
+        'variables': {
+            'pos_rate_trader_usd_balance': s_store_pos_rate_trader_usd_balance,
+            'pos_rate_trader_rai_balance': s_store_pos_rate_trader_rai_balance,
+            'RAI_balance': uniswap.update_RAI_balance,
+            'ETH_balance': uniswap.update_ETH_balance,
+            'UNI_supply': uniswap.update_UNI_supply,
+        }
+    },
+        {
+        'details': """
+            rate trading model
+        """,
+        'enabled': True,
+        'policies': {
+            'arbitrage': p_trade_rate
+        },
+        'variables': {
+            'rate_trader_usd_balance': s_store_rate_trader_usd_balance,
+            'rate_trader_rai_balance': s_store_rate_trader_rai_balance,
             'RAI_balance': uniswap.update_RAI_balance,
             'ETH_balance': uniswap.update_ETH_balance,
             'UNI_supply': uniswap.update_UNI_supply,
@@ -112,7 +179,7 @@ partial_state_update_blocks_unprocessed = [
     },
     #################################################################
     {   
-        'enabled': False,
+        'enabled': False,# False
         'details': '''
             Exogenous u,v activity: liquidate CDPs
         ''',
@@ -127,6 +194,7 @@ partial_state_update_blocks_unprocessed = [
         'details': """
         Rebalance CDPs using wipes and draws 
         """,
+        'enabled': True,
         'policies': {
             'rebalance_cdps': p_rebalance_cdps,
         },
@@ -142,6 +210,7 @@ partial_state_update_blocks_unprocessed = [
         'details': '''
             Endogenous w activity
         ''',
+        'enabled': True,
         'policies': {},
         'variables': {
             'accrued_interest': s_update_accrued_interest,

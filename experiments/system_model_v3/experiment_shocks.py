@@ -15,6 +15,12 @@ kp_sweep = np.unique(np.append(np.linspace(1e-6/5, 1e-6, 3), np.linspace(1e-6, 5
 # integral term for the stability controller: units 1/(USD*seconds)
 ki_sweep = np.unique(np.append(np.linspace(-1e-9/5, -1e-9, 3), np.linspace(-1e-9, -5e-9, 3)))
 
+kp_sweep = [5e-7, 1e-7, 5e-8, 1e-08]
+# integral term for the stability controller: units 1/(USD*seconds)
+ki_sweep = [-1e-7, -5e-8, -1e-8, 1e-9, 5e-8, 1e-8]
+
+
+
 sweeps = {
     'kp': kp_sweep,
     'ki': ki_sweep,
@@ -64,4 +70,4 @@ experiment_folder = __file__.split('.py')[0]
 results_id = now.isoformat()
 
 if __name__ == "__main__":
-    run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables, ray=False)
+    run_experiment(results_id, experiment_folder, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables)
