@@ -5,7 +5,7 @@ import random
 import logging
 import math
 
-import models.system_model_v3.model.parts.uniswap as uniswap
+import models.system_model_v3.model.parts.amm.balancer.balancer as uniswap
 from .utils import print_time
 
 
