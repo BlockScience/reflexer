@@ -47,14 +47,18 @@ def add_liquidity(R: float,
     Arguments
         R: Reserve tokens balance
         S: Supply tokens balance
-        V: Voucher tokens balance
-        dS: Voucher balance change (if V <= 0)
+        V: Voucher tokens balance (eg. pool token)
+        dV: Voucher balance change (if V <= 0)
         dR: Reserve balance change (if V > 0)
 
     Returns:
         dR - reserve balance change
         dS - supply balance change
         dV - voucher balance change
+
+
+    Reference:
+    https://github.com/TokenEngineeringCommunity/BalancerPools_Model/blob/886b55321957449d6cbf3afafdf57b9e64a8cadb/model/parts/balancer_math.py#L108
     '''
     if V <= 0:
         dS = dV
@@ -72,10 +76,16 @@ def remove_liquidity(R: float,
                      dV: float) -> Tuple[float, float, float]:
     '''
     #TODO
-    Example:
-    new_reserve = (1 - alpha)*reserve_balance
-    new_supply = (1 - alpha)*supply_balance
-    new_liquidity_tokens = (1 - alpha)*liquidity_token_balance
+    Arguments
+        R: Reserve tokens balance
+        S: Supply tokens balance
+        V: Voucher tokens balance (eg. pool token)
+        dV: Voucher balance change
+
+    Returns:
+        dR - reserve balance change
+        dS - supply balance change
+        dV - voucher balance change
     '''
     voucher_change_fraction = dV / V
     dR = voucher_change_fraction * R
