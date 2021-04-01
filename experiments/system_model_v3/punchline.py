@@ -16,7 +16,7 @@ from radcad.core import generate_parameter_sweep
 
 
 SIMULATION_TIMESTEPS = 8758 #len(eth_price_df) - 1
-MONTE_CARLO_RUNS = 1
+MONTE_CARLO_RUNS = 5
 
 
 experiment_metrics = ''''''
