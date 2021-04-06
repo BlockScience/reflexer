@@ -5,15 +5,16 @@ import models.system_model_v3.model.parts.init as init
 from .parts.utils import s_update_sim_metrics, p_free_memory, s_collect_events
 from .parts.governance import p_enable_controller
 
-from .parts.controllers import *
+from .parts.controllers2 import *
 from .parts.debt_market import *
 from .parts.time import *
 from .parts.apt_model import *
+from .parts.price_trading import *
+from .parts.rate_trading import *
 
 
 partial_state_update_blocks_unprocessed = [
     {
-        'label': 'Initialization & Memory management',
         'policies': {
             'free_memory': p_free_memory,
             'random_seed': init.initialize_seed,
@@ -23,7 +24,6 @@ partial_state_update_blocks_unprocessed = [
         }
     },
     {
-        'label': 'Time',
         'details': '''
             This block observes (or samples from data) the amount of time passed between events
         ''',
@@ -38,7 +38,6 @@ partial_state_update_blocks_unprocessed = [
     },
     #################################################################
     {
-        'label': 'Liquidity',
         'enabled': True,
         'policies': {
             'liquidity_demand': markets.p_liquidity_demand
@@ -53,7 +52,6 @@ partial_state_update_blocks_unprocessed = [
         }
     },
     {
-        'label': 'Market Price',
         'policies': {
             'market_price': markets.p_market_price
         },
@@ -64,10 +62,10 @@ partial_state_update_blocks_unprocessed = [
         }
     },
     {
-        'label': 'Expected Market Price',
         'details': '''
             Resolve expected price and store in state
         ''',
+        'enabled': False,
         'policies': {
             'market': p_resolve_expected_market_price
         },
@@ -76,10 +74,10 @@ partial_state_update_blocks_unprocessed = [
         }
     },
     {
-        'label': 'Arbitrageur',
         'details': """
             APT model
         """,
+        'enabled': False,
         'policies': {
             'arbitrage': p_arbitrageur_model
         },
@@ -91,24 +89,86 @@ partial_state_update_blocks_unprocessed = [
             'UNI_supply': uniswap.update_UNI_supply,
         }
     },
+    {
+        'details': """
+            price trading model
+        """,
+        'enabled': True,
+        'policies': {
+            'arbitrage': p_trade_price
+        },
+        'variables': {
+            'price_trader_usd_balance': s_store_price_trader_usd_balance,
+            'price_trader_rai_balance': s_store_price_trader_rai_balance,
+            'RAI_balance': uniswap.update_RAI_balance,
+            'ETH_balance': uniswap.update_ETH_balance,
+            'UNI_supply': uniswap.update_UNI_supply,
+        }
+    },
+        {
+        'details': """
+            negative rate trading model
+        """,
+        'enabled': False,
+        'policies': {
+            'arbitrage': p_trade_neg_rate
+        },
+        'variables': {
+            'neg_rate_trader_usd_balance': s_store_neg_rate_trader_usd_balance,
+            'neg_rate_trader_rai_balance': s_store_neg_rate_trader_rai_balance,
+            'RAI_balance': uniswap.update_RAI_balance,
+            'ETH_balance': uniswap.update_ETH_balance,
+            'UNI_supply': uniswap.update_UNI_supply,
+        }
+    },
+        {
+        'details': """
+            positive rate trading model
+        """,
+        'enabled': False,
+        'policies': {
+            'arbitrage': p_trade_pos_rate
+        },
+        'variables': {
+            'pos_rate_trader_usd_balance': s_store_pos_rate_trader_usd_balance,
+            'pos_rate_trader_rai_balance': s_store_pos_rate_trader_rai_balance,
+            'RAI_balance': uniswap.update_RAI_balance,
+            'ETH_balance': uniswap.update_ETH_balance,
+            'UNI_supply': uniswap.update_UNI_supply,
+        }
+    },
+        {
+        'details': """
+            rate trading model
+        """,
+        'enabled': True,
+        'policies': {
+            'arbitrage': p_trade_rate
+        },
+        'variables': {
+            'rate_trader_usd_balance': s_store_rate_trader_usd_balance,
+            'rate_trader_rai_balance': s_store_rate_trader_rai_balance,
+            'RAI_balance': uniswap.update_RAI_balance,
+            'ETH_balance': uniswap.update_ETH_balance,
+            'UNI_supply': uniswap.update_UNI_supply,
+        }
+    },
     #################################################################
     {
-        'label': 'Aggregate states 1',
         'details': '''
             Aggregate states
         ''',
-        'policies': {},
-        'variables': {
-            'eth_locked': s_update_eth_locked,
-            'eth_freed': s_update_eth_freed,
-            'eth_bitten': s_update_eth_bitten,
-            'rai_drawn': s_update_rai_drawn,
-            'rai_wiped': s_update_rai_wiped,
-            'rai_bitten': s_update_rai_bitten,
-        }
+      'policies': {},
+      'variables': {
+        'eth_locked': s_update_eth_locked,
+        'eth_freed': s_update_eth_freed,
+        'eth_bitten': s_update_eth_bitten,
+        'rai_drawn': s_update_rai_drawn,
+        'rai_wiped': s_update_rai_wiped,
+        'rai_bitten': s_update_rai_bitten,
+      }
     },
     {
-        'label': 'Debt Market 1',
         'details': '''
             Update debt market state
         ''',
@@ -119,9 +179,8 @@ partial_state_update_blocks_unprocessed = [
         }
     },
     #################################################################
-    {
-        'label': 'Liquidate CDPs',
-        'enabled': False,
+    {   
+        'enabled': False,# False
         'details': '''
             Exogenous u,v activity: liquidate CDPs
         ''',
@@ -133,10 +192,10 @@ partial_state_update_blocks_unprocessed = [
         }
     },
     {
-        'label': 'Rebalance CDPs',
         'details': """
         Rebalance CDPs using wipes and draws 
         """,
+        'enabled': True,
         'policies': {
             'rebalance_cdps': p_rebalance_cdps,
         },
@@ -149,10 +208,10 @@ partial_state_update_blocks_unprocessed = [
     },
     #################################################################
     {
-        'label': 'Interest update',
         'details': '''
             Endogenous w activity
         ''',
+        'enabled': True,
         'policies': {},
         'variables': {
             'accrued_interest': s_update_accrued_interest,
@@ -161,7 +220,6 @@ partial_state_update_blocks_unprocessed = [
     },
     #################################################################
     {
-        'label': 'Compute error',
         'details': """
         This block computes and stores the error terms
         required to compute the various control actions
@@ -171,11 +229,11 @@ partial_state_update_blocks_unprocessed = [
         },
         'variables': {
             'error_star': store_error_star,
+            'prev_error_star': store_prev_error_star,
             'error_star_integral': update_error_star_integral,
         }
     },
     {
-        'label': 'Controller',
         'details': """
         This block computes the stability control action 
         """,
@@ -187,7 +245,6 @@ partial_state_update_blocks_unprocessed = [
         }
     },
     {
-        'label': 'Target price',
         'details': """
         This block updates the target price based on stability control action 
         """,
@@ -198,7 +255,6 @@ partial_state_update_blocks_unprocessed = [
     },
     #################################################################
     {
-        'label': 'Aggregate W',
         'policies': {},
         'variables': {
             'w_1': s_aggregate_w_1,
@@ -207,24 +263,22 @@ partial_state_update_blocks_unprocessed = [
         }
     },
     {
-        'label': 'Aggregate states 2',
         'details': '''
             Aggregate states
         ''',
-        'policies': {},
-        'variables': {
-            'eth_locked': s_update_eth_locked,
-            'eth_freed': s_update_eth_freed,
-            'eth_bitten': s_update_eth_bitten,
-            'rai_drawn': s_update_rai_drawn,
-            'rai_wiped': s_update_rai_wiped,
-            'rai_bitten': s_update_rai_bitten,
-            'accrued_interest': s_update_interest_bitten,
-            'system_revenue': s_update_system_revenue,
-        }
+      'policies': {},
+      'variables': {
+        'eth_locked': s_update_eth_locked,
+        'eth_freed': s_update_eth_freed,
+        'eth_bitten': s_update_eth_bitten,
+        'rai_drawn': s_update_rai_drawn,
+        'rai_wiped': s_update_rai_wiped,
+        'rai_bitten': s_update_rai_bitten,
+        'accrued_interest': s_update_interest_bitten,
+        'system_revenue': s_update_system_revenue,
+      }
     },
     {
-        'label': 'Debt Market 2',
         'details': '''
             Update debt market state
         ''',
@@ -237,7 +291,6 @@ partial_state_update_blocks_unprocessed = [
     },
     #################################################################
     {
-        'label': 'ETH price',
         'details': '''
             Exogenous ETH price process
         ''',
@@ -252,13 +305,11 @@ partial_state_update_blocks_unprocessed = [
     },
     #################################################################
     {
-        'label': 'CDP metrics',
         'policies': {},
         'variables': {
             'cdp_metrics': s_update_cdp_metrics,
         }
-    }
+    },
 ]
 
-partial_state_update_blocks = list(filter(lambda psub: psub.get(
-    'enabled', True), partial_state_update_blocks_unprocessed))
+partial_state_update_blocks = list(filter(lambda psub: psub.get('enabled', True), partial_state_update_blocks_unprocessed))

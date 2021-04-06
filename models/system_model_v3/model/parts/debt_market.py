@@ -201,7 +201,6 @@ def open_cdp_draw(draw, eth_price, target_price, liquidation_ratio):
 
 def p_rebalance_cdps(params, substep, state_history, state):
     cdps = state["cdps"]
-
     eth_price = state["eth_price"]
     target_price = state["target_price"]
     liquidation_ratio = params["liquidation_ratio"]
@@ -495,7 +494,7 @@ def s_update_cdp_interest(params, substep, state_history, state, policy_input):
 
     def resolve_cdp_interest(cdp):
         if cdp["open"]:
-            principal_debt = cdp['drawn'] - cdp['wiped'] - cdp['u_bitten']
+            principal_debt = cdp["drawn"]
             previous_accrued_interest = cdp["dripped"]
             cdp["dripped"] = calculate_accrued_interest(
                 stability_fee,

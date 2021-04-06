@@ -31,7 +31,7 @@ def save_to_HDF5(experiment, store_file_name, store_key, now):
         'date': now.isoformat()
     }
     store.close()
-    print(f"Saved experiment results to HDF5 store file {store_file_name} with key {store_key}")
+    #print(f"Saved experiment results to HDF5 store file {store_file_name} with key {store_key}")
 
 def update_experiment_run_log(experiment_folder, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now):
     experiment_run_log = f'''

@@ -40,7 +40,7 @@ def configure_logging(output_directory, date):
     logger.addHandler(file_handler)
 
 def run_experiment(results_id, output_directory, experiment_metrics, timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=params, initial_state=state_variables, state_update_blocks=partial_state_update_blocks):
-    configure_logging(output_directory + '/logs', now)
+    #configure_logging(output_directory + '/logs', now)
     
     passed = False
     experiment_time = 0.0
@@ -49,9 +49,11 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
         start = time.time()
         
         # Run experiment
+        '''
         logging.info("Starting experiment")
         logging.debug(experiment_metrics)
         logging.info(pprint.pformat(params))
+        '''
 
         # Run cadCAD simulation
         model = Model(
@@ -73,19 +75,16 @@ def run_experiment(results_id, output_directory, experiment_metrics, timesteps=S
         
         exceptions = pd.DataFrame(experiment.exceptions)
         
-        logging.debug(exceptions)
+        #logging.debug(exceptions)
 
         passed = True
         end = time.time()
         experiment_time = end - start
-        logging.info(f"Experiment completed in {experiment_time} seconds")
+        #logging.info(f"Experiment completed in {experiment_time} seconds")
 
         update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now)
-
-        return experiment
     except AssertionError as e:
-        logging.info("Experiment failed")
-        logging.error(e)
+        #logging.info("Experiment failed")
+        #logging.error(e)
 
         update_experiment_run_log(output_directory, passed, results_id, hash, exceptions, experiment_metrics, experiment_time, now)
-        raise e
