@@ -60,7 +60,7 @@ def run_sims_mean(config):
     p = {
          'kp': [config['kp']],
          'ki': [config['ki']],
-         'kd': [0],
+         'kd': [config['kd']],
          'alpha': [config['alpha'] * RAY]
         }
 
@@ -84,7 +84,7 @@ def run_sims_mean(config):
                 run_experiment(results_id, '.', experiment_metrics, #initial_state=new_state_variables,
                                timesteps=SIMULATION_TIMESTEPS, runs=MONTE_CARLO_RUNS, params=these_params)
             except Exception as e:
-                print(e)
+                #print(e)
                 failed_score = float("inf")
                 #print(f"{config=}, {capital_pct=}, {failed_score=}")
                 return failed_score
@@ -94,6 +94,8 @@ def run_sims_mean(config):
             #print(f"{new_state_variables['rate_trader_rai_balance']=}, {new_state_variables['rate_trader_usd_balance']=}")
             #print(f"{new_state_variables['price_trader_rai_balance']=}, {new_state_variables['price_trader_usd_balance']=}, {capital_pct=}, {sim_score=}")
             scores.append(sim_score)
+            if sim_score > 100:
+                return np.mean(scores)
 
     mean_score = np.mean(scores)
     #print(f"{new_state_variables['price_trader_rai_balance']=}, {new_state_variables['price_trader_usd_balance']=}, {mean_score=}")
@@ -142,6 +144,7 @@ if __name__ == "__main__":
              "alpha": tune.uniform(0.99999, 1)
             }
 
+    """
     # PosP, Neg I
     config = {"kp": tune.uniform(1e-7, 5e-7),
              "ki": tune.uniform(-9e-11, -1e-12),
@@ -149,7 +152,6 @@ if __name__ == "__main__":
              "alpha": tune.uniform(0.999, 1)
             }
 
-    """
     config = {"kp": (1e-10, 1e-7),
              "ki": (-1e-7, -1e-10),
              #"kd": tune.grid_search([0]),
@@ -157,38 +159,42 @@ if __name__ == "__main__":
             }
     """
 
-    kp_sweep = np.linspace(config['kp'].lower, config['kp'].upper, 5)
-    ki_sweep = np.linspace(config['ki'].lower, config['ki'].upper, 5)
-    #kd_sweep = np.linspace(config['kd'].lower, config['kd'].upper, 10)
-    alpha_sweep = np.linspace(config['alpha'].lower, config['alpha'].upper, 5)
+    #kp_sweep = np.linspace(config['kp'].lower, config['kp'].upper, 6)
+    #ki_sweep = np.linspace(config['ki'].lower, config['ki'].upper, 6)
+    #kd_sweep = np.linspace(config['kd'].lower, config['kd'].upper, 6)
+    #alpha_sweep = np.linspace(config['alpha'].lower, config['alpha'].upper, 6)
 
 
     #Grid search
-    exponents = np.linspace(-12, -4, 9)
-    scales = [1, 3, 5, 7, 9]
+    exponents = np.linspace(-12, -5, 8)
+    scales = [5]
     kp_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
 
-    exponents = np.linspace(-12, -4, 9)
-    scales = [-1, -3, -5, -7, -9]
+    exponents = np.linspace(-12, -5, 8)
+    scales = [5]
     ki_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
+
+    exponents = np.linspace(-12, -5, 8)
+    scales = [5]
+    kd_sweep = [scale * 10**exponent for scale in scales for exponent in exponents]
 
     alpha_sweep = [0.999, 0.9999, 0.99999, 0.999999, 0.9999999]
 
 
     #assert len(kp_sweep) == len(ki_sweep) == len(alpha_sweep)
     #assert len(ki_sweep) == len(alpha_sweep)
-    cartesian = itertools.product(kp_sweep, ki_sweep, alpha_sweep)
+    cartesian = itertools.product(kp_sweep, ki_sweep, kd_sweep, alpha_sweep)
 
     initial_points = []
     for x in cartesian:
         point = {}
         point['kp'] = x[0]
         point['ki'] = x[1]
-        #point['kd'] = x[2]
-        point['alpha'] = x[2]
+        point['kd'] = x[2]
+        point['alpha'] = x[3]
 
-        if abs(point['ki']) > point['kp']/3600:
-            continue
+        #if abs(point['ki']) > point['kp']/3600:
+        #    continue
         initial_points.append(point)
 
     print(f"{len(initial_points)} initial points")
@@ -219,7 +225,7 @@ if __name__ == "__main__":
     """
 
     #algo.optimizer._prime_queue(1000)
-    algo = ConcurrencyLimiter(algo, max_concurrent=64)
+    algo = ConcurrencyLimiter(algo, max_concurrent=32)
 
     analysis = tune.run(
                     objective_mean,
