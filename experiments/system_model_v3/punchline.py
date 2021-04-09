@@ -16,17 +16,21 @@ from radcad.core import generate_parameter_sweep
 
 
 SIMULATION_TIMESTEPS = 8758 #len(eth_price_df) - 1
-MONTE_CARLO_RUNS = 5
+MONTE_CARLO_RUNS = 10
 
 
 experiment_metrics = ''''''
 
 # Override parameters
 params_override = {
-    'liquidity_demand_enabled': [True],
-    'rescale_target_price': [False],
+   'debug': [True],
+   'liquidity_demand_enabled': [True],
+   'rescale_target_price': [True],
+   'arbitrageur_considers_liquidation_ratio': [False]
     }
 params.update(params_override)
+
+
 
 # Experiment details
 now = datetime.datetime.now()
