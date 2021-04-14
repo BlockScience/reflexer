@@ -25,6 +25,8 @@ experiment_metrics = ""
 # Override parameters
 params_override = {
     'controller_enabled': [False],
+    'rescale_target_price': [True],
+    'liquidity_demand_enabled': [False]
 }
 params.update(params_override)
 
