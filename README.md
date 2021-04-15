@@ -99,6 +99,9 @@ Notebooks analysing the system and showcasing how to perform experiments and ana
 4. [Grid Search Sensitivity-WIP](notebooks/analysis/Grid_Search_Sensitivity.ipynb)
 5. [RAI Mainnet subgraph access](notebooks/analysis/TheGraphDataSetCreation.ipynb)
 6. [RAI Mainnet subgraph analysis](notebooks/analysis/TheGraphDataAnalysis.ipynb)
+7. [Rai Price Correlation Analysis V1](notebooks/analysis/Rai_Price_Correlation_v1.ipynb)
+8. [Rai Price Correlation Analysis V2](notebooks/analysis/Rai_Price_Correlation_v2.ipynb)
+
 
 
 Additional experiment log files and notebooks can be found [here](notebooks/analysis/Experiments_run.md)
