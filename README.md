@@ -32,7 +32,7 @@ See [Parameter overview](docs/rai_update_012921.pdf) here for more details about
 [Click here to see model specifications](<docs/Arbing AMMs.md>)
 
 ## Aggregate Arbitrageur model specifications
-[Click here to see model specifications](docs/<Misc Notes, Aggregate Arbitrageur Model.md>)
+[Click here to see model specifications](<docs/Misc Notes, Aggregate Arbitrageur Model.md>)
     
     
 
@@ -95,7 +95,7 @@ Full system model with CDP and APT system model, using a stochastic Ethereum pri
 Notebooks analysing the system and showcasing how to perform experiments and analysis.
 1. [Full system model - simple run](notebooks/analysis/Single_run.ipynb)
 2. [Full system model - MC](notebooks/analysis/Monte_carlo_run.ipynb)
-3. [Shock Test](notebooks/analysis/Shock_Tests.ipynb)
+3. [Shock Test](notebooks/analysis/Shock_Test.ipynb)
 4. [Grid Search Sensitivity-WIP](notebooks/analysis/Grid_Search_Sensitivity.ipynb)
 5. [RAI Mainnet subgraph access](notebooks/analysis/TheGraphDataSetCreation.ipynb)
 6. [RAI Mainnet subgraph analysis](notebooks/analysis/TheGraphDataAnalysis.ipynb)
