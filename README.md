@@ -104,7 +104,7 @@ Notebooks analysing the system and showcasing how to perform experiments and ana
 
 
 
-Additional experiment log files and notebooks can be found [here](notebooks/analysis/Experiments_run.md)
+Additional experiment log files and notebooks can be found [here](notebooks/analysis/experiment_notebooks/Experiments_run.md)
 
 Click [here](parameter_methodology.md) for information about cadCAD parameter sweeping methodology. 
 
