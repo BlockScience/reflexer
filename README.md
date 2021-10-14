@@ -26,13 +26,13 @@ See [Parameter overview](docs/rai_update_012921.pdf) here for more details about
   
     
 ## RAI Arbitrageur Model
-[Click here to see model specifications](docs/RAI Arbitrageur Model.md)
+[Click here to see model specifications](<docs/RAI Arbitrageur Model.md>)
 
 ## AMM Arb Model
-[Click here to see model specifications](docs/Arbing AMMs.md)
+[Click here to see model specifications](<docs/Arbing AMMs.md>)
 
 ## Aggregate Arbitrageur model specifications
-[Click here to see model specifications](docs/Misc Notes, Aggregate Arbitrageur Model.md)
+[Click here to see model specifications](docs/<Misc Notes, Aggregate Arbitrageur Model.md>)
     
     
 
@@ -40,7 +40,7 @@ See [Parameter overview](docs/rai_update_012921.pdf) here for more details about
 
 The current model, **System Model v3.0**, is a full system model with CDP and APT system model, using a stochastic Ethereum price and liquidity demand process as a driver, under different PI controller settings.**System Model v2.0**, integrates a CDP subsystem, a secondary market subsystem, and applies [Arbitrage Pricing Theory (APT)](https://www.investopedia.com/terms/a/apt.asp) to the **System Model v1.0** model. The **System Model v1.0** model consisted of an estimated "debt price" regressor model, and a fitted market model, with a PI controller in the loop.
 
-The latest notebook would be the **System Model v3.0** [full system model notebook](notebooks/system_model_v3/v3_debt_market_model.ipynb). The model code used within the notebook can be found in `models/system_model_v3/`.
+The latest notebook would be the **System Model v3.0** [full system model notebook](notebooks/system_model_v3/debt_market_model.ipynb). The model code used within the notebook can be found in `models/system_model_v3/`.
 
 
 The table of contents and glossary below should serve as a guide.
@@ -113,7 +113,7 @@ Click [here](parameter_methodology.md) for information about cadCAD parameter sw
 
 <p align="center"><img src="diagrams/debt_dynamics.png" alt="Debt dynamics" width="80%"/></p>
 
-Full system model with CDP, APT, and secondary market subsystems. See [slides 17-21](https://drive.google.com/drive/u/1/folders/1uW7U2dtrlhb91bkvKzs-Vbh2MBoc7ifZ). Please see the below in this README about the Scipy patch that needs to be applied, and the Pickle files you'll need to download for the ML model. 
+Full system model with CDP, APT, and secondary market subsystems. See [slides 17-21](docs/rai_update_102920.pdf). Please see the below in this README about the Scipy patch that needs to be applied, and the Pickle files you'll need to download for the ML model. 
 
 * Model code: `models/system_model_v2/`
 * Notebooks: `notebooks/system_model_v2/`
