@@ -20,19 +20,19 @@ For a great, "plan English" overview of a PID controller, visit the Rai [whitepa
 Mathematical representation:
 ![Controller](diagrams/controller.png)
 
-See [Documenting Model Selection Presentation](https://drive.google.com/drive/u/1/folders/1uW7U2dtrlhb91bkvKzs-Vbh2MBoc7ifZ) for more information.
+See [Documenting Model Selection Presentation](docs/rai_update_102920.pdf) for more information.
 
-See [Parameter overview](https://drive.google.com/file/d/1Ud1D3Jq05GcoU7h9IYKf5zGAmxIuzX_X/view) here for more details about the parameters and KPIs
+See [Parameter overview](docs/rai_update_012921.pdf) here for more details about the parameters and KPIs
   
     
 ## RAI Arbitrageur Model
-[Click here to see model specifications](https://hackmd.io/@jshorish/Hkdj9NhRw)
+[Click here to see model specifications](docs/RAI Arbitrageur Model.md)
 
 ## AMM Arb Model
-[Click here to see model specifications](https://hackmd.io/7Z2e-Is7Toi-5SaRl4K3tA?view)
+[Click here to see model specifications](docs/Arbing AMMs.md)
 
 ## Aggregate Arbitrageur model specifications
-[Click here to see model specifications](https://hackmd.io/vG1Dg_zGT1azTziLv9H7xg)
+[Click here to see model specifications](docs/Misc Notes, Aggregate Arbitrageur Model.md)
     
     
 
@@ -77,7 +77,7 @@ See [GLOSSARY.md](./GLOSSARY.md) markdown file.
 
 # Models
 
-[Model versions](https://drive.google.com/drive/u/1/folders/1uW7U2dtrlhb91bkvKzs-Vbh2MBoc7ifZ) 
+[Model versions](docs/rai_update_102920.pdf) 
 
 
 
@@ -125,7 +125,7 @@ Full system model with CDP, APT, and secondary market subsystems. See [slides 17
 
 ## System Model v1.0: Debt Price Regression and Fitted Market Model
 
-This version of the model is for understanding the debt mechanism. Experimentation of posit exogenous processes for debt price and market price, and test stability controller. See [slides 13-16](https://drive.google.com/drive/u/1/folders/1uW7U2dtrlhb91bkvKzs-Vbh2MBoc7ifZ)
+This version of the model is for understanding the debt mechanism. Experimentation of posit exogenous processes for debt price and market price, and test stability controller. See [slides 13-16](docs/rai_update_102920.pdf)
 
 Full system model with parameters for selecting & stress testing subsystems, such as the controller, the debt price regression model, and the fitted market model.
 
@@ -159,7 +159,7 @@ Full system model with parameters for selecting & stress testing subsystems, suc
 
 ## Large File Dependencies
 
-The following pickle files in `models/pickles/` should be obtained from the [BlockScience/Reflexer shared Google Drive folder](https://drive.google.com/drive/u/1/folders/14pJWIQytibnfZM32YaeemW5FVqj4PpE5), and copied or linked into the repo. They are ignored in the `.gitignore` file to avoid hitting file size and bandwidth limits:
+The following pickle files in `models/pickles/` should be obtained from this [link](https://we.tl/t-Msw9AunMA4), and copied or linked into the repo. They are ignored in the `.gitignore` file to avoid hitting file size and bandwidth limits:
 
 * `apt_debt_model_2020-11-28.pickle`
 
