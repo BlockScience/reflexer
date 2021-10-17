@@ -159,7 +159,7 @@ Full system model with parameters for selecting & stress testing subsystems, suc
 
 ## Large File Dependencies
 
-The following pickle files in `models/pickles/` should be obtained from this [link](https://we.tl/t-Msw9AunMA4), and copied or linked into the repo. They are ignored in the `.gitignore` file to avoid hitting file size and bandwidth limits:
+The following pickle files in `models/pickles/` should be obtained from this [IPFS link](https://ipfs.io/ipfs/QmZFpjnay3w8zhLyMsaEuz5hJFCWej5ccmH77snYsADATr?filename=shared_rai_model_files.zip), and copied or linked into the repo. They are ignored in the `.gitignore` file to avoid hitting file size and bandwidth limits:
 
 * `apt_debt_model_2020-11-28.pickle`
 
